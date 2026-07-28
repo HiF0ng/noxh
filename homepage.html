@@ -35,22 +35,28 @@
 </div>
 </nav>
 
-<!-- Main Content Canvas -->
-<main class="pt-28 pb-xl px-6 md:px-12 max-w-5xl mx-auto flex flex-col gap-xl">
-<!-- Hero Section -->
-<section class="flex flex-col items-center justify-center text-center pt-lg pb-lg mt-0">
-<h1 class="font-display text-display text-primary max-w-3xl mx-auto mb-sm text-justify [text-align-last:center]">
-    Tổng hợp và cung cấp thông tin dự án NOXH, các tài liệu mới nhất và hướng dẫn đăng ký hoàn toàn miễn phí
-</h1>
-<div class="mt-lg flex gap-md">
-<a href="all-projects.html" class="inline-block bg-primary text-on-primary font-label-md text-label-md px-8 py-4 rounded-full shadow__btn cursor-pointer text-center">
-    Khám phá Dự án
-</a>
-</div>
-</section>
+<!-- Hero Section (Full Viewport Height ONLY on Homepage) -->
+<header class="homepage-hero-section flex flex-col items-center justify-center text-center px-6 md:px-12 max-w-5xl mx-auto pt-28 pb-16 relative">
+    <h1 class="font-display hero-title-responsive text-display text-primary max-w-4xl mx-auto mb-6 text-justify [text-align-last:center]">
+        Tổng hợp và cung cấp thông tin dự án NOXH, các tài liệu mới nhất và hướng dẫn đăng ký hoàn toàn miễn phí
+    </h1>
+    <div class="mt-6 flex gap-md">
+        <a href="all-projects.html" class="inline-block bg-primary text-on-primary font-label-md text-label-md px-8 py-4 rounded-full shadow__btn cursor-pointer text-center">
+            Khám phá Dự án
+        </a>
+    </div>
+    
+    <!-- Scroll Down Hint -->
+    <a href="#featured-projects" id="scroll-down-btn" class="scroll-indicator hidden lg:flex" title="Cuộn xuống xem dự án">
+        <span class="text-xs font-medium">Cuộn xuống xem dự án</span>
+        <span class="material-symbols-outlined scroll-icon text-xl">keyboard_arrow_down</span>
+    </a>
+</header>
 
+<!-- Main Content Canvas -->
+<main class="pb-xl px-6 md:px-12 max-w-5xl mx-auto flex flex-col gap-xl">
 <!-- Minimap Section (Bento Grid Style) -->
-<section class="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] p-md md:p-lg border border-outline-variant/30 flex flex-col gap-xs">
+<section id="featured-projects" class="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] p-md md:p-lg border border-outline-variant/30 flex flex-col gap-xs">
 <h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">Dự án nổi bật</h2>
 <!-- Filters -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-sm">
@@ -270,43 +276,168 @@
 <!-- Decorative background element -->
 <div class="absolute top-0 right-0 w-64 h-64 bg-white/15 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
 <div class="relative z-10 max-w-xl">
-<h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg font-bold mb-sm">noxh.help trân trọng sự đóng Góp ýủa bạn</h2>
-<p class="font-body-md text-body-md opacity-90">Chúng tôi cảm ơn sự đồng hành của bạn và rất vui khi nhận được những Góp ý để cải thiện tốt hơn cho cộng đồng</p>
+<h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg font-bold mb-sm">Chúng tôi trân trọng sự đóng góp của bạn!</h2>
+<p class="font-body-md text-body-md opacity-90">Chúng tôi cảm ơn sự đồng hành của bạn và rất vui khi nhận được những đóng góp để cải thiện tốt hơn cho cộng đồng</p>
 </div>
 <div class="relative z-10 flex flex-col sm:flex-row gap-md w-full md:w-auto flex-shrink-0">
-<button class="bg-white text-primary font-bold shadow-md hover:shadow-lg hover:scale-105 transition-all px-8 py-3.5 rounded-full flex items-center justify-center gap-2 whitespace-nowrap">
+<button onclick="openFeedbackModal()" class="bg-white text-primary font-bold shadow-md hover:shadow-lg hover:scale-105 transition-all px-8 py-3.5 rounded-full flex items-center justify-center gap-2 whitespace-nowrap">
 <span class="material-symbols-outlined">rate_review</span>
                     Góp ý
                 </button>
-<button class="border-2 border-white text-white font-bold bg-white/10 hover:bg-white/20 hover:scale-105 transition-all px-8 py-3.5 rounded-full flex items-center justify-center gap-2 whitespace-nowrap">
+<button onclick="openSupportModal()" class="border-2 border-white text-white font-bold bg-white/10 hover:bg-white/20 hover:scale-105 transition-all px-8 py-3.5 rounded-full flex items-center justify-center gap-2 whitespace-nowrap">
 <span class="material-symbols-outlined">handshake</span>
                     Hỗ trợ Dự án
                 </button>
 </div>
 </section>
+
+<!-- Feedback Modal -->
+<div id="feedbackModal" class="fixed inset-0 z-[100] flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeFeedbackModal()"></div>
+    <!-- Modal Content -->
+    <div id="feedbackModalContent" class="bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-lg mx-4 relative z-10 overflow-hidden transition-all duration-500 transform scale-95 flex flex-col">
+        <!-- Close button -->
+        <button onclick="closeFeedbackModal()" class="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-container-low">
+            <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+        
+        <!-- Form State -->
+        <div id="feedbackFormState" class="p-6 md:p-8 flex flex-col gap-6 w-full text-left">
+            <div class="flex flex-col gap-1">
+                <h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Gửi Góp ý</h3>
+                <p class="text-body-sm text-on-surface-variant">Mọi đóng góp của bạn đều giúp chúng tôi hoàn thiện hơn.</p>
+            </div>
+            
+            <form id="feedbackForm" class="flex flex-col gap-5" onsubmit="submitFeedback(event)">
+                <!-- Name & Anonymous -->
+                <div class="flex flex-col gap-3">
+                    <div class="flex justify-between items-center">
+                        <label class="font-label-md text-label-md text-on-surface-variant">Tên người gửi</label>
+                        <label class="flex items-center gap-2 cursor-pointer group">
+                            <span class="font-label-sm text-label-sm text-on-surface-variant group-hover:text-on-surface transition-colors">Gửi ẩn danh</span>
+                            <div class="relative">
+                                <input type="checkbox" id="anonymousToggle" class="sr-only" onchange="toggleAnonymous()">
+                                <div class="block bg-surface-container-highest w-10 h-6 rounded-full transition-colors" id="toggleBg"></div>
+                                <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform" id="toggleDot"></div>
+                            </div>
+                        </label>
+                    </div>
+                    <input type="text" id="feedbackName" placeholder="Nhập tên của bạn..." class="w-full px-4 py-2 bg-surface-container-low border border-outline-variant rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-on-surface-variant/50 text-on-surface">
+                </div>
+                
+                <!-- Content -->
+                <div class="flex flex-col gap-2">
+                    <label class="font-label-md text-label-md text-on-surface-variant">Nội dung góp ý <span class="text-error">*</span></label>
+                    <textarea required placeholder="Nhập nội dung chi tiết..." class="w-full px-4 py-3 bg-surface-container-low border border-outline-variant rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-on-surface-variant/50 min-h-[200px] resize-y text-on-surface"></textarea>
+                </div>
+                
+                <!-- Media -->
+                <div class="flex flex-col gap-2">
+                    <label class="font-label-md text-label-md text-on-surface-variant">Đính kèm hình ảnh (nếu có)</label>
+                    <label class="w-full border-2 border-dashed border-outline-variant hover:border-primary/50 bg-surface-container-low/50 hover:bg-surface-container-low rounded-xl py-2 px-4 flex items-center justify-center gap-2 cursor-pointer transition-all group">
+                        <span class="material-symbols-outlined text-primary text-xl group-hover:scale-110 transition-transform">cloud_upload</span>
+                        <span class="text-sm text-primary font-medium">Nhấn để chọn ảnh</span>
+                        <span class="text-xs text-on-surface-variant ml-1">(Tối đa 5MB)</span>
+                        <input type="file" id="feedbackImageInput" class="hidden" accept="image/*" multiple onchange="handleFeedbackImage(this)">
+                    </label>
+                    <!-- File List Container -->
+                    <div id="feedbackFileList" class="flex flex-col gap-1 mt-1 empty:hidden"></div>
+                </div>
+                
+                <!-- Actions -->
+                <div class="flex gap-3 mt-1">
+                    <button type="button" onclick="closeFeedbackModal()" class="flex-1 py-2 px-4 rounded-full text-sm font-bold border-2 border-outline-variant text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all">Hủy</button>
+                    <button type="submit" class="flex-1 py-2 px-4 rounded-full text-sm font-bold bg-primary text-white hover:shadow-lg hover:-translate-y-1 transition-all">Gửi thông tin</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Success State -->
+        <div id="feedbackSuccessState" class="hidden p-8 md:p-12 flex flex-col items-center justify-center text-center gap-4 w-full min-h-[300px]">
+            <div class="w-20 h-20 rounded-full bg-green-100 text-green-600 flex items-center justify-center mb-2 shadow-[0_0_30px_rgba(34,197,94,0.3)]">
+                <span class="material-symbols-outlined text-5xl" style="font-variation-settings: 'FILL' 1, 'wght' 700;">check_circle</span>
+            </div>
+            <h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Thành công!</h3>
+            <p class="text-body-md text-on-surface-variant">Chúng tôi đã nhận được nội dung phản hồi. Xin trân trọng cảm ơn sự đóng góp của bạn.</p>
+            <button onclick="closeFeedbackModal()" class="mt-6 py-2.5 px-8 rounded-full font-label-lg font-bold bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors">Đóng</button>
+        </div>
+    </div>
+</div>
+
+<!-- Support Modal -->
+<div id="supportModal" class="fixed inset-0 z-[100] flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeSupportModal()"></div>
+    <div class="bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-3xl mx-4 relative z-10 overflow-hidden transition-all duration-300 transform scale-95 flex flex-col md:flex-row">
+        <!-- Close button -->
+        <button onclick="closeSupportModal()" class="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-container-low z-20">
+            <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+        
+        <!-- Left: QR Code -->
+        <div class="w-full md:w-5/12 bg-surface-container-low p-8 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-outline-variant/50">
+            <h3 class="font-headline-sm text-headline-sm text-primary font-bold mb-6 hidden md:block">Quét mã QR</h3>
+            <div class="w-56 h-56 md:w-64 md:h-64 bg-white rounded-2xl shadow-sm border border-outline-variant p-4 flex items-center justify-center">
+                <!-- QR Code Placeholder -->
+                <div class="w-full h-full border-4 border-dashed border-primary/20 rounded-xl flex items-center justify-center text-primary/40 flex-col gap-2">
+                    <span class="material-symbols-outlined text-4xl">qr_code_2</span>
+                    <span class="text-xs font-medium text-center">QR<br>CHUYỂN KHOẢN</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right: Content -->
+        <div class="w-full md:w-7/12 p-6 md:p-8 lg:p-10 flex flex-col justify-center">
+            <div class="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-6">
+                <span class="material-symbols-outlined text-2xl leading-none" style="display: block; margin-top: 2px;">favorite</span>
+            </div>
+            
+            <p class="font-body-lg text-body-lg text-on-surface leading-relaxed mb-8 italic text-on-surface-variant">
+                "Chúng tôi cảm ơn sự ủng hộ của bạn đối với dự án này. Sự đóng góp của bạn là động lực to lớn để chúng tôi tiếp tục làm tốt hơn trên con đường giúp mọi người hiện thực hóa ước mơ Nhà ở xã hội."
+            </p>
+            
+            <div class="flex flex-col gap-4 bg-surface-container-low p-5 rounded-xl border border-outline-variant/50">
+                <div class="flex justify-between items-center flex-wrap gap-2">
+                    <span class="text-sm text-on-surface-variant">Người thụ hưởng:</span>
+                    <span class="font-bold text-on-surface">Vietnam Housing</span>
+                </div>
+                <hr class="border-outline-variant/30">
+                <div class="flex justify-between items-center flex-wrap gap-2">
+                    <span class="text-sm text-on-surface-variant">Số tài khoản:</span>
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-primary text-lg">1234567890</span>
+                    </div>
+                </div>
+                <hr class="border-outline-variant/30">
+                <div class="flex justify-between items-center flex-wrap gap-2">
+                    <span class="text-sm text-on-surface-variant">Ngân hàng:</span>
+                    <span class="font-bold text-on-surface text-right">Vietcombank<br><span class="text-xs font-normal opacity-80">Chi nhánh Sở Giao Dịch</span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 </main>
 
 <!-- Footer -->
-<footer class="w-full py-xl px-6 md:px-12 max-w-5xl mx-auto flex flex-col gap-md bg-surface-container-low border-t border-outline-variant">
-<div class="flex flex-col md:flex-row justify-between items-start gap-lg mb-lg">
-<div class="max-w-xs">
-<div class="flex items-center gap-sm mb-4">
-<span class="font-headline-md text-headline-md text-primary">Vietnam Housing</span>
-</div>
-<p class="font-body-md text-body-md text-on-surface-variant">Minh bạch, chính xác, cập nhật và miễn phí</p>
-</div>
-<div class="flex flex-col gap-sm">
-<h4 class="font-label-md text-label-md text-on-surface uppercase tracking-wider mb-2">LIÊN KẾT</h4>
-<a class="font-body-md text-body-md text-on-surface-variant hover:underline decoration-primary hover:text-primary transition-all duration-200" href="#">Về chúng tôi</a>
-<a class="font-body-md text-body-md text-on-surface-variant hover:underline decoration-primary hover:text-primary transition-all duration-200" href="#">Chính sách bảo mật</a>
-<a class="font-body-md text-body-md text-on-surface-variant hover:underline decoration-primary hover:text-primary transition-all duration-200" href="#">Liên hệ hỗ trợ</a>
-<a class="font-body-md text-body-md text-on-surface-variant hover:underline decoration-primary hover:text-primary transition-all duration-200" href="#">Điều khoản sử dụng</a>
-</div>
-</div>
-</footer>
+<div id="footer-placeholder"></div>
 
 <script src="assets/js/location-data.js"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/supabase-service.js"></script>
 <script src="assets/js/main.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const scrollBtn = document.getElementById("scroll-down-btn");
+    if (scrollBtn) {
+        scrollBtn.addEventListener("click", function(e) {
+            e.preventDefault();
+            const targetSection = document.getElementById("featured-projects");
+            if (targetSection) {
+                targetSection.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+        });
+    }
+});
+</script>
 </body></html>
+

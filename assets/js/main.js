@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Load components
+    loadFooter();
+    
     // Run once on page load
     setupUserDropdown();
     window.addEventListener('resize', adjustFeatureSubtext);
@@ -17,6 +20,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+async function loadFooter() {
+    const placeholder = document.getElementById('footer-placeholder');
+    if (!placeholder) return;
+    try {
+        const response = await fetch('components/footer.html');
+        if (response.ok) {
+            const html = await response.text();
+            placeholder.innerHTML = html;
+        }
+    } catch (err) {
+        console.error('Failed to load footer component', err);
+    }
+}
 
 function initPageScripts() {
     highlightActiveLink();
@@ -319,7 +336,10 @@ function setupSPARouter() {
             const currentHasSidebar = document.querySelector('.sidebar-menu') !== null;
             const newHasSidebar = doc.querySelector('.sidebar-menu') !== null;
             
-            if (currentHasSidebar !== newHasSidebar) {
+            const currentHasHero = document.querySelector('.homepage-hero-section') !== null;
+            const newHasHero = doc.querySelector('.homepage-hero-section') !== null;
+            
+            if (currentHasSidebar !== newHasSidebar || currentHasHero !== newHasHero) {
                 window.location.href = href;
                 return;
             }
@@ -1296,3 +1316,173 @@ window.addProjectToCompareList = function(id, title, location, status, progress)
     grid.insertBefore(card, grid.lastElementChild);
     closeAddCompareModal();
 };
+
+// --- CTA Modal Logic ---
+function openFeedbackModal() {
+    const modal = document.getElementById('feedbackModal');
+    if (!modal) return;
+    const content = modal.querySelector('#feedbackModalContent');
+    const formState = document.getElementById('feedbackFormState');
+    const successState = document.getElementById('feedbackSuccessState');
+    const form = document.getElementById('feedbackForm');
+    
+    // Reset state
+    form.reset();
+    window.feedbackFiles = [];
+    if (typeof renderFeedbackFileList === 'function') {
+        renderFeedbackFileList();
+    }
+    document.getElementById('feedbackName').disabled = false;
+    document.getElementById('feedbackName').classList.remove('opacity-50', 'bg-surface-container-highest');
+    document.getElementById('toggleBg').classList.remove('bg-primary');
+    document.getElementById('toggleBg').classList.add('bg-surface-container-highest');
+    document.getElementById('toggleDot').style.transform = 'translateX(0)';
+    
+    formState.classList.remove('hidden');
+    formState.style.opacity = '1';
+    successState.classList.add('hidden');
+    
+    // Reset any width/height styles from previous animations
+    content.style.width = '';
+    content.style.height = '';
+    
+    modal.classList.remove('hidden');
+    // Trigger reflow
+    void modal.offsetWidth;
+    modal.classList.remove('opacity-0');
+    content.classList.remove('scale-95');
+    content.classList.add('scale-100');
+}
+
+function closeFeedbackModal() {
+    const modal = document.getElementById('feedbackModal');
+    if (!modal) return;
+    const content = modal.querySelector('#feedbackModalContent');
+    modal.classList.add('opacity-0');
+    content.classList.remove('scale-100');
+    content.classList.add('scale-95');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300);
+}
+
+function toggleAnonymous() {
+    const checkbox = document.getElementById('anonymousToggle');
+    const nameInput = document.getElementById('feedbackName');
+    const toggleBg = document.getElementById('toggleBg');
+    const toggleDot = document.getElementById('toggleDot');
+    
+    if (checkbox.checked) {
+        nameInput.disabled = true;
+        nameInput.value = '';
+        nameInput.classList.add('opacity-50', 'bg-surface-container-highest');
+        toggleBg.classList.replace('bg-surface-container-highest', 'bg-primary');
+        toggleDot.style.transform = 'translateX(100%)';
+    } else {
+        nameInput.disabled = false;
+        nameInput.classList.remove('opacity-50', 'bg-surface-container-highest');
+        toggleBg.classList.replace('bg-primary', 'bg-surface-container-highest');
+        toggleDot.style.transform = 'translateX(0)';
+    }
+}
+
+function submitFeedback(e) {
+    e.preventDefault();
+    
+    const content = document.getElementById('feedbackModalContent');
+    const formState = document.getElementById('feedbackFormState');
+    const successState = document.getElementById('feedbackSuccessState');
+    
+    // Lock current dimensions before animating
+    content.style.width = content.offsetWidth + 'px';
+    content.style.height = content.offsetHeight + 'px';
+    
+    // Fade out form
+    formState.style.opacity = '0';
+    formState.style.transition = 'opacity 0.3s ease';
+    
+    setTimeout(() => {
+        formState.classList.add('hidden');
+        successState.classList.remove('hidden');
+        successState.style.opacity = '0';
+        
+        // Shrink the modal box to fit the success state nicely
+        content.style.width = '100%';
+        content.style.height = '350px';
+        
+        setTimeout(() => {
+            successState.style.transition = 'opacity 0.4s ease';
+            successState.style.opacity = '1';
+        }, 300); // wait for resize
+        
+    }, 300); // wait for fade out
+}
+
+function openSupportModal() {
+    const modal = document.getElementById('supportModal');
+    if (!modal) return;
+    const content = modal.querySelector('div.relative.z-10');
+    modal.classList.remove('hidden');
+    void modal.offsetWidth;
+    modal.classList.remove('opacity-0');
+    content.classList.remove('scale-95');
+    content.classList.add('scale-100');
+}
+
+function closeSupportModal() {
+    const modal = document.getElementById('supportModal');
+    if (!modal) return;
+    const content = modal.querySelector('div.relative.z-10');
+    modal.classList.add('opacity-0');
+    content.classList.remove('scale-100');
+    content.classList.add('scale-95');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300);
+}
+
+window.feedbackFiles = [];
+
+function handleFeedbackImage(input) {
+    if (!input.files || input.files.length === 0) return;
+    
+    // Append newly selected files to our global array
+    for (let i = 0; i < input.files.length; i++) {
+        // Simple check to avoid duplicates by name
+        if (!window.feedbackFiles.some(f => f.name === input.files[i].name)) {
+            window.feedbackFiles.push(input.files[i]);
+        }
+    }
+    
+    // Clear the input so the same file can be selected again if removed
+    input.value = '';
+    
+    renderFeedbackFileList();
+}
+
+function removeFeedbackFile(index) {
+    window.feedbackFiles.splice(index, 1);
+    renderFeedbackFileList();
+}
+
+function renderFeedbackFileList() {
+    const listContainer = document.getElementById('feedbackFileList');
+    if (!listContainer) return;
+    
+    listContainer.innerHTML = '';
+    
+    window.feedbackFiles.forEach((file, index) => {
+        const fileItem = document.createElement('div');
+        fileItem.className = 'flex items-center justify-between bg-surface-container py-1.5 px-3 rounded-lg border border-outline-variant/30';
+        fileItem.innerHTML = `
+            <div class="flex items-center gap-2 overflow-hidden">
+                <span class="material-symbols-outlined text-on-surface-variant text-sm">image</span>
+                <span class="text-xs text-on-surface font-medium truncate">${file.name}</span>
+            </div>
+            <button type="button" onclick="removeFeedbackFile(${index})" class="text-on-surface-variant hover:text-error transition-colors w-6 h-6 flex items-center justify-center rounded-full hover:bg-error/10 flex-shrink-0">
+                <span class="material-symbols-outlined text-sm">close</span>
+            </button>
+        `;
+        listContainer.appendChild(fileItem);
+    });
+}
