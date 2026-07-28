@@ -1,0 +1,109 @@
+<!DOCTYPE html><html lang="vi" class="light" style=""><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/css/style.css">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="assets/js/tailwind-config.js"></script><meta charset="utf-8"></head><body class="antialiased bg-background text-on-surface flex flex-col md:flex-row min-h-screen">
+<!-- SideNavBar (Hidden on Mobile, Visible on Desktop) -->
+<nav class="sidebar-menu hidden md:flex flex-col p-md gap-xs bg-surface-container-low dark:bg-inverse-surface shadow-sm dark:shadow-none h-screen w-64 fixed left-0 top-0 z-20 pt-[100px]">
+<!-- Removed overlapping logo -->
+<a class="flex items-center gap-sm px-4 py-3 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high transition-all duration-200 scale-95 active:scale-90 font-label-md text-label-md truncate whitespace-nowrap" href="settings.html">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+                Tài khoản
+            </a>
+
+<a class="flex items-center gap-sm px-4 py-3 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high transition-all duration-200 scale-95 active:scale-90 font-label-md text-label-md truncate whitespace-nowrap" href="saved.html"><span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 0;">favorite</span>
+                Dự án đã lưu</a><a class="flex items-center gap-sm px-4 py-3 bg-primary-container text-on-primary-container rounded-lg font-bold transition-all duration-200 scale-95 active:scale-90 font-label-md text-label-md truncate whitespace-nowrap" href="working.html">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">edit_document</span>
+                Dự án đang đăng ký
+            </a>
+
+
+
+<div class="mt-auto flex flex-col gap-xs pt-4 border-t border-outline-variant">
+
+<a class="flex items-center gap-sm px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 font-label-sm text-label-sm" href="#"><span class="material-symbols-outlined text-sm">help</span> Gửi phản hồi</a>
+<a class="flex items-center gap-sm px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 font-label-sm text-label-sm" href="#"><span class="material-symbols-outlined text-sm">logout</span> ĐĐĐăng xuất</a>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col md:ml-64 min-w-0">
+<!-- TopNavBar -->
+<nav class="top-navbar fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-3 max-w-5xl mx-auto bg-surface-container-lowest rounded-full mt-margin-mobile mx-margin-mobile lg:mt-sm lg:mx-auto shadow-sm">
+<div class="flex items-center gap-sm">
+<span class="font-headline-md text-headline-md font-bold text-primary hidden sm:block">Vietnam Housing</span>
+</div>
+<div class="hidden md:flex items-center gap-lg">
+<a class="nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="homepage.html">Trang chủ</a>
+<a class="nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="all-projects.html">Dự án</a>
+<a class="nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="documents.html">Tài liệu</a>
+<a class="nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="faq.html">Câu hỏi thường gặp</a>
+<a class="nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="compare.html">So sánh</a>
+</div>
+<div class="flex items-center gap-sm">
+<div class="h-10 w-10 rounded-full overflow-hidden border-2 border-outline-variant bg-surface-container flex items-center justify-center cursor-pointer">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<!-- Main Content Canvas -->
+<main class="flex-1 px-6 md:px-12 w-full max-w-5xl mx-auto pt-[100px] pb-8">
+<!-- Breadcrumb -->
+<nav aria-label="Breadcrumb" class="flex text-on-surface-variant font-label-md text-label-md mb-6">
+<ol class="inline-flex items-center">
+<li class="inline-flex items-center">
+<a class="inline-flex items-center hover:text-primary transition-colors" href="homepage.html">
+                        Trang chủ
+                    </a>
+</li>
+<li class="inline-flex items-center">
+<span class="material-symbols-outlined text-sm mx-2" data-icon="chevron_right">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="settings.html">Tài khoản</a>
+</li>
+<li class="inline-flex items-center">
+<span class="material-symbols-outlined text-sm mx-2" data-icon="chevron_right">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="working.html">Đang đăng ký</a>
+</li>
+</ol>
+</nav>
+<!-- Page Header -->
+<div class="mb-6">
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">Dự án đang đăng ký</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Theo dõi tiến độ hồ sơ đăng ký mua Nhà ở xã hội của bạn. Hệ thống cập nhật Trạng thái liên tục để bạn luôn nắm bắt thông tin kịp thời.</p>
+</div>
+<!-- Applications List -->
+<div class="flex flex-col gap-md">
+<!-- Card 1: Valid Status -->
+<article class="bg-surface-container-lowest rounded-lg shadow-level-1 overflow-hidden flex flex-col md:flex-row hover:shadow-level-2 transition-shadow duration-300 border border-outline-variant"><div class="md:w-1/3 relative min-h-[200px] md:min-h-auto"><img class="absolute inset-0 w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCn4esqr1eejMJp65UyTTb7oWhsC4Gz5Gn9OGeRFPdSySeaOTwzUWbPzFdOP8zDMK84jrAmmPezsIOhmZR1bg81Ow6bhJLWZmjJDqLZUMhunveMOqvhbsbLwUYvKhOv4A27qMG3c6RBfZLUf9nJVM3LxtHpqhwIMdRtuuE4rGArAkXcNrfngBhEi1FO-1YUygHNcIpMUlNpCXaTIxaG8gDVHrxaogElmfhm3YrZlT1mfnbvCIxGsstybBujqp8e1kLr3plCMShsIwL7"><div class="absolute top-3 left-3 status-pill status-chuanbithuhoso">Chuẩn bị thu hồ sơ</div></div><div class="p-md flex-grow flex flex-col justify-center"><h2 class="font-headline-md text-headline-md text-on-surface mb-md">Nhà ở xã hội Rice City Thượng Thanh</h2><div class="relative flex items-center justify-between w-full"><div class="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-outline-variant rounded-full z-0"></div><div class="relative z-10 flex flex-col items-center gap-2"><div class="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-white"><span class="material-symbols-outlined text-[14px]">check</span></div><span class="font-label-sm text-label-sm text-on-surface text-center w-20">Chuẩn bị hồ sơ</span></div><div class="relative z-10 flex flex-col items-center gap-2"><div class="w-6 h-6 rounded-full bg-surface-container-lowest border-2 border-secondary flex items-center justify-center"><div class="w-2 h-2 rounded-full bg-secondary"></div></div><span class="font-label-sm text-label-sm text-primary font-bold text-center w-20">Đang nộp giấy tờ</span></div><div class="relative z-10 flex flex-col items-center gap-2"><div class="w-6 h-6 rounded-full bg-surface-container-lowest border-2 border-outline-variant flex items-center justify-center"></div><span class="font-label-sm text-label-sm text-on-surface-variant text-center w-20">Đang chờ duyệt</span></div><div class="relative z-10 flex flex-col items-center gap-2"><div class="w-6 h-6 rounded-full bg-surface-container-lowest border-2 border-outline-variant flex items-center justify-center"></div><span class="font-label-sm text-label-sm text-on-surface-variant text-center w-20">Chờ bốc thăm</span></div></div><div class="mt-md flex justify-end"><button class="bg-primary-container text-white px-md py-xs rounded-lg font-label-md hover:shadow-level-2 transition-shadow duration-300">Xem chi tiết</button></div></div></article>
+<!-- Card 2: Needs Documents Status -->
+<article class="bg-surface-container-lowest rounded-lg shadow-level-1 overflow-hidden flex flex-col md:flex-row hover:shadow-level-2 transition-shadow duration-300 border border-outline-variant"><div class="md:w-1/3 relative min-h-[200px] md:min-h-auto"><img class="absolute inset-0 w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAanbg7PSCzhjkBnwdHppOP0EEWHtO8eH5ountt2m6hr4nDohAAAqLXzL9rtApvQEtHMAFR-qtVnfUIVPv5yIJAiXX7NrXkMCaV22YNMf6kysF6LKhiXm3wMrxgl55iTKUQHxuhwXzLIwvW2FC6K3iCwEZ7_Bv5cFAGSmFX_moA7XTT7eNw0yx09VQ9Mf8rnJYOnTlBVJDymJRPKwJ_m9SqAwiCT1Jdi_qzazRixkxSWJlbA5yhHC37LU5VdH-U5wmTZtTMfX6LxPIb"><div class="absolute top-3 left-3 status-pill status-dangthuhoso">Đang thu hồ sơ</div></div><div class="p-md flex-grow flex flex-col justify-center"><h2 class="font-headline-md text-headline-md text-on-surface mb-md">Khu đô thị mới Thanh Lâm - Đại Thịnh 2</h2><div class="relative flex items-center justify-between w-full"><div class="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-outline-variant rounded-full z-0"></div><div class="relative z-10 flex flex-col items-center gap-2"><div class="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-white"><span class="material-symbols-outlined text-[14px]">check</span></div><span class="font-label-sm text-label-sm text-on-surface text-center w-20">Chuẩn bị hồ sơ</span></div><div class="relative z-10 flex flex-col items-center gap-2"><div class="w-6 h-6 rounded-full bg-surface-container-lowest border-2 border-secondary flex items-center justify-center"><div class="w-2 h-2 rounded-full bg-secondary"></div></div><span class="font-label-sm text-label-sm text-primary font-bold text-center w-20">Đang nộp giấy tờ</span></div><div class="relative z-10 flex flex-col items-center gap-2"><div class="w-6 h-6 rounded-full bg-surface-container-lowest border-2 border-outline-variant flex items-center justify-center"></div><span class="font-label-sm text-label-sm text-on-surface-variant text-center w-20">Đang chờ duyệt</span></div><div class="relative z-10 flex flex-col items-center gap-2"><div class="w-6 h-6 rounded-full bg-surface-container-lowest border-2 border-outline-variant flex items-center justify-center"></div><span class="font-label-sm text-label-sm text-on-surface-variant text-center w-20">Chờ bốc thăm</span></div></div><div class="mt-md flex justify-end"><button class="bg-primary-container text-white px-md py-xs rounded-lg font-label-md hover:shadow-level-2 transition-shadow duration-300">Xem chi tiết</button></div></div></article>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-xl px-6 md:px-12 max-w-5xl mx-auto flex flex-col gap-md bg-surface-container-low border-t border-outline-variant">
+<div class="flex flex-col md:flex-row justify-between items-start gap-lg mb-lg">
+<div class="max-w-xs">
+<div class="flex items-center gap-sm mb-4">
+<span class="font-headline-md text-headline-md text-primary">Vietnam Housing</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Cung cấp thông tin minh bạch, Chính xác và hoàn toàn Miễn phí giúp bạn hiện thực hóa giấc mơ Nhà ở xã hội.</p>
+</div>
+<div class="flex flex-col gap-sm">
+<h4 class="font-label-md text-label-md text-on-surface uppercase tracking-wider mb-2">LIÊN KẾT</h4>
+<a class="font-body-md text-body-md text-on-surface-variant hover:underline decoration-primary hover:text-primary transition-all duration-200" href="#">Về chúng tôi</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:underline decoration-primary hover:text-primary transition-all duration-200" href="#">Chính sách bảo mật</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:underline decoration-primary hover:text-primary transition-all duration-200" href="#">Liên hệ hỗ trợ</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:underline decoration-primary hover:text-primary transition-all duration-200" href="#">Điều khoản sử dụng</a>
+</div>
+</div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+</div>
+</body></html>
+
+
+
+
+
+
+
+

@@ -1,0 +1,224 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Tạo tin mới - Admin Central</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "background": "#f8f9ff",
+                        "secondary-container": "#6cf8bb",
+                        "tertiary": "#784b00",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-tertiary-fixed": "#2a1700",
+                        "outline-variant": "#c3c6d7",
+                        "on-primary-fixed": "#00174b",
+                        "surface-tint": "#0053db",
+                        "primary": "#004ac6",
+                        "on-primary": "#ffffff",
+                        "surface-container-low": "#eff4ff",
+                        "secondary-fixed-dim": "#4edea3",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "inverse-on-surface": "#eaf1ff",
+                        "error-container": "#ffdad6",
+                        "on-secondary-container": "#00714d",
+                        "tertiary-fixed": "#ffddb8",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#213145",
+                        "surface-container": "#e5eeff",
+                        "primary-fixed": "#dbe1ff",
+                        "on-surface": "#0b1c30",
+                        "surface-variant": "#d3e4fe",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface": "#f8f9ff",
+                        "on-secondary": "#ffffff",
+                        "on-primary-container": "#eeefff",
+                        "on-tertiary": "#ffffff",
+                        "primary-container": "#2563eb",
+                        "on-error-container": "#93000a",
+                        "surface-container-highest": "#d3e4fe",
+                        "inverse-primary": "#b4c5ff",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "surface-dim": "#cbdbf5",
+                        "secondary": "#006c49",
+                        "outline": "#737686",
+                        "tertiary-container": "#996100",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed": "#002113",
+                        "on-tertiary-container": "#ffeedd",
+                        "on-background": "#0b1c30",
+                        "on-secondary-fixed-variant": "#005236",
+                        "surface-container-high": "#dce9ff",
+                        "error": "#ba1a1a",
+                        "secondary-fixed": "#6ffbbe",
+                        "surface-bright": "#f8f9ff",
+                        "on-surface-variant": "#434655"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "xs": "8px",
+                        "base": "4px",
+                        "xl": "64px",
+                        "md": "24px",
+                        "margin-desktop": "auto",
+                        "lg": "40px",
+                        "sm": "16px",
+                        "max-width": "1280px"
+                    },
+                    "fontFamily": {
+                        "display": ["Be Vietnam Pro"],
+                        "label-md": ["Be Vietnam Pro"],
+                        "headline-md": ["Be Vietnam Pro"],
+                        "headline-lg-mobile": ["Be Vietnam Pro"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "headline-lg": ["Be Vietnam Pro"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "label-sm": ["Be Vietnam Pro"]
+                    },
+                    "fontSize": {
+                        "display": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { background-color: #F9FAFB; }
+        .shadow-level-1 { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04); }
+    </style>
+</head>
+<body class="font-body-md text-body-md text-on-background bg-background h-screen overflow-hidden flex">
+<!-- SideNavBar -->
+<nav class="bg-surface-container dark:bg-inverse-surface h-screen w-64 flex-col fixed left-0 top-0 border-r border-outline-variant dark:border-outline flex flex-col h-full p-4 overflow-y-auto hidden md:flex z-50">
+<div class="mb-lg">
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-inverse-primary">Admin Central</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-xs">Housing Support System</p>
+</div>
+<ul class="flex flex-col gap-xs flex-1">
+<li class=""><a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors hover:bg-primary-container/10 dark:hover:bg-primary/20 rounded-lg transition-all duration-200 active:scale-95" href="#"><span class="material-symbols-outlined" data-icon="dashboard">dashboard</span> <span class="font-label-md text-label-md">Dashboard</span></a></li>
+<li class=""><a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors hover:bg-primary-container/10 dark:hover:bg-primary/20 rounded-lg transition-all duration-200 active:scale-95" href="#"><span class="material-symbols-outlined" data-icon="home_work">home_work</span> <span class="font-label-md text-label-md">Projects</span></a></li>
+<li class=""><a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors hover:bg-primary-container/10 dark:hover:bg-primary/20 rounded-lg transition-all duration-200 active:scale-95" href="#"><span class="material-symbols-outlined" data-icon="description">description</span> <span class="font-label-md text-label-md">Applications</span></a></li>
+<li class=""><a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors hover:bg-primary-container/10 dark:hover:bg-primary/20 rounded-lg transition-all duration-200 active:scale-95" href="#"><span class="material-symbols-outlined" data-icon="group">group</span> <span class="font-label-md text-label-md">Users</span></a></li>
+<li class=""><a class="flex items-center gap-3 px-4 py-3 bg-primary-container text-on-primary-container rounded-lg font-bold hover:bg-primary-container/10 dark:hover:bg-primary/20 transition-all duration-200 active:scale-95" href="#"><span class="material-symbols-outlined" data-icon="folder_open">folder_open</span> <span class="font-label-md text-label-md">Documents</span></a></li>
+<li class=""><a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors hover:bg-primary-container/10 dark:hover:bg-primary/20 rounded-lg transition-all duration-200 active:scale-95" href="#"><span class="material-symbols-outlined" data-icon="quiz">quiz</span> <span class="font-label-md text-label-md">FAQ</span></a></li>
+<li class=""><a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors hover:bg-primary-container/10 dark:hover:bg-primary/20 rounded-lg transition-all duration-200 active:scale-95" href="#"><span class="material-symbols-outlined" data-icon="settings">settings</span> <span class="font-label-md text-label-md">Settings</span></a></li>
+</ul>
+<div class="mt-auto pt-md border-t border-outline-variant flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-variant overflow-hidden">
+<img alt="Admin User Profile" class="w-full h-full object-cover" data-alt="A small, professional headshot of an administrator in a modern office environment. Soft, even lighting, conveying trust and competence. Minimalist corporate aesthetic. Muted blues and whites." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxJ1yAYKIfx1nVKPZxZdjQeYoqkkvBdYH9UlSL7u_QBSoyOCNbjELHo3cxW_U4s4lkyYDSePuI3YaXA1qw9hdcpnOl8DSA-ZmyYfAguGN_fMrsYDxK0p35X7fi1PwD1YwFPQiv947T8AnFWynP9QjfEfVzq_uLzrujTWfAbedRn1B6tDU0Z8olyrUMN2tqxbAS9vvbvtMCZpGVXKABgQ45wdccjIc83Q7vgY3Qu7pVltiBpeSD8bkBiRVP_66sDe6xl9Jap7cvC91c">
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Admin User</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">System Administrator</p>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 ml-0 md:ml-64 flex flex-col h-screen overflow-hidden">
+<!-- Minimal Top Navbar for Breadcrumb -->
+<header class="bg-surface dark:bg-surface-dim h-16 w-full flex items-center px-6 border-b border-outline-variant z-40 shrink-0">
+<nav aria-label="Breadcrumb" class="flex text-on-surface-variant font-label-md text-label-md">
+<ol class="inline-flex items-center space-x-1 md:space-x-3">
+<li class="inline-flex items-center">
+<a class="inline-flex items-center hover:text-primary transition-colors" href="#">
+                            Quản trị
+                        </a>
+</li>
+<li class="">
+<div class="flex items-center">
+<span class="material-symbols-outlined mx-1" style="font-size: 16px;">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Tin tức</a>
+</div>
+</li>
+<li aria-current="page" class="">
+<div class="flex items-center">
+<span class="material-symbols-outlined mx-1" style="font-size: 16px;">chevron_right</span>
+<span class="text-on-surface font-bold">Tạo tin mới</span>
+</div>
+</li>
+</ol>
+</nav>
+<div class="ml-auto flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">notifications</span></button>
+<button class="text-on-surface-variant hover:text-primary transition-colors md:hidden"><span class="material-symbols-outlined">menu</span></button>
+</div>
+</header>
+<!-- Form Content Canvas -->
+<div class="flex-1 overflow-y-auto p-4 md:p-lg bg-[#F9FAFB]">
+<div class="max-w-max-width mx-auto">
+<div class="mb-md flex items-center justify-between">
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">Tạo tin tức mới</h2>
+</div>
+<form class="bg-surface-container-lowest rounded-lg shadow-level-1 p-md md:p-xl space-y-lg">
+<!-- Row 1: Tiêu đề -->
+<div class="space-y-xs">
+<label class="block font-label-md text-label-md text-on-surface" for="title">Tiêu đề tin tức <span class="text-error">*</span></label>
+<input class="w-full rounded bg-surface border border-outline-variant px-4 py-2 focus:border-primary focus:ring focus:ring-primary/20 outline-none transition-all font-body-md text-body-md text-on-surface" id="title" placeholder="Nhập tiêu đề tin tức..." type="text">
+</div>
+<!-- Row 2: Ảnh đại diện -->
+<div class="space-y-xs">
+<label class="block font-label-md text-label-md text-on-surface">Ảnh đại diện</label>
+<div class="mt-2 flex justify-center rounded-lg border border-dashed border-outline-variant px-6 py-10 bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer group">
+<div class="text-center">
+<span class="material-symbols-outlined text-4xl text-outline group-hover:text-primary transition-colors">cloud_upload</span>
+<div class="mt-4 flex text-body-md text-on-surface-variant justify-center">
+<span class="font-label-md text-primary hover:underline">Tải ảnh lên</span>
+<p class="pl-1">hoặc kéo thả vào đây</p>
+</div>
+<p class="font-label-sm text-label-sm text-outline mt-2">PNG, JPG, GIF tối đa 10MB</p>
+</div>
+</div>
+</div>
+<!-- Row 3: Rich Text (Giả lập) -->
+<div class="space-y-xs">
+<label class="block font-label-md text-label-md text-on-surface">Nội dung chi tiết</label>
+<div class="border border-outline-variant rounded bg-surface flex flex-col">
+<!-- Toolbar giả -->
+<div class="flex items-center gap-2 p-2 border-b border-outline-variant bg-surface-container-lowest flex-wrap">
+<button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant" type="button"><span class="material-symbols-outlined" style="font-size: 20px;">format_bold</span></button>
+<button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant" type="button"><span class="material-symbols-outlined" style="font-size: 20px;">format_italic</span></button>
+<button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant" type="button"><span class="material-symbols-outlined" style="font-size: 20px;">format_underlined</span></button>
+<div class="w-px h-6 bg-outline-variant mx-1"></div>
+<button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant" type="button"><span class="material-symbols-outlined" style="font-size: 20px;">format_list_bulleted</span></button>
+<button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant" type="button"><span class="material-symbols-outlined" style="font-size: 20px;">format_list_numbered</span></button>
+<div class="w-px h-6 bg-outline-variant mx-1"></div>
+<button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant" type="button"><span class="material-symbols-outlined" style="font-size: 20px;">image</span></button>
+<button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant" type="button"><span class="material-symbols-outlined" style="font-size: 20px;">link</span></button>
+</div>
+<!-- Editor Area -->
+<textarea class="w-full border-none px-4 py-4 focus:ring-0 outline-none font-body-md text-body-md text-on-surface bg-transparent resize-y" placeholder="Viết nội dung chi tiết tại đây..." rows="10"></textarea>
+</div>
+</div>
+<!-- Row 4: Trạng thái -->
+
+<!-- Actions -->
+<div class="pt-lg flex justify-end gap-sm">
+<button class="px-6 py-2 rounded-full font-label-md text-primary bg-transparent hover:bg-primary-container/10 transition-colors border border-transparent hover:border-primary-container/30" type="button">Lưu nháp</button>
+<button class="px-6 py-2 rounded-full font-label-md text-on-primary bg-primary hover:bg-on-primary-fixed-variant transition-colors shadow-sm active:scale-95" type="submit">Đăng ngay</button>
+</div>
+</form>
+</div>
+</div>
+</main>
+
+
+</body></html>

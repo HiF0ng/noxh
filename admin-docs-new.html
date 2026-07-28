@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Upload Document - Admin Central</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#d3e4fe",
+                    "outline": "#737686",
+                    "on-primary-container": "#eeefff",
+                    "on-primary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-fixed": "#2a1700",
+                    "secondary-container": "#6cf8bb",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "inverse-on-surface": "#eaf1ff",
+                    "secondary-fixed": "#6ffbbe",
+                    "surface-bright": "#f8f9ff",
+                    "surface-container-highest": "#d3e4fe",
+                    "secondary-fixed-dim": "#4edea3",
+                    "surface": "#f8f9ff",
+                    "primary-fixed": "#dbe1ff",
+                    "on-tertiary-fixed-variant": "#653e00",
+                    "surface-container-high": "#dce9ff",
+                    "error": "#ba1a1a",
+                    "on-error": "#ffffff",
+                    "on-primary-fixed": "#00174b",
+                    "on-error-container": "#93000a",
+                    "inverse-surface": "#213145",
+                    "on-secondary-fixed": "#002113",
+                    "on-tertiary-container": "#ffeedd",
+                    "tertiary-fixed-dim": "#ffb95f",
+                    "surface-container-low": "#eff4ff",
+                    "surface-container": "#e5eeff",
+                    "on-secondary-container": "#00714d",
+                    "primary-container": "#2563eb",
+                    "inverse-primary": "#b4c5ff",
+                    "surface-dim": "#cbdbf5",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-fixed-variant": "#005236",
+                    "background": "#f8f9ff",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "tertiary": "#784b00",
+                    "primary": "#004ac6",
+                    "primary-fixed-dim": "#b4c5ff",
+                    "outline-variant": "#c3c6d7",
+                    "tertiary-fixed": "#ffddb8",
+                    "on-background": "#0b1c30",
+                    "tertiary-container": "#996100",
+                    "surface-tint": "#0053db",
+                    "on-surface": "#0b1c30",
+                    "secondary": "#006c49",
+                    "on-surface-variant": "#434655"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "4px",
+                    "xl": "64px",
+                    "margin-desktop": "auto",
+                    "sm": "16px",
+                    "margin-mobile": "16px",
+                    "gutter": "24px",
+                    "md": "24px",
+                    "max-width": "1280px",
+                    "lg": "40px",
+                    "xs": "8px"
+            },
+            "fontFamily": {
+                    "label-sm": [
+                            "Be Vietnam Pro"
+                    ],
+                    "label-md": [
+                            "Be Vietnam Pro"
+                    ],
+                    "headline-md": [
+                            "Be Vietnam Pro"
+                    ],
+                    "headline-lg": [
+                            "Be Vietnam Pro"
+                    ],
+                    "body-lg": [
+                            "Be Vietnam Pro"
+                    ],
+                    "body-md": [
+                            "Be Vietnam Pro"
+                    ],
+                    "headline-lg-mobile": [
+                            "Be Vietnam Pro"
+                    ],
+                    "display": [
+                            "Be Vietnam Pro"
+                    ]
+            },
+            "fontSize": {
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "label-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "letterSpacing": "0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "28px",
+                            {
+                                    "lineHeight": "36px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "display": [
+                            "48px",
+                            {
+                                    "lineHeight": "56px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+        
+        .upload-zone-hover {
+            border-color: theme('colors.primary');
+            background-color: theme('colors.surface-container-low');
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col md:flex-row">
+<!-- SideNavBar -->
+<nav class="hidden md:flex h-screen w-64 flex-col fixed left-0 top-0 bg-surface-container border-r border-outline-variant z-50">
+<div class="p-6">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Admin Central</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Housing Support System</p>
+</div>
+<div class="flex flex-col h-full p-4 overflow-y-auto gap-2">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors hover:bg-primary-container/10 transition-all duration-200 active:scale-95 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Tổng quan</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors hover:bg-primary-container/10 transition-all duration-200 active:scale-95 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="home_work">home_work</span>
+<span class="font-label-md text-label-md">Dự án</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors hover:bg-primary-container/10 transition-all duration-200 active:scale-95 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="font-label-md text-label-md">Hồ sơ</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors hover:bg-primary-container/10 transition-all duration-200 active:scale-95 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-label-md text-label-md">Người dùng</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-primary-container text-on-primary-container rounded-lg font-bold transition-all duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="folder_open">folder_open</span>
+<span class="font-label-md text-label-md">Tài liệu</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors hover:bg-primary-container/10 transition-all duration-200 active:scale-95 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="quiz">quiz</span>
+<span class="font-label-md text-label-md">Câu hỏi thường gặp</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors hover:bg-primary-container/10 transition-all duration-200 active:scale-95 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Cài đặt</span>
+</a>
+</div>
+<div class="p-4 mt-auto border-t border-outline-variant">
+<div class="flex items-center gap-3">
+<img alt="Admin User Profile" class="w-10 h-10 rounded-full object-cover border border-outline-variant" data-alt="A small, professional avatar image of an admin user. The image shows a close-up headshot of a smiling professional in business casual attire against a clean, light blue background. The lighting is soft and flattering, suitable for a corporate identity system." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNrVcenJFxY5cayxp35ml44E01lwb40fvNn8zY8bmrT160ErHasTnif6zqLnJAaUynjJ6q-YUrQD57A5mSw_YeBmBIfoinaoYYLgauLwnBS09ZtuJOmqmle-FGmQxHs-59jepgiorDFqYIND-OGmy2zNwKiL9rpFm168pS6eqr2Ww3OQRN7fWg12NEsppWyobtePwx72riYcPIR0Ajq57AP1wFXzKCljQ14bdJkgkxy7q6h67NmGAfKxVVXE3dDYW1goWXSZSrjB2N"/>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Quản trị viên</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Quản trị hệ thống</p>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 md:ml-64 flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="h-16 w-full fixed top-0 z-40 bg-surface border-b border-outline-variant shadow-sm flex justify-between items-center px-6 md:w-[calc(100%-16rem)]">
+<div class="flex items-center gap-4">
+<button class="md:hidden text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-full font-body-md text-body-md focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none w-64 transition-all" placeholder="Tìm kiếm..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:opacity-80 relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+</button>
+<img alt="Administrator Avatar" class="w-8 h-8 rounded-full object-cover border border-outline-variant md:hidden" data-alt="A small, professional avatar image of an administrator. The image shows a close-up headshot of a confident professional in modern business attire against a neutral grey background. The lighting is bright and clear, matching a professional admin portal aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCI_58_NLdDstvcqVAATk2N0X84jIf9Gm_6C_Syk9Fvrsyss-LBu-9vuttZUWrfg8HR5R_G2MkKdN5xBef3ZFR6XYoh-tqlkfs_4xGKSGjFAlc0FknyGdR8Xc7PwT-xlGxCWOv7m_tDqN3FP_MGNfLRsJdiGTtmQ4uTU9LqKjOzztOP7vvrBvlTxeCzca6Nx_CxodfD_qz5az1WMFLRiGMHgbS-_A5v24GF1w2SaaS-EbHdggEYgrPwRkN--Nza4MN1AJso0NiWFf-v"/>
+</div>
+</header>
+<!-- Page Content -->
+<main class="flex-1 pt-24 px-6 pb-12 w-full max-w-max-width mx-auto">
+<div class="mb-8">
+<div class="flex items-center gap-2 text-on-surface-variant font-label-md text-label-md mb-2">
+<span class="material-symbols-outlined text-sm">folder_open</span>
+<span>Tài liệu</span>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="text-primary font-semibold">Tải lên tài liệu</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-background">Tải lên tài liệu mới</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2">Thêm tài liệu và hướng dẫn vào thư viện hệ thống hỗ trợ nhà ở.</p>
+</div>
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+<form class="p-6 md:p-8 space-y-8">
+<!-- Document Details Section -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="col-span-1 md:col-span-2">
+<h3 class="font-headline-md text-headline-md text-on-background mb-4">Chi tiết tài liệu</h3>
+</div>
+<div class="space-y-2 col-span-1 md:col-span-2">
+<label class="font-label-md text-label-md text-on-surface block" for="docName">Tên tài liệu <span class="text-error">*</span></label>
+<input class="w-full p-3 bg-surface border border-outline-variant rounded-lg font-body-md text-body-md focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all" id="docName" placeholder="Ví dụ: Cập nhật chính sách nhà ở Quý 3" type="text"/>
+</div>
+<div class="space-y-2 col-span-1">
+<label class="font-label-md text-label-md text-on-surface block" for="docCategory">Danh mục <span class="text-error">*</span></label>
+<div class="relative">
+<select class="w-full p-3 bg-surface border border-outline-variant rounded-lg font-body-md text-body-md appearance-none focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all" id="docCategory">
+<option disabled="" selected="" value="">Chọn danh mục</option>
+<option value="policies">Policies &amp; Guidelines</option>
+<option value="forms">Application Forms</option>
+<option value="reports">Quarterly Reports</option>
+<option value="community">Community Resources</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="space-y-2 col-span-1 md:col-span-2">
+<label class="font-label-md text-label-md text-on-surface block" for="docDesc">Mô tả ngắn</label>
+<textarea class="w-full p-3 bg-surface border border-outline-variant rounded-lg font-body-md text-body-md focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-y" id="docDesc" placeholder="Mô tả ngắn gọn nội dung tài liệu này..." rows="3"></textarea>
+</div>
+</div>
+<hr class="border-outline-variant"/>
+<!-- File Upload Section -->
+<div>
+<div class="mb-4 flex items-center justify-between">
+<h3 class="font-headline-md text-headline-md text-on-background">Tải tệp lên</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container py-1 px-3 rounded-full">Dung lượng tối đa: 25MB</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- PDF Upload Zone -->
+<div class="border-2 border-dashed border-outline-variant rounded-xl p-8 flex flex-col items-center justify-center text-center bg-surface transition-all duration-200 cursor-pointer group" id="pdf-dropzone">
+<div class="w-16 h-16 bg-error-container rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-error text-3xl">picture_as_pdf</span>
+</div>
+<h4 class="font-label-md text-label-md text-on-surface mb-1">Tải tài liệu PDF</h4>
+<p class="font-body-md text-label-sm text-on-surface-variant mb-4">Kéo và thả tệp tại đây</p>
+<button class="px-4 py-2 border border-outline text-on-surface font-label-md text-label-md rounded-full hover:bg-surface-container transition-colors" type="button">
+                                    Chọn tệp
+                                </button>
+<input accept=".pdf" class="hidden" id="pdf-input" type="file"/>
+</div>
+<!-- DOCX Upload Zone -->
+<div class="border-2 border-dashed border-outline-variant rounded-xl p-8 flex flex-col items-center justify-center text-center bg-surface transition-all duration-200 cursor-pointer group" id="docx-dropzone">
+<div class="w-16 h-16 bg-primary-container/20 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary text-3xl">description</span>
+</div>
+<h4 class="font-label-md text-label-md text-on-surface mb-1">Tải tài liệu Word</h4>
+<p class="font-body-md text-label-sm text-on-surface-variant mb-4">Kéo và thả tệp tại đây</p>
+<button class="px-4 py-2 border border-outline text-on-surface font-label-md text-label-md rounded-full hover:bg-surface-container transition-colors" type="button">
+                                    Chọn tệp
+                                </button>
+<input accept=".docx,.doc" class="hidden" id="docx-input" type="file"/>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center justify-end gap-4 pt-4 mt-8 border-t border-outline-variant">
+<button class="px-6 py-2.5 border border-outline-variant text-on-surface font-label-md text-label-md rounded-full hover:bg-surface-container transition-colors focus:ring-2 focus:ring-outline outline-none" type="button">
+                            Lưu nháp
+                        </button>
+<button class="px-6 py-2.5 bg-primary text-on-primary font-label-md text-label-md rounded-full hover:bg-primary/90 transition-colors shadow-sm focus:ring-2 focus:ring-primary focus:ring-offset-2 outline-none flex items-center gap-2" type="button">
+<span class="material-symbols-outlined text-sm">save</span>
+                            Lưu tài liệu
+                        </button>
+</div>
+</form>
+</div>
+</main>
+</div>
+<script>
+        // Simple drag and drop visual feedback logic
+        function setupDropzone(zoneId, inputId) {
+            const dropzone = document.getElementById(zoneId);
+            const input = document.getElementById(inputId);
+
+            if (!dropzone || !input) return;
+
+            dropzone.addEventListener('click', () => input.click());
+
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropzone.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, unhighlight, false);
+            });
+
+            function highlight(e) {
+                dropzone.classList.add('upload-zone-hover');
+                dropzone.classList.remove('bg-surface');
+            }
+
+            function unhighlight(e) {
+                dropzone.classList.remove('upload-zone-hover');
+                dropzone.classList.add('bg-surface');
+            }
+
+            dropzone.addEventListener('drop', handleDrop, false);
+
+            function handleDrop(e) {
+                let dt = e.dataTransfer;
+                let files = dt.files;
+                input.files = files;
+                // Add logic here to show selected file name if desired
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupDropzone('pdf-dropzone', 'pdf-input');
+            setupDropzone('docx-dropzone', 'docx-input');
+        });
+    </script>
+</body></html>

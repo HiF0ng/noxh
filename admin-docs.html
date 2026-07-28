@@ -1,0 +1,205 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Social Housing Support - Tài liệu</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-container": "#00714d",
+                        "secondary": "#006c49",
+                        "on-secondary-fixed-variant": "#005236",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed": "#002113",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-primary-container": "#eeefff",
+                        "surface-container": "#e5eeff",
+                        "surface-bright": "#f8f9ff",
+                        "surface-variant": "#d3e4fe",
+                        "surface-container-high": "#dce9ff",
+                        "tertiary": "#784b00",
+                        "on-tertiary-container": "#ffeedd",
+                        "on-error-container": "#93000a",
+                        "primary": "#004ac6",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-dim": "#cbdbf5",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "outline": "#737686",
+                        "tertiary-fixed": "#ffddb8",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "inverse-primary": "#b4c5ff",
+                        "on-primary-fixed": "#00174b",
+                        "error-container": "#ffdad6",
+                        "surface": "#f8f9ff",
+                        "secondary-fixed-dim": "#4edea3",
+                        "on-tertiary-fixed": "#2a1700",
+                        "background": "#f8f9ff",
+                        "surface-container-highest": "#d3e4fe",
+                        "on-tertiary": "#ffffff",
+                        "on-background": "#0b1c30",
+                        "primary-fixed": "#dbe1ff",
+                        "secondary-fixed": "#6ffbbe",
+                        "tertiary-container": "#996100",
+                        "surface-container-low": "#eff4ff",
+                        "secondary-container": "#6cf8bb",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#213145",
+                        "on-surface-variant": "#434655",
+                        "primary-container": "#2563eb",
+                        "surface-tint": "#0053db",
+                        "outline-variant": "#c3c6d7",
+                        "on-secondary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-surface": "#0b1c30"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "md": "24px",
+                        "lg": "40px",
+                        "xs": "8px",
+                        "margin-desktop": "auto",
+                        "xl": "64px",
+                        "max-width": "1280px",
+                        "base": "4px",
+                        "sm": "16px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "display": ["Be Vietnam Pro", "sans-serif"],
+                        "label-sm": ["Be Vietnam Pro", "sans-serif"],
+                        "headline-md": ["Be Vietnam Pro", "sans-serif"],
+                        "body-md": ["Be Vietnam Pro", "sans-serif"],
+                        "body-lg": ["Be Vietnam Pro", "sans-serif"],
+                        "headline-lg": ["Be Vietnam Pro", "sans-serif"],
+                        "label-md": ["Be Vietnam Pro", "sans-serif"],
+                        "headline-lg-mobile": ["Be Vietnam Pro", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "display": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md antialiased min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col h-full py-6 px-4 bg-surface-container-low dark:bg-inverse-surface fixed left-0 top-0 h-full w-64 border-r border-outline-variant dark:border-outline z-20">
+<div class="mb-8 px-4">
+<h1 class="text-headline-md font-headline-md font-bold text-primary dark:text-inverse-primary">Social Housing Support</h1>
+<p class="text-label-sm font-label-sm text-on-surface-variant mt-1">Administration Portal</p>
+</div>
+<div class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-label-md font-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors" href="#">
+<span class="material-symbols-outlined">settings_input_component</span>
+<span class="text-label-md font-label-md">Interface</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-label-md font-label-md">Users</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-primary dark:text-primary-fixed-dim bg-secondary-container/30 dark:bg-secondary-container/10 font-bold scale-95 duration-100 transition-transform hover:bg-surface-container-high dark:hover:bg-surface-container-highest" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">description</span>
+<span class="text-label-md font-label-md">Documents</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="text-label-md font-label-md">FAQ</span>
+</a>
+</div>
+<div class="mt-auto px-4 pt-6 border-t border-outline-variant">
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="A professional headshot of a person looking friendly and approachable, plain light background, modern corporate style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNYHfHNKKxwiXZLlK1yQLBgylkmaSkGFvc9I9qlPvbtzazWTcv3zFn2xR6XuB0QjybeYQPhBPkp5AohA8pF_31Rj_r9ZfJBceM4RvS3QrYXxgCvj02PCOi47RMKrIiPqlpkMV5yOieBh_DEWUSl4hPaRukaedREtY5sEsibBOLxp_nKO3KcukpXLT7Mlh-9lULXUeSYU-hc9CFD9NtULTgVfV89cMmSIQ_-G9DS-BK2E9N3wu4Uj-yNK5Apm6HboPwfy7OAwAH2Nw-">
+<div>
+<p class="text-label-md font-label-md text-on-surface">Admin User Profile</p>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 ml-0 md:ml-64 flex flex-col min-h-screen">
+<!-- TopAppBar -->
+<header class="flex items-center h-16 w-full pl-6 md:pl-8 pr-8 ml-auto bg-surface-bright dark:bg-background border-b border-outline-variant dark:border-outline sticky top-0 z-10">
+<div class="flex items-center text-label-md font-label-md text-on-surface-variant gap-2">
+<a class="hover:text-primary transition-colors" href="#">Quản trị</a>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="text-on-surface font-semibold">Tài liệu</span>
+</div>
+<div class="ml-auto hidden md:flex items-center gap-6 text-label-md font-label-md">
+<a class="text-on-surface-variant hover:text-primary transition-all duration-200" href="#">Home</a>
+<a class="text-on-surface-variant hover:text-primary transition-all duration-200" href="#">Admin</a>
+<a class="text-on-surface-variant hover:text-primary transition-all duration-200" href="#">Portal</a>
+</div>
+</header>
+<!-- Page Content -->
+<div class="p-4 md:p-8 flex-1 max-w-[1280px] w-full mx-auto">
+<!-- Header Section -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+<div>
+<h2 class="text-headline-lg font-headline-lg text-on-surface">Quản lý Tài liệu</h2>
+<p class="text-body-md font-body-md text-on-surface-variant mt-1">Organize and manage system documents and forms.</p>
+</div>
+<button class="bg-primary hover:bg-surface-tint text-on-primary text-label-md font-label-md px-6 py-2.5 rounded-full flex items-center gap-2 transition-colors shadow-sm"><span class="material-symbols-outlined">add</span>Tải lên tài liệu</button>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Main Table Section (Takes up 2 columns on lg) -->
+<div class="lg:col-span-2 flex flex-col gap-6 lg:col-span-3">
+<!-- Filters -->
+<div class="flex flex-wrap items-center gap-4 mb-2"><div class="relative flex-1 max-w-md"><span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span><input class="w-full pl-10 pr-4 py-2 rounded-lg border border-outline-variant text-body-md font-body-md focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-surface-container-lowest" placeholder="Tìm kiếm tài liệu..." type="text"></div><button class="flex items-center gap-2 px-4 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-low transition-colors font-label-md text-label-md"><span class="material-symbols-outlined">filter_list</span>Bộ lọc</button></div>
+<!-- Document Table Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-outline-variant/30 overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead><tr class="border-b border-outline-variant bg-surface-container-low"><th class="py-4 px-6 text-label-md font-label-md text-on-surface-variant font-semibold w-1/2">Tên tài liệu</th><th class="py-4 px-6 text-label-md font-label-md text-on-surface-variant font-semibold">Loại đơn</th><th class="py-4 px-6 text-label-md font-label-md text-on-surface-variant font-semibold">Loại tài liệu</th><th class="py-4 px-6 text-label-md font-label-md text-on-surface-variant font-semibold">Ngày tạo</th><th class="py-4 px-6 text-label-md font-label-md text-on-surface-variant font-semibold text-right">Hành động</th></tr></thead>
+<tbody>
+<tr class="border-b border-outline-variant/50 hover:bg-surface-container-low/50 transition-colors group"><td class="py-4 px-6"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary"><span class="material-symbols-outlined">picture_as_pdf</span></div><div><p class="text-body-md font-body-md text-on-surface font-medium">Mẫu đơn đề nghị hỗ trợ nhà ở xã hội</p><p class="text-label-sm font-label-sm text-on-surface-variant">v2.1 - Cập nhật bởi Admin</p></div></div></td><td class="py-4 px-6"><span class="px-3 py-1 rounded-full bg-secondary-container/40 text-on-secondary-container text-label-sm font-label-sm">Mua</span></td><td class="py-4 px-6"><p class="text-body-md font-body-md text-on-surface">PDF</p><p class="text-label-sm font-label-sm text-on-surface-variant">2.4 MB</p></td><td class="py-4 px-6 text-body-md font-body-md text-on-surface-variant">24/10/2023</td><td class="py-4 px-6 text-right"><div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity"><button class="p-2 text-on-surface-variant hover:text-primary hover:bg-primary-container/10 rounded-full transition-colors" title="Tải xuống"><span class="material-symbols-outlined text-sm">download</span></button><button class="p-2 text-on-surface-variant hover:text-primary hover:bg-primary-container/10 rounded-full transition-colors" title="Sửa"><span class="material-symbols-outlined text-sm">edit</span></button><button class="p-2 text-on-surface-variant hover:text-error hover:bg-error-container/30 rounded-full transition-colors" title="Xóa"><span class="material-symbols-outlined text-sm">delete</span></button></div></td></tr>
+<tr class="border-b border-outline-variant/50 hover:bg-surface-container-low/50 transition-colors group"><td class="py-4 px-6"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary"><span class="material-symbols-outlined">description</span></div><div><p class="text-body-md font-body-md text-on-surface font-medium">Quy định về đối tượng vay vốn</p><p class="text-label-sm font-label-sm text-on-surface-variant">Thông tư số 09/2021/TT-BXD</p></div></div></td><td class="py-4 px-6"><span class="px-3 py-1 rounded-full bg-tertiary-container/20 text-tertiary text-label-sm font-label-sm">Thuê</span></td><td class="py-4 px-6"><p class="text-body-md font-body-md text-on-surface">DOCX</p><p class="text-label-sm font-label-sm text-on-surface-variant">1.1 MB</p></td><td class="py-4 px-6 text-body-md font-body-md text-on-surface-variant">15/09/2023</td><td class="py-4 px-6 text-right"><div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity"><button class="p-2 text-on-surface-variant hover:text-primary hover:bg-primary-container/10 rounded-full transition-colors" title="Tải xuống"><span class="material-symbols-outlined text-sm">download</span></button><button class="p-2 text-on-surface-variant hover:text-primary hover:bg-primary-container/10 rounded-full transition-colors" title="Sửa"><span class="material-symbols-outlined text-sm">edit</span></button><button class="p-2 text-on-surface-variant hover:text-error hover:bg-error-container/30 rounded-full transition-colors" title="Xóa"><span class="material-symbols-outlined text-sm">delete</span></button></div></td></tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors group"><td class="py-4 px-6"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary"><span class="material-symbols-outlined">picture_as_pdf</span></div><div><p class="text-body-md font-body-md text-on-surface font-medium">Hướng dẫn quy trình xét duyệt hồ sơ</p><p class="text-label-sm font-label-sm text-on-surface-variant">Tài liệu nội bộ cán bộ</p></div></div></td><td class="py-4 px-6"><span class="px-3 py-1 rounded-full bg-surface-variant text-on-surface-variant text-label-sm font-label-sm">Mua</span></td><td class="py-4 px-6"><p class="text-body-md font-body-md text-on-surface">PDF</p><p class="text-label-sm font-label-sm text-on-surface-variant">5.7 MB</p></td><td class="py-4 px-6 text-body-md font-body-md text-on-surface-variant">02/08/2023</td><td class="py-4 px-6 text-right"><div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity"><button class="p-2 text-on-surface-variant hover:text-primary hover:bg-primary-container/10 rounded-full transition-colors" title="Tải xuống"><span class="material-symbols-outlined text-sm">download</span></button><button class="p-2 text-on-surface-variant hover:text-primary hover:bg-primary-container/10 rounded-full transition-colors" title="Sửa"><span class="material-symbols-outlined text-sm">edit</span></button><button class="p-2 text-on-surface-variant hover:text-error hover:bg-error-container/30 rounded-full transition-colors" title="Xóa"><span class="material-symbols-outlined text-sm">delete</span></button></div></td></tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 border-t border-outline-variant bg-surface-bright flex justify-between items-center text-label-sm text-on-surface-variant">
+<span class="">Showing 1 to 3 of 42 entries</span>
+<div class="flex gap-1">
+<button class="px-3 py-1 border border-outline-variant rounded-md hover:bg-surface-container-low disabled:opacity-50">Prev</button>
+<button class="px-3 py-1 bg-primary text-on-primary rounded-md">1</button>
+<button class="px-3 py-1 border border-outline-variant rounded-md hover:bg-surface-container-low">2</button>
+<button class="px-3 py-1 border border-outline-variant rounded-md hover:bg-surface-container-low">Next</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column (Settings) -->
+
+</div>
+</div>
+</main>
+
+
+</body></html>
