@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hướng dẫn điền tài liệu - Admin Central</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#004ac6",
+                        "primary-container": "#2563eb",
+                        "on-primary": "#ffffff",
+                        "on-primary-container": "#eeefff",
+                        "surface": "#f8f9ff",
+                        "on-surface": "#0b1c30",
+                        "surface-variant": "#d3e4fe",
+                        "on-surface-variant": "#434655",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#eff4ff",
+                        "surface-container": "#e5eeff",
+                        "surface-container-high": "#dce9ff",
+                        "outline": "#737686",
+                        "outline-variant": "#c3c6d7",
+                        "error": "#ba1a1a",
+                        "error-container": "#ffdad6",
+                        "on-error": "#ffffff",
+                        "background": "#f8f9ff",
+                        "on-background": "#0b1c30",
+                    },
+                    fontFamily: {
+                        "body-md": ["Be Vietnam Pro", "sans-serif"],
+                        "label-sm": ["Be Vietnam Pro", "sans-serif"],
+                        "label-md": ["Be Vietnam Pro", "sans-serif"],
+                        "headline-md": ["Be Vietnam Pro", "sans-serif"],
+                        "headline-lg": ["Be Vietnam Pro", "sans-serif"],
+                        "headline-lg-mobile": ["Be Vietnam Pro", "sans-serif"],
+                        "display": ["Be Vietnam Pro", "sans-serif"]
+                    },
+                    spacing: {
+                        "sm": "16px",
+                        "md": "24px",
+                        "lg": "40px",
+                        "xl": "64px",
+                        "max-width": "1280px"
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+        .upload-zone-hover {
+            border-color: theme('colors.primary');
+            background-color: theme('colors.surface-container-low');
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col md:flex-row">
+    <!-- SideNavBar -->
+    <nav class="hidden md:flex h-screen w-64 flex-col fixed left-0 top-0 bg-surface-container border-r border-outline-variant z-50">
+        <div class="p-6">
+            <h1 class="font-headline-md text-[24px] font-bold text-primary leading-tight">Admin Central</h1>
+            <p class="font-label-sm text-[12px] text-on-surface-variant mt-1">Housing Support System</p>
+        </div>
+        <div class="flex flex-col h-full p-4 overflow-y-auto gap-2">
+            <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors hover:bg-primary-container/10 transition-all duration-200 active:scale-95 rounded-lg" href="#">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span class="font-label-md font-semibold text-[14px]">Tổng quan</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors hover:bg-primary-container/10 transition-all duration-200 active:scale-95 rounded-lg" href="#">
+                <span class="material-symbols-outlined">home_work</span>
+                <span class="font-label-md font-semibold text-[14px]">Dự án</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors hover:bg-primary-container/10 transition-all duration-200 active:scale-95 rounded-lg" href="#">
+                <span class="material-symbols-outlined">description</span>
+                <span class="font-label-md font-semibold text-[14px]">Hồ sơ</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors hover:bg-primary-container/10 transition-all duration-200 active:scale-95 rounded-lg" href="#">
+                <span class="material-symbols-outlined">group</span>
+                <span class="font-label-md font-semibold text-[14px]">Người dùng</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 bg-primary-container text-on-primary-container rounded-lg font-bold transition-all duration-200 active:scale-95" href="#">
+                <span class="material-symbols-outlined">folder_open</span>
+                <span class="font-label-md text-[14px]">Tài liệu</span>
+            </a>
+            <!-- Submenu for Tài liệu (Guides) -->
+            <div class="ml-6 flex flex-col gap-1 border-l-2 border-outline-variant/30 pl-2">
+                <a class="flex items-center gap-3 px-4 py-2 text-primary font-bold bg-surface-container-high rounded-lg transition-colors" href="admin-docs-guide.html">
+                    <span class="material-symbols-outlined text-[18px]">menu_book</span>
+                    <span class="font-label-sm text-[13px]">Hướng dẫn điền</span>
+                </a>
+            </div>
+            <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors hover:bg-primary-container/10 transition-all duration-200 active:scale-95 rounded-lg" href="#">
+                <span class="material-symbols-outlined">quiz</span>
+                <span class="font-label-md font-semibold text-[14px]">Câu hỏi thường gặp</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors hover:bg-primary-container/10 transition-all duration-200 active:scale-95 rounded-lg" href="#">
+                <span class="material-symbols-outlined">settings</span>
+                <span class="font-label-md font-semibold text-[14px]">Cài đặt</span>
+            </a>
+        </div>
+        <div class="p-4 mt-auto border-t border-outline-variant">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold">A</div>
+                <div>
+                    <p class="font-label-md text-[14px] font-semibold text-on-surface">Quản trị viên</p>
+                    <p class="font-label-sm text-[12px] text-on-surface-variant">Quản trị hệ thống</p>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 md:ml-64 flex flex-col min-h-screen">
+        <!-- TopNavBar -->
+        <header class="h-16 w-full fixed top-0 z-40 bg-surface border-b border-outline-variant shadow-sm flex justify-between items-center px-6 md:w-[calc(100%-16rem)]">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:opacity-80">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+                <div class="relative hidden sm:block">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+                    <input class="pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-full font-body-md text-[16px] focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none w-64 transition-all" placeholder="Tìm kiếm..." type="text"/>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:opacity-80 relative">
+                    <span class="material-symbols-outlined">notifications</span>
+                    <span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full"></span>
+                </button>
+                <button class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:opacity-80">
+                    <span class="material-symbols-outlined">help_outline</span>
+                </button>
+                <div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold md:hidden">A</div>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <main class="flex-1 pt-24 px-6 pb-12 w-full max-w-max-width mx-auto">
+            <div class="mb-8 flex flex-col lg:flex-row lg:justify-between lg:items-end gap-4">
+                <div>
+                    <div class="flex items-center gap-2 text-on-surface-variant font-label-md text-[14px] font-semibold mb-2">
+                        <span class="material-symbols-outlined text-[16px]">folder_open</span>
+                        <span>Tài liệu</span>
+                        <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+                        <span class="text-primary">Hướng dẫn điền tài liệu</span>
+                    </div>
+                    <h2 class="font-headline-lg text-[32px] font-bold text-on-background">Cấu hình Hướng dẫn</h2>
+                    <p class="font-body-md text-[16px] text-on-surface-variant mt-2">Thiết lập tài liệu mẫu và các bước hướng dẫn chi tiết cho người dùng.</p>
+                </div>
+                <div class="flex gap-4">
+                    <button class="px-6 py-2.5 border-2 border-outline-variant text-on-surface font-semibold text-[14px] rounded-full hover:bg-surface-container transition-colors">Hủy</button>
+                    <button class="px-6 py-2.5 bg-primary text-on-primary font-semibold text-[14px] rounded-full hover:bg-primary/90 transition-colors shadow-sm flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">save</span>
+                        Lưu cấu hình
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                <!-- Left Column: Upload -->
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm sticky top-24">
+                    <h3 class="font-headline-md text-[20px] font-bold text-on-background mb-2">Hình ảnh tài liệu mẫu</h3>
+                    <p class="font-body-sm text-[14px] text-on-surface-variant mb-4">Tải lên hình ảnh tài liệu để người dùng dễ dàng đối chiếu.</p>
+                    
+                    <div class="border-2 border-dashed border-outline-variant rounded-xl p-8 flex flex-col items-center justify-center text-center bg-surface transition-all duration-200 cursor-pointer group min-h-[400px] hover:border-primary hover:bg-surface-container-low" id="image-dropzone" onclick="document.getElementById('image-input').click()">
+                        <div class="w-16 h-16 bg-primary-container/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-primary text-[32px]">add_photo_alternate</span>
+                        </div>
+                        <h4 class="font-label-md text-[16px] font-semibold text-on-surface mb-1">Tải ảnh lên</h4>
+                        <p class="font-body-md text-[14px] text-on-surface-variant mb-4">Kéo và thả tệp ảnh vào đây</p>
+                        <button class="px-4 py-2 border border-outline text-on-surface font-semibold text-[14px] rounded-full group-hover:bg-surface-container transition-colors" type="button">Chọn tệp</button>
+                        <input accept="image/png, image/jpeg, image/jpg" class="hidden" id="image-input" type="file"/>
+                    </div>
+                </div>
+
+                <!-- Right Column: Fields -->
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm flex flex-col min-h-[600px]">
+                    <h3 class="font-headline-md text-[20px] font-bold text-on-background mb-2">Các trường thông tin</h3>
+                    <p class="font-body-sm text-[14px] text-on-surface-variant mb-6">Thêm các bước hướng dẫn điền tương ứng với tài liệu mẫu.</p>
+                    
+                    <div id="guide-steps-container" class="space-y-6 flex-1">
+                        <!-- Initial Step 1 -->
+                        <div class="guide-step relative bg-surface border border-outline-variant/60 rounded-xl p-5 pt-6 shadow-sm group hover:border-primary/50 transition-colors">
+                            <button type="button" class="absolute top-2 right-2 p-1 text-on-surface-variant hover:text-error hover:bg-error-container rounded-full transition-colors opacity-0 group-hover:opacity-100" title="Xóa bước này" onclick="removeStep(this)">
+                                <span class="material-symbols-outlined text-[20px]">close</span>
+                            </button>
+                            <div class="flex gap-4 items-start">
+                                <div class="w-10 h-10 shrink-0 bg-primary text-on-primary rounded-full flex items-center justify-center font-bold text-[18px] step-number shadow-sm mt-1">1</div>
+                                <div class="flex-1 space-y-4">
+                                    <div>
+                                        <label class="block text-[14px] font-semibold text-on-surface mb-2">Tiêu đề (Header)</label>
+                                        <input type="text" class="w-full p-3 bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-[15px]" placeholder="VD: Họ và tên">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[14px] font-semibold text-on-surface mb-2">Nội dung hướng dẫn</label>
+                                        <textarea class="w-full p-3 bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none resize-y text-[15px]" rows="3" placeholder="VD: Điền đầy đủ họ và tên..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 pt-6 border-t border-outline-variant">
+                        <button type="button" onclick="addStep()" class="w-full py-3.5 bg-surface-container border-2 border-dashed border-primary text-primary rounded-xl font-bold text-[15px] hover:bg-primary hover:text-on-primary hover:border-solid transition-all flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined">add_circle</span>
+                            Thêm thông tin
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function addStep() {
+            const container = document.getElementById('guide-steps-container');
+            
+            const html = `
+                <div class="guide-step relative bg-surface border border-outline-variant/60 rounded-xl p-5 pt-6 shadow-sm group hover:border-primary/50 transition-colors">
+                    <button type="button" class="absolute top-2 right-2 p-1 text-on-surface-variant hover:text-error hover:bg-error-container rounded-full transition-colors opacity-0 group-hover:opacity-100" title="Xóa bước này" onclick="removeStep(this)">
+                        <span class="material-symbols-outlined text-[20px]">close</span>
+                    </button>
+                    <div class="flex gap-4 items-start">
+                        <div class="w-10 h-10 shrink-0 bg-primary text-on-primary rounded-full flex items-center justify-center font-bold text-[18px] step-number shadow-sm mt-1"></div>
+                        <div class="flex-1 space-y-4">
+                            <div>
+                                <label class="block text-[14px] font-semibold text-on-surface mb-2">Tiêu đề (Header)</label>
+                                <input type="text" class="w-full p-3 bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-[15px]" placeholder="VD: Nhập thông tin...">
+                            </div>
+                            <div>
+                                <label class="block text-[14px] font-semibold text-on-surface mb-2">Nội dung hướng dẫn</label>
+                                <textarea class="w-full p-3 bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none resize-y text-[15px]" rows="3" placeholder="Chi tiết cách điền..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', html);
+            updateStepNumbers();
+        }
+
+        function removeStep(buttonElement) {
+            const stepElement = buttonElement.closest('.guide-step');
+            if(stepElement) {
+                stepElement.remove();
+                updateStepNumbers();
+            }
+        }
+
+        function updateStepNumbers() {
+            const steps = document.querySelectorAll('.guide-step');
+            steps.forEach((step, index) => {
+                step.querySelector('.step-number').textContent = index + 1;
+            });
+        }
+
+        // Initialize drag & drop styling for image upload
+        const dropzone = document.getElementById('image-dropzone');
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, preventDefaults, false);
+        });
+        function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzone.addEventListener(eventName, () => dropzone.classList.add('border-primary', 'bg-surface-container-low'), false);
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, () => dropzone.classList.remove('border-primary', 'bg-surface-container-low'), false);
+        });
+    </script>
+</body>
+</html>

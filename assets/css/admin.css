@@ -1,0 +1,685 @@
+/* ============================================
+   ADMIN SPA - Stylesheet
+   File: assets/css/admin.css
+   Description: Styles riêng cho hệ thống Admin
+   ============================================ */
+
+/* ---- Base ---- */
+body.admin-body {
+    font-family: 'Be Vietnam Pro', sans-serif;
+    background-color: #f8f9ff;
+    color: #0b1c30;
+    margin: 0;
+    overflow: hidden;
+}
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+.material-symbols-outlined.filled-icon {
+    font-variation-settings: 'FILL' 1;
+}
+
+/* ---- Sidebar ---- */
+.admin-sidebar {
+    width: 260px;
+    min-width: 260px;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    background-color: #e5eeff;
+    border-right: 1px solid #c3c6d7;
+    overflow-y: auto;
+    overflow-x: hidden;
+    transition: transform 0.3s ease;
+}
+
+.admin-sidebar .brand {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    border-bottom: 1px solid #c3c6d7;
+    flex-shrink: 0;
+}
+
+.admin-sidebar .brand h1 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #004ac6;
+    margin: 0;
+    line-height: 1.3;
+}
+
+.admin-sidebar .brand p {
+    font-size: 11px;
+    font-weight: 500;
+    color: #434655;
+    margin: 0;
+}
+
+/* ---- Nav Items ---- */
+.admin-nav {
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    gap: 2px;
+    flex: 1;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #434655;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    position: relative;
+}
+
+.nav-item:hover {
+    background-color: #dce9ff;
+    color: #0b1c30;
+}
+
+.nav-item:active {
+    transform: scale(0.97);
+}
+
+.nav-item.active {
+    background-color: #2563eb;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.nav-item.active .material-symbols-outlined {
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* ---- Expandable Parent ---- */
+.nav-parent {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0;
+    gap: 0;
+}
+
+.nav-parent-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #434655;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.nav-parent-header:hover {
+    background-color: #dce9ff;
+    color: #0b1c30;
+}
+
+.nav-parent-header:active {
+    transform: scale(0.97);
+}
+
+.nav-parent-header .nav-label {
+    flex: 1;
+}
+
+.nav-parent-header .expand-icon {
+    font-size: 20px;
+    transition: transform 0.3s ease;
+}
+
+/* Parent expanded state */
+.nav-parent.expanded > .nav-parent-header {
+    background-color: #2563eb;
+    color: #ffffff;
+    font-weight: 700;
+    border-radius: 10px;
+}
+
+.nav-parent.expanded > .nav-parent-header .material-symbols-outlined {
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.nav-parent.expanded > .nav-parent-header .expand-icon {
+    transform: rotate(180deg);
+}
+
+/* ---- Submenu ---- */
+.nav-submenu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+    padding-left: 16px;
+    border-left: 3px solid #2563eb;
+    margin-left: 26px;
+    margin-top: 4px;
+}
+
+.nav-parent.expanded > .nav-submenu {
+    max-height: 200px;
+    opacity: 1;
+}
+
+.nav-submenu-item {
+    display: block;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #434655;
+    text-decoration: none;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+    margin: 2px 0;
+}
+
+.nav-submenu-item:hover {
+    background-color: rgba(37, 99, 235, 0.08);
+    color: #004ac6;
+}
+
+.nav-submenu-item.active {
+    background-color: rgba(37, 99, 235, 0.12);
+    color: #004ac6;
+    font-weight: 700;
+}
+
+/* ---- Main Content Area ---- */
+.admin-main-wrapper {
+    margin-left: 260px;
+    width: calc(100% - 260px);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-header {
+    height: 64px;
+    min-height: 64px;
+    width: 100%;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background-color: #f8f9ff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border-bottom: 1px solid #c3c6d7;
+    padding: 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    max-width: 1280px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* ---- SPA Page Sections ---- */
+.page-section {
+    display: none;
+    animation: fadeIn 0.25s ease;
+}
+
+.page-section.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Breadcrumb ---- */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #434655;
+}
+
+.breadcrumb .current {
+    color: #004ac6;
+    font-weight: 700;
+    border-bottom: 2px solid #004ac6;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    margin-top: 2px;
+}
+
+/* ---- Upload Zone ---- */
+.upload-zone {
+    border: 2px dashed #c3c6d7;
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: #f8f9ff;
+}
+
+.upload-zone:hover,
+.upload-zone.upload-zone-hover {
+    border-color: #2563eb;
+    background-color: #eff4ff;
+}
+
+/* ---- Shadow Utility ---- */
+.shadow-level-1 {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+/* ---- Stat Card ---- */
+.stat-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid rgba(195, 198, 215, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+/* ---- Table Styles ---- */
+.admin-table {
+    width: 100%;
+    text-align: left;
+    border-collapse: collapse;
+}
+
+.admin-table thead tr {
+    background-color: #eff4ff;
+    border-bottom: 1px solid rgba(195, 198, 215, 0.5);
+}
+
+.admin-table th {
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #434655;
+}
+
+.admin-table td {
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #0b1c30;
+}
+
+.admin-table tbody tr {
+    border-bottom: 1px solid rgba(195, 198, 215, 0.3);
+    transition: background-color 0.15s ease;
+}
+
+.admin-table tbody tr:hover {
+    background-color: #f8f9ff;
+}
+
+/* ---- Action Buttons ---- */
+.btn-primary {
+    background-color: #2563eb;
+    color: #ffffff;
+    padding: 10px 20px;
+    border-radius: 9999px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-primary:hover {
+    background-color: #004ac6;
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: #004ac6;
+    padding: 10px 20px;
+    border-radius: 9999px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1px solid #004ac6;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-outline:hover {
+    background-color: rgba(0, 74, 198, 0.05);
+}
+
+/* ---- Badge / Pill ---- */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-badge.published {
+    background-color: rgba(0, 108, 73, 0.12);
+    color: #006c49;
+}
+
+.status-badge.draft {
+    background-color: rgba(115, 118, 134, 0.12);
+    color: #737686;
+}
+
+/* ---- Progress Bar ---- */
+.progress-bar-bg {
+    height: 8px;
+    border-radius: 9999px;
+    background-color: #e5eeff;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    border-radius: 9999px;
+    background-color: #2563eb;
+    transition: width 0.5s ease;
+}
+
+/* ---- FAQ Item ---- */
+.faq-admin-item {
+    background: #ffffff;
+    border: 1px solid rgba(195, 198, 215, 0.3);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.faq-admin-item:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.faq-admin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    cursor: pointer;
+    gap: 12px;
+}
+
+.faq-admin-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+.faq-admin-item.expanded .faq-admin-body {
+    max-height: 500px;
+    padding: 0 20px 16px;
+}
+
+.faq-admin-item.expanded .faq-expand-icon {
+    transform: rotate(180deg);
+}
+
+.faq-expand-icon {
+    transition: transform 0.3s ease;
+}
+
+/* ---- Form Inputs ---- */
+.admin-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #c3c6d7;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    background-color: #ffffff;
+    color: #0b1c30;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.admin-input::placeholder {
+    color: #737686;
+}
+
+.admin-select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #c3c6d7;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    background-color: #ffffff;
+    color: #0b1c30;
+    cursor: pointer;
+    appearance: auto;
+}
+
+.admin-select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.admin-textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #c3c6d7;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    background-color: #ffffff;
+    color: #0b1c30;
+    resize: vertical;
+    min-height: 100px;
+}
+
+.admin-textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.admin-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #0b1c30;
+    margin-bottom: 6px;
+}
+
+/* ---- Card ---- */
+.admin-card {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid rgba(195, 198, 215, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+}
+
+/* ---- Pagination ---- */
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    font-size: 14px;
+    color: #434655;
+}
+
+.pagination-btns {
+    display: flex;
+    gap: 4px;
+}
+
+.pagination-btns button {
+    padding: 6px 12px;
+    border: 1px solid #c3c6d7;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #434655;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.pagination-btns button:hover {
+    background-color: #eff4ff;
+    border-color: #2563eb;
+    color: #004ac6;
+}
+
+.pagination-btns button.active {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
+}
+
+/* ---- Rich Text Editor Toolbar ---- */
+.editor-toolbar {
+    display: flex;
+    gap: 2px;
+    padding: 8px 12px;
+    background: #eff4ff;
+    border: 1px solid #c3c6d7;
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
+}
+
+.editor-toolbar button {
+    padding: 6px 8px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #434655;
+    transition: all 0.15s ease;
+}
+
+.editor-toolbar button:hover {
+    background-color: #dce9ff;
+    color: #004ac6;
+}
+
+.editor-textarea {
+    border: 1px solid #c3c6d7;
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    min-height: 200px;
+    width: 100%;
+    padding: 14px;
+    font-size: 14px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    resize: vertical;
+}
+
+.editor-textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+/* ---- Checkbox Milestone ---- */
+.milestone-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(195, 198, 215, 0.2);
+}
+
+.milestone-item:last-child {
+    border-bottom: none;
+}
+
+.milestone-checkbox {
+    width: 20px;
+    height: 20px;
+    accent-color: #2563eb;
+    margin-top: 2px;
+    cursor: pointer;
+}
+
+/* ---- Mobile Responsive ---- */
+@media (max-width: 768px) {
+    .admin-sidebar {
+        transform: translateX(-100%);
+    }
+    .admin-sidebar.open {
+        transform: translateX(0);
+    }
+    .admin-main-wrapper {
+        margin-left: 0;
+        width: 100%;
+    }
+}
+
+/* Standardized 4 Project Status Badges (Always 100% white text) */
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.25;
+    color: #ffffff !important;
+}
+
+/* 1. Chờ xây dựng: Nền đỏ nhạt, chữ trắng */
+.status-cho-xay-dung, .status-choxaydung, .bg-status-cho-xay-dung {
+    background-color: #ef4444 !important;
+    color: #ffffff !important;
+}
+
+/* 2. Đang xây dựng: Nền cam biển, chữ trắng */
+.status-dang-xay-dung, .status-dangxaydung, .bg-status-dang-xay-dung {
+    background-color: #f97316 !important;
+    color: #ffffff !important;
+}
+
+/* 3. Đang nhận đơn: Nền xanh biển, chữ trắng */
+.status-dang-nhan-don, .status-dangnhandon, .status-chuanbithuhoso, .bg-status-dang-nhan-don {
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+}
+
+/* 4. Chờ bàn giao: Nền xanh lá, chữ trắng */
+.status-cho-ban-giao, .status-chobangiao, .status-hoanthien, .bg-status-cho-ban-giao {
+    background-color: #10b981 !important;
+    color: #ffffff !important;
+}
+

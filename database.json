@@ -1,0 +1,614 @@
+﻿{
+    "users":  [
+                  {
+                      "id":  "user-admin-1",
+                      "email":  "admin@noxh.help",
+                      "passwordHash":  "386362f5cc9041c2301dff39f0bfab88b06f96d2d4fda335c292f7109055453d",
+                      "fullName":  "Nguyễn Văn A (Admin)",
+                      "role":  "admin",
+                      "createdAt":  "2026-07-27T03:44:07.7812320Z"
+                  }
+              ],
+    "projects":  [
+
+                 ],
+    "documents":  [
+                      {
+                          "id":  "doc-1",
+                          "title":  "Mẫu đơn đăng ký mua Nhà ở xã hội (Mẫu số 01)",
+                          "category":  "Đơn mua",
+                          "docType":  "PDF",
+                          "fileUrl":  "/uploads/mau-01-dang-ky-mua-noxh.pdf",
+                          "content":  "Mẫu đơn đăng ký mua nhà ở xã hội chuẩn Bộ Xây dựng."
+                      },
+                      {
+                          "id":  "doc-2",
+                          "title":  "Mẫu giấy xác nhận đối tượng và điều kiện nhà ở (Mẫu số 03)",
+                          "category":  "Đơn mua",
+                          "docType":  "DOCX",
+                          "fileUrl":  "/uploads/mau-03-xac-nhan-dieu-kien.docx",
+                          "content":  "Giấy xác nhận thực trạng nhà ở cho người thu nhập thấp."
+                      },
+                      {
+                          "id":  "doc-3",
+                          "title":  "Mẫu đơn đăng ký thuê Nhà ở xã hội (Mẫu số 02)",
+                          "category":  "Đơn thuê",
+                          "docType":  "PDF",
+                          "fileUrl":  "/uploads/mau-02-dang-ky-thue-noxh.pdf",
+                          "content":  "Mẫu đơn chuẩn dành cho đối tượng có nhu cầu thuê NOXH."
+                      }
+                  ],
+    "faqs":  [
+                 {
+                     "id":  "faq-1",
+                     "category":  "doi-tuong",
+                     "q":  "Ai được quyền mua NOXH?",
+                     "a":  "",
+                     "sortOrder":  1
+                 },
+                 {
+                     "id":  "faq-2",
+                     "category":  "doi-tuong",
+                     "q":  "Người độc thân có được mua NOXH không?",
+                     "a":  "",
+                     "sortOrder":  2
+                 },
+                 {
+                     "id":  "faq-3",
+                     "category":  "doi-tuong",
+                     "q":  "Lao động tự do, không có hợp đồng lao động có được mua không?",
+                     "a":  "",
+                     "sortOrder":  3
+                 },
+                 {
+                     "id":  "faq-4",
+                     "category":  "doi-tuong",
+                     "q":  "Không có hộ khẩu hoặc sổ tạm trú tại tỉnh/thành phố có dự án thì mua được không?",
+                     "a":  "",
+                     "sortOrder":  4
+                 },
+                 {
+                     "id":  "faq-5",
+                     "category":  "doi-tuong",
+                     "q":  "Người nước ngoài hoặc người Việt Nam định cư ở nước ngoài (Việt kiều) được mua NOXH không?",
+                     "a":  "",
+                     "sortOrder":  5
+                 },
+                 {
+                     "id":  "faq-6",
+                     "category":  "doi-tuong",
+                     "q":  "Đã sở hữu nhà ở nhưng diện tích quá nhỏ có được mua NOXH không?",
+                     "a":  "",
+                     "sortOrder":  6
+                 },
+                 {
+                     "id":  "faq-7",
+                     "category":  "doi-tuong",
+                     "q":  "Lực lượng vũ trang (quân đội, công an) có chính sách NOXH riêng biệt không?",
+                     "a":  "",
+                     "sortOrder":  7
+                 },
+                 {
+                     "id":  "faq-8",
+                     "category":  "doi-tuong",
+                     "q":  "Người đang hưởng lương hưu có đủ điều kiện mua NOXH không?",
+                     "a":  "",
+                     "sortOrder":  8
+                 },
+                 {
+                     "id":  "faq-9",
+                     "category":  "doi-tuong",
+                     "q":  "Đã từng được Nhà nước giao đất, cấp đất có được xét duyệt mua NOXH không?",
+                     "a":  "",
+                     "sortOrder":  9
+                 },
+                 {
+                     "id":  "faq-10",
+                     "category":  "doi-tuong",
+                     "q":  "Sinh viên mới ra trường có thuộc đối tượng được mua NOXH không?",
+                     "a":  "",
+                     "sortOrder":  10
+                 },
+                 {
+                     "id":  "faq-11",
+                     "category":  "doi-tuong",
+                     "q":  "Vợ và chồng có được làm hai bộ hồ sơ độc lập để tăng cơ hội trúng bốc thăm không?",
+                     "a":  "",
+                     "sortOrder":  11
+                 },
+                 {
+                     "id":  "faq-12",
+                     "category":  "doi-tuong",
+                     "q":  "Nếu vợ/chồng đã đứng tên sở hữu một bất động sản khác, người còn lại có được mua NOXH không?",
+                     "a":  "",
+                     "sortOrder":  12
+                 },
+                 {
+                     "id":  "faq-13",
+                     "category":  "doi-tuong",
+                     "q":  "Bố mẹ ruột có nhà, nhưng con cái đã tách hộ khẩu ra riêng thì có được tính là \\\"chưa có nhà ở\\\" không?",
+                     "a":  "",
+                     "sortOrder":  13
+                 },
+                 {
+                     "id":  "faq-14",
+                     "category":  "doi-tuong",
+                     "q":  "Doanh nghiệp có được phép mua đứt NOXH để làm chỗ ở cho nhân viên không?",
+                     "a":  "",
+                     "sortOrder":  14
+                 },
+                 {
+                     "id":  "faq-15",
+                     "category":  "doi-tuong",
+                     "q":  "Đã từng mua một căn NOXH, sau đó bán đi hợp pháp, nay có được làm hồ sơ mua căn thứ hai không?",
+                     "a":  "",
+                     "sortOrder":  15
+                 },
+                 {
+                     "id":  "faq-16",
+                     "category":  "doi-tuong",
+                     "q":  "Hộ nghèo, hộ cận nghèo tại khu vực nông thôn có cần chứng minh thu nhập để mua NOXH không?",
+                     "a":  "",
+                     "sortOrder":  16
+                 },
+                 {
+                     "id":  "faq-17",
+                     "category":  "doi-tuong",
+                     "q":  "Người khuyết tật có được đặc cách xét duyệt hồ sơ mua NOXH không?",
+                     "a":  "",
+                     "sortOrder":  17
+                 },
+                 {
+                     "id":  "faq-18",
+                     "category":  "doi-tuong",
+                     "q":  "Người có công với cách mạng được hưởng mức ưu tiên như thế nào?",
+                     "a":  "",
+                     "sortOrder":  18
+                 },
+                 {
+                     "id":  "faq-19",
+                     "category":  "doi-tuong",
+                     "q":  "Có bắt buộc phải tham gia Bảo hiểm xã hội (BHXH) đủ 1 năm mới được mua NOXH không?",
+                     "a":  "",
+                     "sortOrder":  19
+                 },
+                 {
+                     "id":  "faq-20",
+                     "category":  "doi-tuong",
+                     "q":  "Học sinh, sinh viên đang đi học tại các trường đại học có được mua NOXH không?",
+                     "a":  "",
+                     "sortOrder":  20
+                 },
+                 {
+                     "id":  "faq-21",
+                     "category":  "dieu-kien-ho-so",
+                     "q":  "Mức trần thu nhập tối đa để đủ điều kiện mua NOXH được quy định như thế nào?",
+                     "a":  "",
+                     "sortOrder":  21
+                 },
+                 {
+                     "id":  "faq-22",
+                     "category":  "dieu-kien-ho-so",
+                     "q":  "Quy trình đăng ký và xét duyệt hồ sơ mua NOXH gồm những bước nào?",
+                     "a":  "",
+                     "sortOrder":  22
+                 },
+                 {
+                     "id":  "faq-23",
+                     "category":  "dieu-kien-ho-so",
+                     "q":  "Người dân phải nộp hồ sơ đăng ký mua NOXH trực tiếp tại đâu?",
+                     "a":  "",
+                     "sortOrder":  23
+                 },
+                 {
+                     "id":  "faq-24",
+                     "category":  "dieu-kien-ho-so",
+                     "q":  "Có thể ủy quyền cho người thân, bạn bè đi nộp hồ sơ đăng ký thay được không?",
+                     "a":  "",
+                     "sortOrder":  24
+                 },
+                 {
+                     "id":  "faq-25",
+                     "category":  "dieu-kien-ho-so",
+                     "q":  "Một bộ hồ sơ pháp lý hoàn chỉnh để mua NOXH bao gồm những loại giấy tờ nào?",
+                     "a":  "",
+                     "sortOrder":  25
+                 },
+                 {
+                     "id":  "faq-26",
+                     "category":  "dieu-kien-ho-so",
+                     "q":  "Thủ tục xin Giấy xác nhận chưa có nhà ở (thực trạng nhà ở) được thực hiện ở cơ quan nào?",
+                     "a":  "",
+                     "sortOrder":  26
+                 },
+                 {
+                     "id":  "faq-27",
+                     "category":  "dieu-kien-ho-so",
+                     "q":  "Xin Giấy xác nhận điều kiện về thu nhập ở đâu là hợp lệ?",
+                     "a":  "",
+                     "sortOrder":  27
+                 },
+                 {
+                     "id":  "faq-28",
+                     "category":  "dieu-kien-ho-so",
+                     "q":  "Đang có mã số thuế cá nhân và phải đóng thuế TNCN thì hồ sơ có bị loại không?",
+                     "a":  "",
+                     "sortOrder":  28
+                 },
+                 {
+                     "id":  "faq-29",
+                     "category":  "dieu-kien-ho-so",
+                     "q":  "Thời gian từ khi nộp hồ sơ đến khi biết kết quả xét duyệt mất bao lâu?",
+                     "a":  "",
+                     "sortOrder":  29
+                 },
+                 {
+                     "id":  "faq-30",
+                     "category":  "dieu-kien-ho-so",
+                     "q":  "Phải nộp bao nhiêu bộ hồ sơ cho Chủ đầu tư và có cần công chứng tất cả không?",
+                     "a":  "",
+                     "sortOrder":  30
+                 },
+                 {
+                     "id":  "faq-31",
+                     "category":  "dieu-kien-ho-so",
+                     "q":  "Người dân có phải đóng bất kỳ khoản phí nào khi nộp hồ sơ mua NOXH không?",
+                     "a":  "",
+                     "sortOrder":  31
+                 },
+                 {
+                     "id":  "faq-32",
+                     "category":  "dieu-kien-ho-so",
+                     "q":  "Hệ thống chấm điểm ưu tiên khi số hồ sơ nộp vào lớn hơn số căn hộ hoạt động ra sao?",
+                     "a":  "",
+                     "sortOrder":  32
+                 },
+                 {
+                     "id":  "faq-33",
+                     "category":  "dieu-kien-ho-so",
+                     "q":  "Quy trình bốc thăm giành quyền mua diễn ra trong trường hợp nào?",
+                     "a":  "",
+                     "sortOrder":  33
+                 },
+                 {
+                     "id":  "faq-34",
+                     "category":  "dieu-kien-ho-so",
+                     "q":  "Nếu không trúng bốc thăm, tôi có được nhận lại hồ sơ gốc đã nộp không?",
+                     "a":  "",
+                     "sortOrder":  34
+                 },
+                 {
+                     "id":  "faq-35",
+                     "category":  "dieu-kien-ho-so",
+                     "q":  "Khách hàng có quyền được tự lựa chọn số căn, số tầng, hoặc hướng nhà khi mua NOXH không?",
+                     "a":  "",
+                     "sortOrder":  35
+                 },
+                 {
+                     "id":  "faq-36",
+                     "category":  "dieu-kien-ho-so",
+                     "q":  "Thời điểm nào người mua sẽ chính thức ký Hợp đồng mua bán với Chủ đầu tư?",
+                     "a":  "",
+                     "sortOrder":  36
+                 },
+                 {
+                     "id":  "faq-37",
+                     "category":  "dieu-kien-ho-so",
+                     "q":  "Khi nào thì bắt đầu phải đóng tiền và đóng đợt 1 bao nhiêu phần trăm?",
+                     "a":  "",
+                     "sortOrder":  37
+                 },
+                 {
+                     "id":  "faq-38",
+                     "category":  "dieu-kien-ho-so",
+                     "q":  "Các biểu mẫu đơn từ xin xác nhận nhà ở và thu nhập phải lấy từ đâu để đảm bảo hợp lệ?",
+                     "a":  "",
+                     "sortOrder":  38
+                 },
+                 {
+                     "id":  "faq-39",
+                     "category":  "dieu-kien-ho-so",
+                     "q":  "Quy trình \\\"kiểm tra chéo\\\" của Sở Xây dựng nhằm mục đích gì?",
+                     "a":  "",
+                     "sortOrder":  39
+                 },
+                 {
+                     "id":  "faq-40",
+                     "category":  "dieu-kien-ho-so",
+                     "q":  "Nếu khi nộp vào, Chủ đầu tư báo hồ sơ bị thiếu sót giấy tờ thì tôi có được bổ sung không?",
+                     "a":  "",
+                     "sortOrder":  40
+                 },
+                 {
+                     "id":  "faq-41",
+                     "category":  "vay-von",
+                     "q":  "Có những gói vay ưu đãi hỗ trợ tài chính nào dành riêng cho người mua NOXH?",
+                     "a":  "",
+                     "sortOrder":  41
+                 },
+                 {
+                     "id":  "faq-42",
+                     "category":  "vay-von",
+                     "q":  "Hạn mức vay vốn tối đa để mua NOXH là bao nhiêu phần trăm giá trị căn hộ?",
+                     "a":  "",
+                     "sortOrder":  42
+                 },
+                 {
+                     "id":  "faq-43",
+                     "category":  "vay-von",
+                     "q":  "Thời hạn vay vốn tối đa để người mua có thể trả góp là bao nhiêu năm?",
+                     "a":  "",
+                     "sortOrder":  43
+                 },
+                 {
+                     "id":  "faq-44",
+                     "category":  "vay-von",
+                     "q":  "Điều kiện cốt lõi để được duyệt vay vốn qua Ngân hàng Chính sách xã hội là gì?",
+                     "a":  "",
+                     "sortOrder":  44
+                 },
+                 {
+                     "id":  "faq-45",
+                     "category":  "vay-von",
+                     "q":  "Tiến độ thanh toán tiền mua nhà đối với dự án NOXH đang xây dựng được chia ra sao?",
+                     "a":  "",
+                     "sortOrder":  45
+                 },
+                 {
+                     "id":  "faq-46",
+                     "category":  "vay-von",
+                     "q":  "Lãi suất vay ưu đãi có được giữ cố định trong suốt 25 năm trả góp không?",
+                     "a":  "",
+                     "sortOrder":  46
+                 },
+                 {
+                     "id":  "faq-47",
+                     "category":  "vay-von",
+                     "q":  "Đã từng bị nợ xấu (thuộc nhóm 3, 4, 5) trên CIC có được ngân hàng duyệt vay mua NOXH không?",
+                     "a":  "",
+                     "sortOrder":  47
+                 },
+                 {
+                     "id":  "faq-48",
+                     "category":  "vay-von",
+                     "q":  "Nếu tôi có tiền mặt và muốn tất toán (trả nợ trước hạn), tôi có bị ngân hàng tính phí phạt không?",
+                     "a":  "",
+                     "sortOrder":  48
+                 },
+                 {
+                     "id":  "faq-49",
+                     "category":  "vay-von",
+                     "q":  "Tôi có thể dùng chính căn hộ NOXH đang dự định mua làm tài sản thế chấp để vay vốn không?",
+                     "a":  "",
+                     "sortOrder":  49
+                 },
+                 {
+                     "id":  "faq-50",
+                     "category":  "vay-von",
+                     "q":  "Hiện nay, những ngân hàng thương mại nào đang được phép giải ngân các gói vay NOXH?",
+                     "a":  "",
+                     "sortOrder":  50
+                 },
+                 {
+                     "id":  "faq-51",
+                     "category":  "vay-von",
+                     "q":  "Người lớn tuổi (trên 50 tuổi) có bị giới hạn thời gian vay vốn mua nhà không?",
+                     "a":  "",
+                     "sortOrder":  51
+                 },
+                 {
+                     "id":  "faq-52",
+                     "category":  "vay-von",
+                     "q":  "Chi phí bảo trì căn hộ NOXH là bao nhiêu và phải đóng tại thời điểm nào?",
+                     "a":  "",
+                     "sortOrder":  52
+                 },
+                 {
+                     "id":  "faq-53",
+                     "category":  "vay-von",
+                     "q":  "Nếu tôi có sẵn đủ tiền mặt, tôi có bắt buộc phải vay qua ngân hàng chính sách không?",
+                     "a":  "",
+                     "sortOrder":  53
+                 },
+                 {
+                     "id":  "faq-54",
+                     "category":  "vay-von",
+                     "q":  "Nếu vợ bị nợ xấu, chồng đứng tên hồ sơ vay độc lập với ngân hàng có được chấp nhận không?",
+                     "a":  "",
+                     "sortOrder":  54
+                 },
+                 {
+                     "id":  "faq-55",
+                     "category":  "vay-von",
+                     "q":  "Ngân hàng đánh giá tỷ lệ \\\"thu nhập/khoản trả nợ\\\" hàng tháng như thế nào để quyết định giải ngân?",
+                     "a":  "",
+                     "sortOrder":  55
+                 },
+                 {
+                     "id":  "faq-56",
+                     "category":  "vay-von",
+                     "q":  "Người vay mua NOXH có được hưởng chính sách ân hạn nợ gốc không?",
+                     "a":  "",
+                     "sortOrder":  56
+                 },
+                 {
+                     "id":  "faq-57",
+                     "category":  "vay-von",
+                     "q":  "Hình thức \\\"giải ngân song song\\\" giữa ngân hàng và người mua hoạt động như thế nào?",
+                     "a":  "",
+                     "sortOrder":  57
+                 },
+                 {
+                     "id":  "faq-58",
+                     "category":  "vay-von",
+                     "q":  "Chi phí thẩm định giá tài sản và công chứng thế chấp ngân hàng do bên nào chi trả?",
+                     "a":  "",
+                     "sortOrder":  58
+                 },
+                 {
+                     "id":  "faq-59",
+                     "category":  "vay-von",
+                     "q":  "Phí quản lý vận hành chung cư NOXH có đắt đỏ như chung cư thương mại không?",
+                     "a":  "",
+                     "sortOrder":  59
+                 },
+                 {
+                     "id":  "faq-60",
+                     "category":  "vay-von",
+                     "q":  "Lãi suất cho vay của Ngân hàng Chính sách xã hội đối với NOXH trong những năm gần đây dao động ở mức nào?",
+                     "a":  "",
+                     "sortOrder":  60
+                 },
+                 {
+                     "id":  "faq-61",
+                     "category":  "quyen-so-huu",
+                     "q":  "Nhà ở xã hội sau khi bàn giao sẽ được cấp sổ hồng với thời hạn sở hữu là bao nhiêu năm?",
+                     "a":  "",
+                     "sortOrder":  61
+                 },
+                 {
+                     "id":  "faq-62",
+                     "category":  "quyen-so-huu",
+                     "q":  "Sau khi nhận nhà, người mua phải chờ bao lâu mới được phép chuyển nhượng, bán lại NOXH?",
+                     "a":  "",
+                     "sortOrder":  62
+                 },
+                 {
+                     "id":  "faq-63",
+                     "category":  "quyen-so-huu",
+                     "q":  "Nếu chưa đủ 5 năm mà gia đình gặp biến cố cần tiền, tôi có thể bán nhà cho ai không?",
+                     "a":  "",
+                     "sortOrder":  63
+                 },
+                 {
+                     "id":  "faq-64",
+                     "category":  "quyen-so-huu",
+                     "q":  "Trong thời gian chờ đủ 5 năm, tôi có được phép cho thuê căn hộ NOXH của mình không?",
+                     "a":  "",
+                     "sortOrder":  64
+                 },
+                 {
+                     "id":  "faq-65",
+                     "category":  "quyen-so-huu",
+                     "q":  "Sau khi đã đáp ứng đủ điều kiện 5 năm, việc bán lại NOXH có bị khống chế giá trần không?",
+                     "a":  "",
+                     "sortOrder":  65
+                 },
+                 {
+                     "id":  "faq-66",
+                     "category":  "quyen-so-huu",
+                     "q":  "Khi bán lại NOXH sau 5 năm, tôi có phải nộp bổ sung Tiền sử dụng đất cho Nhà nước không?",
+                     "a":  "",
+                     "sortOrder":  66
+                 },
+                 {
+                     "id":  "faq-67",
+                     "category":  "quyen-so-huu",
+                     "q":  "Mua bán trái phép NOXH (chưa đủ 5 năm) qua hình thức Lập vi bằng có giá trị pháp lý không?",
+                     "a":  "",
+                     "sortOrder":  67
+                 },
+                 {
+                     "id":  "faq-68",
+                     "category":  "quyen-so-huu",
+                     "q":  "Nếu cơ quan chức năng phát hiện hành vi mua bán NOXH sai quy định, hậu quả xử lý ra sao?",
+                     "a":  "",
+                     "sortOrder":  68
+                 },
+                 {
+                     "id":  "faq-69",
+                     "category":  "quyen-so-huu",
+                     "q":  "Tôi có được phép đăng ký kinh doanh, dùng NOXH để làm văn phòng, trụ sở công ty không?",
+                     "a":  "",
+                     "sortOrder":  69
+                 },
+                 {
+                     "id":  "faq-70",
+                     "category":  "quyen-so-huu",
+                     "q":  "Nhà ở xã hội có được để lại thừa kế cho con cái hoặc người thân không?",
+                     "a":  "",
+                     "sortOrder":  70
+                 },
+                 {
+                     "id":  "faq-71",
+                     "category":  "quyen-so-huu",
+                     "q":  "Trong trường hợp vợ chồng ly hôn, căn hộ NOXH đang trong thời hạn 5 năm sẽ được phân chia như thế nào?",
+                     "a":  "",
+                     "sortOrder":  71
+                 },
+                 {
+                     "id":  "faq-72",
+                     "category":  "quyen-so-huu",
+                     "q":  "Quy trình sang tên Sổ hồng NOXH sau 5 năm yêu cầu người bán phải nộp những loại thuế phí gì?",
+                     "a":  "",
+                     "sortOrder":  72
+                 },
+                 {
+                     "id":  "faq-73",
+                     "category":  "quyen-so-huu",
+                     "q":  "Chủ nhà có được phép tự ý đập thông hai căn NOXH hoặc cơi nới diện tích ban công không?",
+                     "a":  "",
+                     "sortOrder":  73
+                 },
+                 {
+                     "id":  "faq-74",
+                     "category":  "quyen-so-huu",
+                     "q":  "Kể từ lúc nhận bàn giao nhà, người mua phải chờ tối đa bao lâu để được cấp Sổ hồng?",
+                     "a":  "",
+                     "sortOrder":  74
+                 },
+                 {
+                     "id":  "faq-75",
+                     "category":  "quyen-so-huu",
+                     "q":  "Nếu Chủ đầu tư cố tình chây ì, chậm làm Sổ hồng cho cư dân NOXH thì bị xử lý thế nào?",
+                     "a":  "",
+                     "sortOrder":  75
+                 },
+                 {
+                     "id":  "faq-76",
+                     "category":  "quyen-so-huu",
+                     "q":  "Người mua NOXH có được phép làm thủ tục đăng ký thường trú (làm Sổ hộ khẩu mới) tại địa chỉ căn hộ không?",
+                     "a":  "",
+                     "sortOrder":  76
+                 },
+                 {
+                     "id":  "faq-77",
+                     "category":  "quyen-so-huu",
+                     "q":  "Trong trường hợp tòa nhà NOXH quá cũ nát, bị giải tỏa trong tương lai, chủ nhà có được bồi thường không?",
+                     "a":  "",
+                     "sortOrder":  77
+                 },
+                 {
+                     "id":  "faq-78",
+                     "category":  "quyen-so-huu",
+                     "q":  "Nếu mua NOXH nhưng không ở, cứ khóa cửa để trống trong nhiều năm thì có bị thu hồi không?",
+                     "a":  "",
+                     "sortOrder":  78
+                 },
+                 {
+                     "id":  "faq-79",
+                     "category":  "quyen-so-huu",
+                     "q":  "Nếu một căn NOXH đã đủ điều kiện 5 năm và được bán ra thị trường tự do, người nước ngoài có được mua lại căn đó không?",
+                     "a":  "",
+                     "sortOrder":  79
+                 },
+                 {
+                     "id":  "faq-80",
+                     "category":  "quyen-so-huu",
+                     "q":  "Để lách luật bán nhà trước 5 năm, tôi có thể làm Hợp đồng ủy quyền quản lý sử dụng vô thời hạn cho người khác không?",
+                     "a":  "",
+                     "sortOrder":  80
+                 }
+             ],
+    "news":  [
+                 {
+                     "id":  "news-1",
+                     "title":  "Lãi suất cho vay ưu đãi mua Nhà ở xã hội mới nhất năm 2026",
+                     "summary":  "Ngân hàng Chính sách xã hội công bố điều chỉnh mức lãi suất ưu đãi mua NOXH.",
+                     "content":  "Nội dung chi tiết về lãi suất ưu đãi...",
+                     "imageUrl":  "/img/news-1.jpg",
+                     "status":  "published",
+                     "publishedAt":  "2026-07-27T03:44:07.7822319Z"
+                 }
+             ]
+}

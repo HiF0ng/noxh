@@ -1,0 +1,440 @@
+<!DOCTYPE html><html lang="vi" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Chỉnh sửa Dự án - Housing Support Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed": "#2a1700",
+                      "on-secondary-fixed-variant": "#005236",
+                      "on-primary-fixed-variant": "#003ea8",
+                      "surface-container-low": "#eff4ff",
+                      "surface-tint": "#0053db",
+                      "on-error": "#ffffff",
+                      "tertiary-fixed": "#ffddb8",
+                      "tertiary": "#784b00",
+                      "error-container": "#ffdad6",
+                      "surface-container-highest": "#d3e4fe",
+                      "on-background": "#0b1c30",
+                      "surface-container-high": "#dce9ff",
+                      "on-primary-fixed": "#00174b",
+                      "surface-container-lowest": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "on-primary": "#ffffff",
+                      "secondary-fixed": "#6ffbbe",
+                      "on-tertiary-container": "#ffeedd",
+                      "on-tertiary-fixed-variant": "#653e00",
+                      "inverse-primary": "#b4c5ff",
+                      "secondary-fixed-dim": "#4edea3",
+                      "on-surface-variant": "#434655",
+                      "on-secondary-container": "#00714d",
+                      "surface-bright": "#f8f9ff",
+                      "primary": "#004ac6",
+                      "tertiary-container": "#996100",
+                      "on-secondary-fixed": "#002113",
+                      "surface": "#f8f9ff",
+                      "secondary": "#006c49",
+                      "on-primary-container": "#eeefff",
+                      "tertiary-fixed-dim": "#ffb95f",
+                      "outline": "#737686",
+                      "on-secondary": "#ffffff",
+                      "surface-dim": "#cbdbf5",
+                      "primary-fixed-dim": "#b4c5ff",
+                      "on-surface": "#0b1c30",
+                      "on-tertiary": "#ffffff",
+                      "surface-container": "#e5eeff",
+                      "outline-variant": "#c3c6d7",
+                      "surface-variant": "#d3e4fe",
+                      "inverse-surface": "#213145",
+                      "background": "#f8f9ff",
+                      "secondary-container": "#6cf8bb",
+                      "primary-container": "#2563eb",
+                      "primary-fixed": "#dbe1ff",
+                      "error": "#ba1a1a",
+                      "inverse-on-surface": "#eaf1ff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "md": "24px",
+                      "sm": "16px",
+                      "margin-desktop": "auto",
+                      "lg": "40px",
+                      "xs": "8px",
+                      "xl": "64px",
+                      "gutter": "24px",
+                      "base": "4px",
+                      "max-width": "1280px",
+                      "margin-mobile": "16px"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "body-lg": [
+                              "Be Vietnam Pro"
+                      ],
+                      "label-sm": [
+                              "Be Vietnam Pro"
+                      ],
+                      "label-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "headline-lg-mobile": [
+                              "Be Vietnam Pro"
+                      ],
+                      "body-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "display": [
+                              "Be Vietnam Pro"
+                      ],
+                      "headline-lg": [
+                              "Be Vietnam Pro"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        body { font-family: 'Be Vietnam Pro', sans-serif; background-color: #F9FAFB; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .filled-icon { font-variation-settings: 'FILL' 1; }
+    </style>
+</head>
+<body class="bg-background text-on-background flex min-h-screen">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-surface dark:bg-surface-dim bg-surface-container-low dark:bg-surface-container-lowest shadow-sm flex flex-col border-r border-outline-variant dark:border-outline z-20">
+<div class="p-6">
+<div class="flex items-center gap-4 mb-8">
+<div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary font-bold text-headline-md">home_work</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim text-lg">Housing Support</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Admin Portal</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-outline-variant hover:text-primary hover:bg-surface-container-high dark:hover:bg-surface-container transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-outline-variant hover:text-primary hover:bg-surface-container-high dark:hover:bg-surface-container transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-label-md text-label-md">Users</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-primary dark:text-primary-fixed-dim font-bold bg-secondary-container/20 rounded-lg Active: scale-[0.98] transition-transform" href="#">
+<span class="material-symbols-outlined filled-icon" data-icon="home_work">home_work</span>
+<span class="font-label-md text-label-md">Projects</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-outline-variant hover:text-primary hover:bg-surface-container-high dark:hover:bg-surface-container transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="font-label-md text-label-md">Documents</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-outline-variant hover:text-primary hover:bg-surface-container-high dark:hover:bg-surface-container transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-label-md text-label-md">FAQ</span>
+</a>
+</nav>
+</div>
+<div class="mt-auto p-6 border-t border-outline-variant dark:border-outline">
+<button class="w-full py-3 px-4 bg-primary text-on-primary rounded-full font-label-md text-label-md font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors shadow-sm">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                New Application
+            </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 flex-1 flex flex-col min-h-screen">
+<!-- TopAppBar -->
+<header class="bg-surface/80 backdrop-blur-md dark:bg-surface-dim/80 docked full-width top-0 border-b border-outline-variant dark:border-outline flex justify-between items-center h-16 px-8 w-full z-10 sticky">
+<div class="flex items-center gap-2 font-body-md text-body-md text-on-surface-variant">
+<span class="hover:text-primary cursor-pointer transition-colors">Quản trị</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="hover:text-primary cursor-pointer transition-colors">Dự án</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-primary font-bold">Chỉnh sửa dự án</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:bg-surface-variant dark:hover:bg-inverse-surface rounded-full p-2 focus:outline-none transition-all">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-variant dark:hover:bg-inverse-surface rounded-full p-2 focus:outline-none transition-all">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-variant overflow-hidden border border-outline-variant ml-2">
+<img alt="Admin User Profile" class="w-full h-full object-cover" data-alt="A small circular avatar of a professional admin user in a corporate setting. The user has dark hair and is wearing a neat blue shirt. The background is a soft, blurred modern office environment. Light mode, clear, friendly." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIJIRz3Z5k9uTdoAbfjgtAAbVXZYHlfMly--b5I5eOD9Cv4HoEE-UR-Q5l2vVSJsGtDhPSIHne_gNGf8iJwu13jE6PbtxW74N04kA15jehtJppBKBucbCLprNs_i6dOfeRt8HRbaIZ7WEQnhk4IYAJQ85da3nnD0VzZeMy0kWh3mBsVDy_kAsGpejQ4nXGuAfObLfCkKEzIMFIjSDO5klHicuMLSb7UwTqd4lgff6Rr9RgP0WeMuvlF_wwL24mkA9pUOw7_Q7NwBVX">
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="p-8 lg:p-10 max-w-[1280px] mx-auto w-full flex-1">
+<div class="flex justify-between items-end mb-8">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-2">Thông tin chi tiết Dự án</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Cập nhật thông tin cơ bản, kỹ thuật và tiến độ của dự án nhà ở xã hội.</p>
+</div>
+<div class="flex gap-4">
+<button class="px-6 py-2.5 rounded-full border-2 border-outline text-on-surface-variant font-label-md text-label-md hover:bg-surface-variant transition-colors">
+                        Hủy bỏ
+                    </button>
+<button class="px-6 py-2.5 rounded-full bg-primary text-on-primary font-label-md text-label-md hover:bg-primary/90 transition-colors flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">save</span>
+                        Lưu thay đổi
+                    </button>
+</div>
+</div>
+<!-- Form Bento Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Left Column: Main Info -->
+<div class="lg:col-span-2 flex flex-col gap-6">
+<!-- Thông tin cơ bản -->
+<div class="bg-surface-lowest rounded-xl shadow-sm border border-outline-variant p-6 p-md">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">info</span>
+                            Thông tin cơ bản
+                        </h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="md:col-span-2">
+<label class="block font-label-md text-label-md text-on-surface mb-2">Tên dự án <span class="text-error">*</span></label>
+<input class="w-full px-4 py-3 rounded-lg border border-outline focus:border-primary focus:ring-2 focus:ring-primary/20 bg-surface-lowest text-on-surface transition-all outline-none font-body-md text-body-md" type="text" value="Khu nhà ở xã hội Hưng Thịnh">
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-2">Tỉnh/Thành phố <span class="text-error">*</span></label>
+<select class="w-full px-4 py-3 rounded-lg border border-outline focus:border-primary focus:ring-2 focus:ring-primary/20 bg-surface-lowest text-on-surface transition-all outline-none font-body-md text-body-md appearance-none">
+<option>Hà Nội</option>
+<option>TP. Hồ Chí Minh</option>
+<option>Đà Nẵng</option>
+</select>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-2">Quận/Huyện <span class="text-error">*</span></label>
+<select class="w-full px-4 py-3 rounded-lg border border-outline focus:border-primary focus:ring-2 focus:ring-primary/20 bg-surface-lowest text-on-surface transition-all outline-none font-body-md text-body-md appearance-none">
+<option>Quận Long Biên</option>
+<option>Quận Hà Đông</option>
+<option>Huyện Gia Lâm</option>
+</select>
+</div>
+
+<div class="md:col-span-2">
+<label class="block font-label-md text-label-md text-on-surface mb-2">Mô tả dự án</label>
+<textarea class="w-full px-4 py-3 rounded-lg border border-outline focus:border-primary focus:ring-2 focus:ring-primary/20 bg-surface-lowest text-on-surface transition-all outline-none font-body-md text-body-md" placeholder="Nhập mô tả chi tiết về dự án..." rows="4"></textarea>
+</div>
+</div>
+</div><div class="bg-surface-lowest rounded-xl shadow-sm border border-outline-variant p-6 p-md">
+    <h3 class="font-headline-md text-headline-md text-on-surface mb-6 flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">add_circle</span>
+        Thông tin bổ sung
+    </h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div><label class="block font-label-md text-label-md text-on-surface mb-2">Chủ đầu tư</label><input class="w-full px-4 py-3 rounded-lg border border-outline focus:border-primary focus:ring-2 focus:ring-primary/20 bg-surface-lowest text-on-surface transition-all outline-none font-body-md text-body-md" placeholder="Nhập thông tin..." type="text"></div>
+        <div><label class="block font-label-md text-label-md text-on-surface mb-2">Diện tích</label><input class="w-full px-4 py-3 rounded-lg border border-outline focus:border-primary focus:ring-2 focus:ring-primary/20 bg-surface-lowest text-on-surface transition-all outline-none font-body-md text-body-md" placeholder="Nhập thông tin..." type="text"></div>
+        <div><label class="block font-label-md text-label-md text-on-surface mb-2">Quy mô</label><input class="w-full px-4 py-3 rounded-lg border border-outline focus:border-primary focus:ring-2 focus:ring-primary/20 bg-surface-lowest text-on-surface transition-all outline-none font-body-md text-body-md" placeholder="Nhập thông tin..." type="text"></div>
+        <div><label class="block font-label-md text-label-md text-on-surface mb-2">Pháp lý</label><input class="w-full px-4 py-3 rounded-lg border border-outline focus:border-primary focus:ring-2 focus:ring-primary/20 bg-surface-lowest text-on-surface transition-all outline-none font-body-md text-body-md" placeholder="Nhập thông tin..." type="text"></div>
+        <div><label class="block font-label-md text-label-md text-on-surface mb-2">Bàn giao</label><input class="w-full px-4 py-3 rounded-lg border border-outline focus:border-primary focus:ring-2 focus:ring-primary/20 bg-surface-lowest text-on-surface transition-all outline-none font-body-md text-body-md" placeholder="Nhập thông tin..." type="text"></div>
+    </div>
+</div>
+<!-- Tiện ích nổi bật -->
+<div class="bg-surface-lowest rounded-xl shadow-sm border border-outline-variant p-6 p-md">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">star</span>
+                            Tiện ích nổi bật
+                        </h3>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-2">Tiện ích 1</label>
+<input class="w-full px-4 py-3 rounded-lg border border-outline focus:border-primary focus:ring-2 focus:ring-primary/20 bg-surface-lowest text-on-surface transition-all outline-none font-body-md text-body-md" placeholder="Ví dụ: Công viên" type="text">
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-2">Tiện ích 2</label>
+<input class="w-full px-4 py-3 rounded-lg border border-outline focus:border-primary focus:ring-2 focus:ring-primary/20 bg-surface-lowest text-on-surface transition-all outline-none font-body-md text-body-md" placeholder="Ví dụ: Hồ bơi" type="text">
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-2">Tiện ích 3</label>
+<input class="w-full px-4 py-3 rounded-lg border border-outline focus:border-primary focus:ring-2 focus:ring-primary/20 bg-surface-lowest text-on-surface transition-all outline-none font-body-md text-body-md" placeholder="Ví dụ: Siêu thị" type="text">
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-2">Tiện ích 4</label>
+<input class="w-full px-4 py-3 rounded-lg border border-outline focus:border-primary focus:ring-2 focus:ring-primary/20 bg-surface-lowest text-on-surface transition-all outline-none font-body-md text-body-md" placeholder="Ví dụ: Nhà trẻ" type="text">
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-2">Tiện ích 5</label>
+<input class="w-full px-4 py-3 rounded-lg border border-outline focus:border-primary focus:ring-2 focus:ring-primary/20 bg-surface-lowest text-on-surface transition-all outline-none font-body-md text-body-md" placeholder="Ví dụ: Khu vui chơi" type="text">
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-2">Tiện ích 6</label>
+<input class="w-full px-4 py-3 rounded-lg border border-outline focus:border-primary focus:ring-2 focus:ring-primary/20 bg-surface-lowest text-on-surface transition-all outline-none font-body-md text-body-md" placeholder="Ví dụ: Bãi đỗ xe" type="text">
+</div>
+</div>
+</div>
+<!-- Mặt bằng căn hộ -->
+<div class="bg-surface-lowest rounded-xl shadow-sm border border-outline-variant p-6 p-md">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">floor</span>
+                            Mặt bằng căn hộ
+                        </h3>
+<div class="border-2 border-dashed border-outline-variant rounded-lg p-8 text-center hover:bg-surface-container-low transition-colors cursor-pointer flex flex-col items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[48px] text-outline">upload_file</span>
+<span class="font-label-md text-label-md text-on-surface">Kéo thả hoặc nhấn để tải ảnh mặt bằng lên</span>
+<span class="font-body-sm text-sm text-on-surface-variant">Hỗ trợ định dạng JPG, PNG, PDF (Tối đa 5MB)</span>
+</div>
+</div>
+<!-- Vị trí dự án -->
+<div class="bg-surface-lowest rounded-xl shadow-sm border border-outline-variant p-6 p-md">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">location_on</span>
+                            Vị trí dự án
+                        </h3>
+<div class="flex flex-col gap-4">
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-2">Google Maps Link</label>
+<input class="w-full px-4 py-3 rounded-lg border border-outline focus:border-primary focus:ring-2 focus:ring-primary/20 bg-surface-lowest text-on-surface transition-all outline-none font-body-md text-body-md" placeholder="Dán link Google Maps tại đây" type="text">
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-2">Ảnh bản đồ</label>
+<div class="border-2 border-dashed border-outline-variant rounded-lg p-8 text-center hover:bg-surface-container-low transition-colors cursor-pointer flex flex-col items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[48px] text-outline">map</span>
+<span class="font-label-md text-label-md text-on-surface">Tải ảnh chụp Google Maps</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Sidebar Form elements -->
+<div class="flex flex-col gap-6">
+<!-- Hình ảnh -->
+<div class="bg-surface-lowest rounded-xl shadow-sm border border-outline-variant p-6 p-md">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">imagesmode</span>
+                            Hình ảnh Dự án
+                        </h3>
+<div class="mb-6">
+<label class="block font-label-md text-label-md text-on-surface mb-2">Ảnh đại diện</label>
+<div class="border-2 border-dashed border-outline-variant rounded-lg p-4 text-center hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="w-full h-32 mb-3 rounded overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="A wide architectural rendering of a modern, affordable housing complex in Vietnam. The buildings are clean and well-lit with sunlight, surrounded by small green parks and walking paths. Bright, professional corporate style, soft shadows, inviting and calm." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMGWeCFKXbJPUMAX5yM8qitJxwxH-puiOsKEUqRwYuaNHzcgETzAD7lauiN724AmmZMXl9XzQvgDWv2jQazIqM4ekA6FJ5tZpeUZ0S1fZ75JV_vg5qK8EbWVtDyyH46YCG1a2e2L5qK6wfkr4VSe1n5rk_T_i8Icj6X-c1OYr6XyBaav-0qADinO6b8rE0HyZZeVug5nPums8XwnrxRu7ezsFjM7b12fO6i3xkb_2ILZwztJOqDxOGtMaMPODpv8iJP_uDzR9T0aIy">
+<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+<span class="material-symbols-outlined text-white text-[32px]">edit</span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-primary">Thay đổi ảnh đại diện</span>
+</div>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-2 flex justify-between">
+<span class="">Thư viện ảnh thực tế</span>
+<span class="text-on-surface-variant font-normal">3/10</span>
+</label>
+<div class="grid grid-cols-2 gap-2 mb-3">
+<div class="h-20 rounded bg-surface-container-high overflow-hidden relative group">
+<img class="w-full h-full object-cover" data-alt="A close-up view of a bright, newly constructed apartment building facade with clean lines and white paint. Blue sky background. Modern, soft minimalist aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3qEJfDnac_XkT-9ayvBuC7nSKErSqhhCWWSboCMmskAWqTDK0rB0RHo46th_MV8YcgJxqHXPjFEaoNt5SHMmHEgr22ecGRpvnoLVSBObPsHgjE_oXDaG70PdUYqALgu2-AycJ3edHaU1dtICmQLhj6zZ4bKjnyHjG3YYZ8ndTyiN1nKLrpQcAn1877iDmjwVZ3_7ZKXciNr8dLFcvMMX9J474bKvbeBXI-CytK3vddpjVtiso907jiGDG6gXGH-WWrypBTAukThn2">
+<button class="absolute top-1 right-1 w-6 h-6 bg-error/90 text-on-error rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[14px]">close</span>
+</button>
+</div>
+<div class="h-20 rounded bg-surface-container-high overflow-hidden relative group">
+<img class="w-full h-full object-cover" data-alt="An interior shot of an unfurnished, well-lit apartment living room with white walls and light wooden flooring. Large windows letting in natural sunlight. Clean, hopeful, minimalist." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfzS20OSzBhHlE_IviNCgqqpDHd1K1KbFBgD2upnXWk-aQFuFQpcAUlFJFiWFJMcJTw0Imvwf0N9NrcJ85JMXYuaAgyJgQGdNem60I0tYPXrNGKqBjaNiGaPZR1XKCWtv41tcOS0Xdu5hPB85icpQve976_-RgzL0CdEXCMQnWmvLehIAGiQV6nXmkQw06tk45iJGGYrVe4BQVC5ZgwwnZTWDYu5AJJVpVCxk9kE2Xm10fEF-ARv39ojdYk5x975nra6hLoGuA8Cp6">
+<button class="absolute top-1 right-1 w-6 h-6 bg-error/90 text-on-error rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[14px]">close</span>
+</button>
+</div>
+</div>
+<button class="w-full py-2 border border-outline rounded-lg flex items-center justify-center gap-2 text-on-surface-variant font-label-md hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[18px]">upload</span>
+                                Tải ảnh lên
+                            </button>
+</div>
+</div>
+<!-- Trạng thái & Lộ trình -->
+<div class="bg-surface-lowest rounded-xl shadow-sm border border-outline-variant p-6 p-md">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">timeline</span>
+                            Tiến độ
+                        </h3>
+
+<div class=""><div class="flex flex-col gap-4"><div class="flex gap-3"><input type="checkbox" class="mt-1 rounded border-outline text-primary focus:ring-primary" checked=""><div class="flex-1"><span class="font-label-sm text-label-sm text-on-surface block mb-1">Khởi công xây dựng</span><input class="w-full px-3 py-2 rounded-md border border-outline text-sm focus:border-primary focus:outline-none" type="text" placeholder="Ghi chú (ví dụ: Đã hoàn thành móng)"></div></div><div class="flex gap-3"><input type="checkbox" class="mt-1 rounded border-outline text-primary focus:ring-primary"><div class="flex-1"><span class="font-label-sm text-label-sm text-on-surface block mb-1">Cất nóc dự án</span><input class="w-full px-3 py-2 rounded-md border border-outline text-sm focus:border-primary focus:outline-none" type="text" placeholder="Ghi chú..."></div></div><div class="flex gap-3"><input type="checkbox" class="mt-1 rounded border-outline text-primary focus:ring-primary"><div class="flex-1"><span class="font-label-sm text-label-sm text-on-surface block mb-1">Mở bán chính thức</span><input class="w-full px-3 py-2 rounded-md border border-outline text-sm focus:border-primary focus:outline-none" type="text" placeholder="Ghi chú..."></div></div><div class="flex gap-3"><input type="checkbox" class="mt-1 rounded border-outline text-primary focus:ring-primary"><div class="flex-1"><span class="font-label-sm text-label-sm text-on-surface block mb-1">Bàn giao nhà</span><input class="w-full px-3 py-2 rounded-md border border-outline text-sm focus:border-primary focus:outline-none" type="text" placeholder="Ghi chú..."></div></div></div></div>
+</div>
+</div>
+</div>
+</div>
+</main>
+
+
+
+
+
+
+</body></html>

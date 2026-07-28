@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html class="light" lang="vi"><head>
+<meta charset="utf-8">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vietnam Community Housing</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Be Vietnam Pro -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="assets/js/tailwind-config.js"></script>
+</head>
+<body class="bg-background text-on-surface antialiased overflow-x-hidden">
+<!-- TopNavBar -->
+<nav class="top-navbar fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-3 max-w-5xl mx-auto bg-surface-container-lowest rounded-full mt-margin-mobile mx-margin-mobile lg:mt-sm lg:mx-auto shadow-sm">
+<div class="flex items-center gap-sm">
+<span class="font-headline-md text-headline-md font-bold text-primary hidden sm:block">Vietnam Housing</span>
+</div>
+<div class="hidden md:flex items-center gap-lg">
+<a class="nav-link font-label-md text-label-md text-primary border-b-2 border-primary pb-1 font-bold transition-colors active" href="homepage.html">Trang chủ</a>
+<a class="nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="all-projects.html">Dự án</a>
+<a class="nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="documents.html">Tài liệu</a>
+<a class="nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="faq.html">Câu hỏi thường gặp</a>
+<a class="nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="compare.html">So sánh</a>
+</div>
+<div class="flex items-center gap-sm">
+<div class="h-10 w-10 rounded-full overflow-hidden border-2 border-outline-variant bg-surface-container flex items-center justify-center cursor-pointer">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+</div>
+</nav>
+
+<!-- Main Content Canvas -->
+<main class="pt-28 pb-xl px-6 md:px-12 max-w-5xl mx-auto flex flex-col gap-xl">
+<!-- Hero Section -->
+<section class="flex flex-col items-center justify-center text-center pt-lg pb-lg mt-0">
+<h1 class="font-display text-display text-primary max-w-3xl mx-auto mb-sm text-justify [text-align-last:center]">
+    Tổng hợp và cung cấp thông tin dự án NOXH, các tài liệu mới nhất và hướng dẫn đăng ký hoàn toàn miễn phí
+</h1>
+<div class="mt-lg flex gap-md">
+<a href="all-projects.html" class="inline-block bg-primary text-on-primary font-label-md text-label-md px-8 py-4 rounded-full shadow__btn cursor-pointer text-center">
+    Khám phá Dự án
+</a>
+</div>
+</section>
+
+<!-- Minimap Section (Bento Grid Style) -->
+<section class="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] p-md md:p-lg border border-outline-variant/30 flex flex-col gap-xs">
+<h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">Dự án nổi bật</h2>
+<!-- Filters -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-sm">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-10 pr-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-body-md text-body-md" placeholder="Tìm kiếm tên Dự án..." type="text"/>
+</div>
+<div class="relative location-dropdown" id="province-dropdown-container">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline z-10">location_on</span>
+<input class="w-full pl-10 pr-10 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-body-md text-body-md cursor-pointer select-none" id="province-input" readonly="" placeholder="Tỉnh/Thành phố" type="text"/>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none transition-transform duration-200" id="province-arrow">expand_more</span>
+<div class="absolute left-0 right-0 mt-2 bg-surface-container-lowest rounded-lg shadow-lg border border-outline-variant/30 hidden flex-col z-50 max-h-60 overflow-y-auto" id="province-list-panel">
+<div class="p-2 border-b border-outline-variant/30 sticky top-0 bg-surface-container-lowest z-10">
+<input class="w-full px-3 py-2 rounded border border-outline-variant bg-surface-container-low text-sm focus:border-primary focus:outline-none" id="province-search" placeholder="G Tìm kiếm..." type="text"/>
+</div>
+<div class="flex flex-col py-1" id="province-options">
+</div>
+</div>
+</div>
+<div class="relative location-dropdown opacity-50" id="district-dropdown-container">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline z-10">map</span>
+<input class="w-full pl-10 pr-10 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-body-md text-body-md cursor-pointer select-none" id="district-input" readonly="" disabled="" placeholder="Quận/Huyện" type="text"/>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none transition-transform duration-200" id="district-arrow">expand_more</span>
+<div class="absolute left-0 right-0 mt-2 bg-surface-container-lowest rounded-lg shadow-lg border border-outline-variant/30 hidden flex-col z-50 max-h-60 overflow-y-auto" id="district-list-panel">
+<div class="p-2 border-b border-outline-variant/30 sticky top-0 bg-surface-container-lowest z-10">
+<input class="w-full px-3 py-2 rounded border border-outline-variant bg-surface-container-low text-sm focus:border-primary focus:outline-none" id="district-search" placeholder="G Tìm kiếm..." type="text"/>
+</div>
+<div class="flex flex-col py-1" id="district-options">
+</div>
+</div>
+</div>
+</div>
+<!-- Map Container -->
+<div id="homepage-projects-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md">
+    <!-- Skeleton 1 -->
+    <div class="bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/60 shadow-sm space-y-3">
+        <div class="skeleton-shimmer h-40 w-full rounded-lg"></div>
+        <div class="skeleton-shimmer h-5 w-3/4 rounded-md"></div>
+        <div class="skeleton-shimmer h-4 w-1/2 rounded-md"></div>
+        <div class="skeleton-shimmer h-3 w-full rounded-md mt-2"></div>
+        <div class="skeleton-shimmer h-8 w-full rounded-full mt-3"></div>
+    </div>
+    <!-- Skeleton 2 -->
+    <div class="bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/60 shadow-sm space-y-3">
+        <div class="skeleton-shimmer h-40 w-full rounded-lg"></div>
+        <div class="skeleton-shimmer h-5 w-3/4 rounded-md"></div>
+        <div class="skeleton-shimmer h-4 w-1/2 rounded-md"></div>
+        <div class="skeleton-shimmer h-3 w-full rounded-md mt-2"></div>
+        <div class="skeleton-shimmer h-8 w-full rounded-full mt-3"></div>
+    </div>
+    <!-- Skeleton 3 -->
+    <div class="bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/60 shadow-sm space-y-3">
+        <div class="skeleton-shimmer h-40 w-full rounded-lg"></div>
+        <div class="skeleton-shimmer h-5 w-3/4 rounded-md"></div>
+        <div class="skeleton-shimmer h-4 w-1/2 rounded-md"></div>
+        <div class="skeleton-shimmer h-3 w-full rounded-md mt-2"></div>
+        <div class="skeleton-shimmer h-8 w-full rounded-full mt-3"></div>
+    </div>
+    <!-- Skeleton 4 -->
+    <div class="bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/60 shadow-sm space-y-3">
+        <div class="skeleton-shimmer h-40 w-full rounded-lg"></div>
+        <div class="skeleton-shimmer h-5 w-3/4 rounded-md"></div>
+        <div class="skeleton-shimmer h-4 w-1/2 rounded-md"></div>
+        <div class="skeleton-shimmer h-3 w-full rounded-md mt-2"></div>
+        <div class="skeleton-shimmer h-8 w-full rounded-full mt-3"></div>
+    </div>
+</div>
+</section>
+
+<!-- Features/Criteria Section (Glassmorphism inspired cards) -->
+<section class="grid grid-cols-1 sm:grid-cols-2 gap-md">
+<div class="bg-surface-container-lowest py-sm px-md rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-outline-variant/30 flex flex-col items-center text-center hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-shadow duration-300">
+<div class="h-12 w-12 bg-surface-container rounded-full flex items-center justify-center mb-sm text-primary">
+<span class="material-symbols-outlined text-[24px]">volunteer_activism</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">Miễn phí</h3>
+<p class="font-body-md text-body-md text-on-surface-variant feature-subtext whitespace-nowrap">Toàn bộ Tài liệu và thông tin được chia sẻ Miễn phí</p>
+</div>
+<div class="bg-surface-container-lowest py-sm px-md rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-outline-variant/30 flex flex-col items-center text-center hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-shadow duration-300">
+<div class="h-12 w-12 bg-surface-container rounded-full flex items-center justify-center mb-sm text-primary">
+<span class="material-symbols-outlined text-[24px]">speed</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">Nhanh chóng</h3>
+<p class="font-body-md text-body-md text-on-surface-variant feature-subtext whitespace-nowrap">Cập nhật tin tức và tiến độ Dự án Nhà ở xã hội liên tục 24/7</p>
+</div>
+<div class="bg-surface-container-lowest py-sm px-md rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-outline-variant/30 flex flex-col items-center text-center hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-shadow duration-300">
+<div class="h-12 w-12 bg-surface-container rounded-full flex items-center justify-center mb-sm text-primary">
+<span class="material-symbols-outlined text-[24px]">update</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">Mới nhất</h3>
+<p class="font-body-md text-body-md text-on-surface-variant feature-subtext whitespace-nowrap">Nguồn Tài liệu Mới nhất theo luật hiện hành.</p>
+</div>
+<div class="bg-surface-container-lowest py-sm px-md rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-outline-variant/30 flex flex-col items-center text-center hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-shadow duration-300">
+<div class="h-12 w-12 bg-surface-container rounded-full flex items-center justify-center mb-sm text-primary">
+<span class="material-symbols-outlined text-[24px]">verified</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">Chính xác</h3>
+<p class="font-body-md text-body-md text-on-surface-variant feature-subtext whitespace-nowrap">Dữ liệu từ nguồn chính thống và được kiểm chứng</p>
+</div>
+</section>
+
+<!-- Testimonial Slideshow -->
+<section class="bg-surface-container-low rounded-xl py-lg md:py-xl overflow-hidden border border-outline-variant/30 relative">
+<h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-center text-on-surface mb-md">Cộng đồng nói gì Về chúng tôi</h2>
+<div class="w-full relative">
+<div class="slider-track" id="testimonial-track">
+<!-- Set 1 -->
+<div class="slider-item">
+<div class="bg-surface-container-lowest p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
+<span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
+<p class="font-body-md text-body-md text-on-surface-variant italic mb-sm z-10 relative">
+                                "Nhờ có hệ thống, tôi đã tiếp cận được thông tin minh bạch và nộp hồ sơ thành công. Rất cảm ơn đội ngũ hỗ trợ!"
+                            </p>
+<div class="flex items-center justify-center gap-sm mt-auto">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="A professional headshot portrait of an Asian woman in her 30s smiling warmly." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfYNAvCAJy5RNHgzrTs4vfZkrd8IxBflbW6hWpRLIwhCJ5LnXp3FXi8-pehMj9LznbRkFpb5ciR7AA9LMg7jiHRoiUK5y86RGo99y_ZgQUuEPL_YWqF1VEJEXMHqOK6cn1wfY1Ge7UeJXeQS-1H4ZG3g_BwMih9qcrdbX25bq243wrQixGiI5mBbUp2fG2PmQ6j46G189hZLj8FSM13XqwzFMQJuwB5O_pqhauUKnraWGBTmPEveO6EHQGCZXuAO9bYjWu7dDUY8KV"/>
+</div>
+<div class="text-left">
+<h4 class="font-label-md text-label-md text-on-surface">Nguyễn Thị A</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Cư dân Dự án X</p>
+</div>
+</div>
+</div>
+</div>
+<div class="slider-item">
+<div class="bg-surface-container-lowest p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
+<span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
+<p class="font-body-md text-body-md text-on-surface-variant italic mb-sm z-10 relative">
+                                "Giao diện thân thiện, dễ sử dụng. Rất hữu ích cho người có thu nhập thấp muốn tìm nhà."
+                            </p>
+<div class="flex items-center justify-center gap-sm mt-auto">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+<div class="text-left">
+<h4 class="font-label-md text-label-md text-on-surface">Trần Văn B</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Người dùng mới</p>
+</div>
+</div>
+</div>
+</div>
+<div class="slider-item">
+<div class="bg-surface-container-lowest p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
+<span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
+<p class="font-body-md text-body-md text-on-surface-variant italic mb-sm z-10 relative">
+                                "Đội ngũ tư vấn nhiệt tình, tôi đã tìm được Dự án phù hợp với gia đình mình."
+                            </p>
+<div class="flex items-center justify-center gap-sm mt-auto">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+<div class="text-left">
+<h4 class="font-label-md text-label-md text-on-surface">Lê Thị C</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Cư dân Dự án Z</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Set 2 -->
+<div class="slider-item">
+<div class="bg-surface-container-lowest p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
+<span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
+<p class="font-body-md text-body-md text-on-surface-variant italic mb-sm z-10 relative">
+                                "Nhờ có hệ thống, tôi đã tiếp cận được thông tin minh bạch và nộp hồ sơ thành công. Rất cảm ơn đội ngũ hỗ trợ!"
+                            </p>
+<div class="flex items-center justify-center gap-sm mt-auto">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="A professional headshot portrait of an Asian woman in her 30s smiling warmly." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfYNAvCAJy5RNHgzrTs4vfZkrd8IxBflbW6hWpRLIwhCJ5LnXp3FXi8-pehMj9LznbRkFpb5ciR7AA9LMg7jiHRoiUK5y86RGo99y_ZgQUuEPL_YWqF1VEJEXMHqOK6cn1wfY1Ge7UeJXeQS-1H4ZG3g_BwMih9qcrdbX25bq243wrQixGiI5mBbUp2fG2PmQ6j46G189hZLj8FSM13XqwzFMQJuwB5O_pqhauUKnraWGBTmPEveO6EHQGCZXuAO9bYjWu7dDUY8KV"/>
+</div>
+<div class="text-left">
+<h4 class="font-label-md text-label-md text-on-surface">Nguyễn Thị A</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Cư dân Dự án X</p>
+</div>
+</div>
+</div>
+</div>
+<div class="slider-item">
+<div class="bg-surface-container-lowest p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
+<span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
+<p class="font-body-md text-body-md text-on-surface-variant italic mb-sm z-10 relative">
+                                "Giao diện thân thiện, dễ sử dụng. Rất hữu ích cho người có thu nhập thấp muốn tìm nhà."
+                            </p>
+<div class="flex items-center justify-center gap-sm mt-auto">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+<div class="text-left">
+<h4 class="font-label-md text-label-md text-on-surface">Trần Văn B</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Người dùng mới</p>
+</div>
+</div>
+</div>
+</div>
+<div class="slider-item">
+<div class="bg-surface-container-lowest p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
+<span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
+<p class="font-body-md text-body-md text-on-surface-variant italic mb-sm z-10 relative">
+                                "Đội ngũ tư vấn nhiệt tình, tôi đã tìm được Dự án phù hợp với gia đình mình."
+                            </p>
+<div class="flex items-center justify-center gap-sm mt-auto">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+<div class="text-left">
+<h4 class="font-label-md text-label-md text-on-surface">Lê Thị C</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Cư dân Dự án Z</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- CTA Banner -->
+<section class="relative bg-primary text-white rounded-xl p-xl overflow-hidden flex flex-col md:flex-row items-center justify-between gap-lg shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
+<!-- Decorative background element -->
+<div class="absolute top-0 right-0 w-64 h-64 bg-white/15 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
+<div class="relative z-10 max-w-xl">
+<h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg font-bold mb-sm">noxh.help trân trọng sự đóng Góp ýủa bạn</h2>
+<p class="font-body-md text-body-md opacity-90">Chúng tôi cảm ơn sự đồng hành của bạn và rất vui khi nhận được những Góp ý để cải thiện tốt hơn cho cộng đồng</p>
+</div>
+<div class="relative z-10 flex flex-col sm:flex-row gap-md w-full md:w-auto flex-shrink-0">
+<button class="bg-white text-primary font-bold shadow-md hover:shadow-lg hover:scale-105 transition-all px-8 py-3.5 rounded-full flex items-center justify-center gap-2 whitespace-nowrap">
+<span class="material-symbols-outlined">rate_review</span>
+                    Góp ý
+                </button>
+<button class="border-2 border-white text-white font-bold bg-white/10 hover:bg-white/20 hover:scale-105 transition-all px-8 py-3.5 rounded-full flex items-center justify-center gap-2 whitespace-nowrap">
+<span class="material-symbols-outlined">handshake</span>
+                    Hỗ trợ Dự án
+                </button>
+</div>
+</section>
+</main>
+
+<!-- Footer -->
+<footer class="w-full py-xl px-6 md:px-12 max-w-5xl mx-auto flex flex-col gap-md bg-surface-container-low border-t border-outline-variant">
+<div class="flex flex-col md:flex-row justify-between items-start gap-lg mb-lg">
+<div class="max-w-xs">
+<div class="flex items-center gap-sm mb-4">
+<span class="font-headline-md text-headline-md text-primary">Vietnam Housing</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Minh bạch, chính xác, cập nhật và miễn phí</p>
+</div>
+<div class="flex flex-col gap-sm">
+<h4 class="font-label-md text-label-md text-on-surface uppercase tracking-wider mb-2">LIÊN KẾT</h4>
+<a class="font-body-md text-body-md text-on-surface-variant hover:underline decoration-primary hover:text-primary transition-all duration-200" href="#">Về chúng tôi</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:underline decoration-primary hover:text-primary transition-all duration-200" href="#">Chính sách bảo mật</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:underline decoration-primary hover:text-primary transition-all duration-200" href="#">Liên hệ hỗ trợ</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:underline decoration-primary hover:text-primary transition-all duration-200" href="#">Điều khoản sử dụng</a>
+</div>
+</div>
+</footer>
+
+<script src="assets/js/location-data.js"></script>
+<script src="assets/js/supabase-config.js"></script>
+<script src="assets/js/supabase-service.js"></script>
+<script src="assets/js/main.js"></script>
+</body></html>

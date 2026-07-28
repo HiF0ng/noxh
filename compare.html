@@ -1,0 +1,120 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>So sánh Dự án - HousingSupportVN</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="assets/js/tailwind-config.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+</head>
+<body class="bg-background text-on-surface antialiased min-h-screen flex flex-col font-body-md">
+
+<!-- TopNavBar -->
+<nav class="top-navbar fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-3 max-w-5xl mx-auto bg-surface-container-lowest rounded-full mt-margin-mobile mx-margin-mobile lg:mt-sm lg:mx-auto shadow-sm">
+<div class="flex items-center gap-sm">
+<span class="font-headline-md text-headline-md font-bold text-primary hidden sm:block">Vietnam Housing</span>
+</div>
+<div class="hidden md:flex items-center gap-lg">
+<a class="nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="homepage.html">Trang chủ</a>
+<a class="nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="all-projects.html">Dự án</a>
+<a class="nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="documents.html">Tài liệu</a>
+<a class="nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="faq.html">Câu hỏi thường gặp</a>
+<a class="nav-link font-label-md text-label-md text-primary border-b-2 border-primary pb-1 font-bold transition-colors active" href="compare.html">So sánh</a>
+</div>
+<div class="flex items-center gap-sm">
+<div class="h-10 w-10 rounded-full overflow-hidden border-2 border-outline-variant bg-surface-container flex items-center justify-center cursor-pointer">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+</div>
+</nav>
+
+<!-- Main Content -->
+<main class="flex-grow">
+<!-- Page Header -->
+<section class="bg-surface-container-low pt-[100px] pb-1 relative overflow-hidden">
+<div class="max-w-3xl mx-auto px-6 md:px-12 text-center relative z-10">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface mb-2">So sánh Dự án</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto mb-4">
+    Lựa chọn và So sánh chi tiết các Dự án Nhà ở xã hội để tìm ra tổ ấm phù hợp nhất với nhu cầu của gia đình bạn.
+</p>
+</div>
+</section>
+
+<!-- Comparison Section -->
+<section class="pt-2 pb-6 max-w-5xl mx-auto px-6 md:px-12">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch" id="compare-grid-container">
+        <!-- Add Project Placeholder Card (Single Slot as originally designed) -->
+        <div class="bg-surface-container-low/50 rounded-xl border-2 border-dashed border-outline-variant flex flex-col items-center justify-center p-6 gap-2.5 hover:bg-surface-container-low transition-colors cursor-pointer min-h-[360px] max-w-sm mx-auto w-full shadow-sm" onclick="openAddCompareModal()">
+            <div class="w-14 h-14 rounded-full bg-surface flex items-center justify-center shadow-sm">
+                <span class="material-symbols-outlined text-primary text-[28px]">add</span>
+            </div>
+            <h3 class="font-headline-md text-base font-bold text-on-surface">Thêm Dự án</h3>
+            <p class="font-body-md text-xs text-on-surface-variant text-center max-w-[200px]">
+                Chọn thêm một Dự án từ hệ thống để So sánh song song.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Add Compare Modal Popup (Moved inside <main> to allow SPA Router tracking) -->
+<div id="add-compare-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeAddCompareModal()"></div>
+    
+    <!-- Modal Content -->
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative z-10 flex flex-col max-h-[85vh] border border-slate-200">
+        <!-- Header -->
+        <div class="flex justify-between items-center pb-3 border-b border-slate-100 mb-4">
+            <div>
+                <h3 class="font-bold text-lg text-slate-900 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-xl">add_task</span>
+                    Thêm dự án để so sánh
+                </h3>
+                <p class="text-xs text-slate-500">Tìm kiếm và chọn dự án bạn muốn so sánh</p>
+            </div>
+            <button onclick="closeAddCompareModal()" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
+                <span class="material-symbols-outlined text-xl">close</span>
+            </button>
+        </div>
+        
+        <!-- Live Search Input -->
+        <div class="relative mb-4 shrink-0">
+            <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+            <input type="text" id="add-compare-search" oninput="filterCompareModalProjects(this.value)" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm font-medium outline-none transition-all" placeholder="Nhập tên dự án để tìm...">
+        </div>
+        
+        <!-- Project List Container -->
+        <div id="add-compare-list" class="flex-grow overflow-y-auto pr-1 flex flex-col gap-2.5 min-h-[200px]">
+            <div class="text-center py-8 text-slate-400 text-xs flex flex-col items-center gap-2">
+                <span class="material-symbols-outlined text-3xl text-slate-300 animate-spin">sync</span>
+                <span>Đang nạp danh sách dự án...</span>
+            </div>
+        </div>
+    </div>
+</div>
+</main>
+
+<!-- Footer -->
+<footer class="w-full py-xl px-6 md:px-12 max-w-5xl mx-auto flex flex-col gap-md bg-surface-container-low border-t border-outline-variant">
+<div class="flex flex-col md:flex-row justify-between items-start gap-lg mb-lg">
+<div class="max-w-xs">
+<div class="flex items-center gap-sm mb-4">
+<span class="font-headline-md text-headline-md text-primary">Vietnam Housing</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Cung cấp thông tin minh bạch, Chính xác và hoàn toàn Miễn phí giúp bạn hiện thực hóa giấc mơ Nhà ở xã hội.</p>
+</div>
+<div class="flex flex-col gap-sm">
+<h4 class="font-label-md text-label-md text-on-surface uppercase tracking-wider mb-2">LIÊN KẾT</h4>
+<a class="font-body-md text-body-md text-on-surface-variant hover:underline decoration-primary hover:text-primary transition-all duration-200" href="#">Về chúng tôi</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:underline decoration-primary hover:text-primary transition-all duration-200" href="#">Chính sách bảo mật</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:underline decoration-primary hover:text-primary transition-all duration-200" href="#">Liên hệ hỗ trợ</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:underline decoration-primary hover:text-primary transition-all duration-200" href="#">Điều khoản sử dụng</a>
+</div>
+</div>
+</footer>
+
+<script src="assets/js/supabase-config.js"></script>
+<script src="assets/js/supabase-service.js"></script>
+<script src="assets/js/main.js"></script>
+</body></html>

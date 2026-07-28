@@ -1,0 +1,277 @@
+<!DOCTYPE html><html class="light" lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Quản lý FAQ - Hỗ trợ Nhà ở Xã hội</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed-dim": "#4edea3",
+                        "surface-variant": "#d3e4fe",
+                        "primary-container": "#2563eb",
+                        "surface-container-low": "#eff4ff",
+                        "tertiary": "#784b00",
+                        "outline-variant": "#c3c6d7",
+                        "surface-container-high": "#dce9ff",
+                        "surface-container": "#e5eeff",
+                        "surface": "#f8f9ff",
+                        "inverse-on-surface": "#eaf1ff",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "on-primary-fixed": "#00174b",
+                        "on-primary-container": "#eeefff",
+                        "on-secondary-container": "#00714d",
+                        "on-error-container": "#93000a",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "surface-tint": "#0053db",
+                        "surface-dim": "#cbdbf5",
+                        "outline": "#737686",
+                        "surface-container-highest": "#d3e4fe",
+                        "surface-bright": "#f8f9ff",
+                        "on-surface-variant": "#434655",
+                        "on-secondary-fixed": "#002113",
+                        "on-background": "#0b1c30",
+                        "tertiary-fixed": "#ffddb8",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed-variant": "#005236",
+                        "on-secondary": "#ffffff",
+                        "inverse-primary": "#b4c5ff",
+                        "secondary-container": "#6cf8bb",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#6ffbbe",
+                        "on-tertiary-fixed": "#2a1700",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-container": "#ffeedd",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "primary-fixed": "#dbe1ff",
+                        "error": "#ba1a1a",
+                        "primary": "#004ac6",
+                        "secondary": "#006c49",
+                        "inverse-surface": "#213145",
+                        "on-surface": "#0b1c30",
+                        "tertiary-container": "#996100",
+                        "background": "#f8f9ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "xl": "64px",
+                        "xs": "8px",
+                        "margin-desktop": "auto",
+                        "base": "4px",
+                        "max-width": "1280px",
+                        "margin-mobile": "16px",
+                        "sm": "16px",
+                        "md": "24px",
+                        "lg": "40px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Be Vietnam Pro"],
+                        "headline-md": ["Be Vietnam Pro"],
+                        "headline-lg-mobile": ["Be Vietnam Pro"],
+                        "headline-lg": ["Be Vietnam Pro"],
+                        "label-md": ["Be Vietnam Pro"],
+                        "display": ["Be Vietnam Pro"],
+                        "label-sm": ["Be Vietnam Pro"],
+                        "body-lg": ["Be Vietnam Pro"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "display": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        body { font-family: 'Be Vietnam Pro', sans-serif; background-color: #f8f9ff; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-64 bg-surface-container-low dark:bg-inverse-surface border-r border-outline-variant dark:border-outline z-50 flex flex-col py-6 px-4">
+<div class="mb-8">
+<h1 class="text-headline-md font-headline-md font-bold text-primary dark:text-inverse-primary truncate">Hỗ trợ Nhà ở Xã hội</h1>
+<p class="text-label-sm font-label-sm text-on-surface-variant mt-1">Cổng Quản trị</p>
+</div>
+<div class="flex flex-col gap-2 flex-grow">
+<!-- Dashboard -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-label-md font-label-md">Tổng quan</span>
+</a>
+<!-- Interface -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors" href="#">
+<span class="material-symbols-outlined">settings_input_component</span>
+<span class="text-label-md font-label-md">Giao diện</span>
+</a>
+<!-- Users -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-label-md font-label-md">Người dùng</span>
+</a>
+<!-- Documents -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="text-label-md font-label-md">Tài liệu</span>
+</a>
+<!-- FAQ (Active) -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-primary dark:text-primary-fixed-dim bg-secondary-container/30 dark:bg-secondary-container/10 font-bold active:scale-95 duration-100 transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">help</span>
+<span class="text-label-md font-label-md">FAQ</span>
+</a>
+</div>
+<div class="mt-auto pt-6 border-t border-outline-variant/50">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden shrink-0">
+<img alt="Admin User Profile" class="w-full h-full object-cover" data-alt="A clean, professional portrait of a customer support administrator. The person is smiling gently, wearing business casual attire. The background is a soft, blurred light blue, conveying trust and professionalism within a modern corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbUyP6BTBqi-Iy5yC2SUk6Pg6mvdVgdoxECqM5PfE0n3lM_51trOksSI8j6spdHafJX_rpGDaoHV_mrSLsXprFAvc1jTOVFFYFX2JoThSzRNp3W8XAL0KAsD4sJouL4NtyBwvw6PVKuFbGYxZF8EKA2IEmdIA2SGuEDFY7PXX3RgO73iH0lLLJAOEFWmf-avVxvfsMGaAP2iM4ZvzI6-3_k6y6iFihkdnLe6PPV54MjjIgacNmnpahMZyr4MuXcnAdh2v7rtVz00wJ">
+</div>
+<div>
+<p class="text-label-md font-label-md text-on-surface">Người quản trị</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Quản lý Hỗ trợ</p>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 ml-64 flex flex-col min-h-screen">
+<!-- TopAppBar -->
+<header class="sticky top-0 w-full h-16 bg-surface-bright dark:bg-background flex items-center justify-between px-8 border-b border-outline-variant dark:border-outline z-40 transition-all duration-200">
+<div class="flex items-center gap-2 text-label-md font-label-md text-on-surface-variant">
+<a class="hover:text-primary transition-colors" href="#">Quản trị</a>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="text-on-surface font-semibold">FAQ</span>
+</div>
+<div class="flex items-center gap-6">
+<!-- Navigation Links -->
+<nav class="hidden md:flex gap-6 text-label-md font-label-md">
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Trang chủ</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Quản trị</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Cổng thông tin</a>
+</nav>
+</div>
+</header>
+<!-- Page Content Canvas -->
+<main class="flex-1 p-gutter max-w-max-width mx-margin-desktop w-full">
+<!-- Page Header -->
+<div class="mb-6">
+<h2 class="text-headline-lg font-headline-lg text-on-surface mb-2">Quản lý FAQ</h2>
+<p class="text-body-md font-body-md text-on-surface-variant">Quản lý các câu hỏi thường gặp, danh mục và phản hồi yêu cầu từ người dùng.</p>
+</div>
+<!-- Filter Buttons -->
+<div class="flex flex-wrap gap-3 mb-8">
+<button class="bg-primary text-on-primary px-5 py-2.5 rounded-full text-label-md font-label-md transition-colors shadow-sm">
+                    Đối tượng thụ hưởng
+                </button>
+<button class="bg-surface-bright text-on-surface px-5 py-2.5 rounded-full text-label-md font-label-md hover:bg-surface-container-low transition-colors border border-outline-variant/50">
+                    Điều kiện, Hồ sơ &amp; Quy trình đăng ký
+                </button>
+<button class="bg-surface-bright text-on-surface px-5 py-2.5 rounded-full text-label-md font-label-md hover:bg-surface-container-low transition-colors border border-outline-variant/50">
+                    Vay vốn &amp; Tài chính
+                </button>
+<button class="bg-surface-bright text-on-surface px-5 py-2.5 rounded-full text-label-md font-label-md hover:bg-surface-container-low transition-colors border border-outline-variant/50">
+                    Quyền sở hữu, Chuyển nhượng &amp; Pháp lý
+                </button>
+</div>
+<!-- FAQ List Layout -->
+<div class="flex flex-col gap-4">
+<!-- FAQ Item 1 (Expanded) -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden">
+<div class="p-4 flex items-center justify-between cursor-pointer hover:bg-surface-container-low transition-colors bg-surface-container-low">
+<div class="flex items-center gap-3 flex-1">
+<span class="material-symbols-outlined text-on-surface-variant">keyboard_arrow_down</span>
+<h3 class="text-label-md font-label-md text-on-surface">Làm thế nào để biết tôi có thuộc đối tượng được mua nhà ở xã hội hay không?</h3>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-full hover:bg-surface-container-high text-on-surface-variant transition-colors" title="Chỉnh sửa">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-2 rounded-full hover:bg-error-container text-error transition-colors" title="Xóa">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+<div class="px-4 pb-4 pl-[52px] bg-surface-container-lowest">
+<p class="text-body-md font-body-md text-on-surface-variant">Theo Điều 49 Luật Nhà ở 2014, có 10 nhóm đối tượng được hưởng chính sách hỗ trợ về nhà ở xã hội. Bao gồm: người có công với cách mạng, hộ nghèo, cận nghèo tại khu vực nông thôn, người lao động đang làm việc tại các doanh nghiệp trong và ngoài khu công nghiệp...</p>
+</div>
+</div>
+<!-- FAQ Item 2 (Collapsed) -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden">
+<div class="p-4 flex items-center justify-between cursor-pointer hover:bg-surface-container-low transition-colors bg-surface-container-low">
+<div class="flex items-center gap-3 flex-1">
+<span class="material-symbols-outlined text-on-surface-variant transform -rotate-90">keyboard_arrow_down</span>
+<h3 class="text-label-md font-label-md text-on-surface">Thu nhập bao nhiêu thì được coi là thu nhập thấp để đủ điều kiện?</h3>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-full hover:bg-surface-container-high text-on-surface-variant transition-colors" title="Chỉnh sửa">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-2 rounded-full hover:bg-error-container text-error transition-colors" title="Xóa">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+</div>
+<!-- FAQ Item 3 (Collapsed) -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden">
+<div class="p-4 flex items-center justify-between cursor-pointer hover:bg-surface-container-low transition-colors bg-surface-container-low">
+<div class="flex items-center gap-3 flex-1">
+<span class="material-symbols-outlined text-on-surface-variant transform -rotate-90">keyboard_arrow_down</span>
+<h3 class="text-label-md font-label-md text-on-surface">Sinh viên có được mua nhà ở xã hội không?</h3>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-full hover:bg-surface-container-high text-on-surface-variant transition-colors" title="Chỉnh sửa">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-2 rounded-full hover:bg-error-container text-error transition-colors" title="Xóa">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+</div>
+<!-- FAQ Item 4 (Collapsed) -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden">
+<div class="p-4 flex items-center justify-between cursor-pointer hover:bg-surface-container-low transition-colors bg-surface-container-low">
+<div class="flex items-center gap-3 flex-1">
+<span class="material-symbols-outlined text-on-surface-variant transform -rotate-90">keyboard_arrow_down</span>
+<h3 class="text-label-md font-label-md text-on-surface">Sĩ quan, quân nhân chuyên nghiệp có được ưu tiên mua nhà ở xã hội không?</h3>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-full hover:bg-surface-container-high text-on-surface-variant transition-colors" title="Chỉnh sửa">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-2 rounded-full hover:bg-error-container text-error transition-colors" title="Xóa">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Add New FAQ Button -->
+<button class="mt-6 w-full border-2 border-dashed border-primary text-primary bg-primary/5 hover:bg-primary/10 py-4 rounded-xl text-label-md font-label-md flex items-center justify-center gap-2 transition-colors">
+                + Thêm FAQ mới
+            </button>
+</main>
+</div>
+
+
+</body></html>

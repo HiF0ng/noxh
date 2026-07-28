@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Central - Hệ thống Hỗ trợ Nhà ở</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+    try {
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "tertiary-container": "#996100",
+                        "tertiary": "#784b00",
+                        "on-error": "#ffffff",
+                        "primary-container": "#2563eb",
+                        "on-primary": "#ffffff",
+                        "surface-bright": "#f8f9ff",
+                        "surface": "#f8f9ff",
+                        "surface-container": "#e5eeff",
+                        "on-tertiary": "#ffffff",
+                        "on-surface-variant": "#434655",
+                        "inverse-surface": "#213145",
+                        "inverse-primary": "#b4c5ff",
+                        "primary": "#004ac6",
+                        "primary-fixed": "#dbe1ff",
+                        "tertiary-fixed": "#ffddb8",
+                        "secondary-container": "#6cf8bb",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#eaf1ff",
+                        "secondary": "#006c49",
+                        "on-surface": "#0b1c30",
+                        "outline": "#737686",
+                        "on-secondary-container": "#00714d",
+                        "background": "#f8f9ff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#eff4ff",
+                        "surface-tint": "#0053db",
+                        "error": "#ba1a1a",
+                        "surface-container-highest": "#d3e4fe",
+                        "surface-dim": "#cbdbf5",
+                        "on-error-container": "#93000a",
+                        "on-background": "#0b1c30",
+                        "surface-container-high": "#dce9ff",
+                        "surface-variant": "#d3e4fe",
+                        "error-container": "#ffdad6",
+                        "on-primary-container": "#eeefff",
+                        "outline-variant": "#c3c6d7"
+                    },
+                    borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+                    spacing: { base: "4px", xl: "64px", sm: "16px", xs: "8px", md: "24px", "margin-mobile": "16px", gutter: "24px", "max-width": "1280px", "margin-desktop": "auto", lg: "40px" },
+                    fontFamily: {
+                        "label-sm": ["Be Vietnam Pro"], "body-lg": ["Be Vietnam Pro"],
+                        "body-md": ["Be Vietnam Pro"], "headline-md": ["Be Vietnam Pro"],
+                        "label-md": ["Be Vietnam Pro"], "display": ["Be Vietnam Pro"],
+                        "headline-lg": ["Be Vietnam Pro"], "headline-lg-mobile": ["Be Vietnam Pro"]
+                    },
+                    fontSize: {
+                        "label-sm": ["12px", { lineHeight: "16px", fontWeight: "500" }],
+                        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+                        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "headline-md": ["24px", { lineHeight: "32px", fontWeight: "600" }],
+                        "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "600" }],
+                        "display": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        "headline-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "700" }],
+                        "headline-lg-mobile": ["28px", { lineHeight: "36px", fontWeight: "700" }]
+                    }
+                }
+            }
+        };
+    } catch(e) {}
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="assets/js/supabase-config.js"></script>
+    <script src="assets/js/supabase-service.js"></script>
+    <link rel="stylesheet" href="assets/css/admin.css">
+</head>
+<body class="admin-body flex h-screen overflow-hidden antialiased bg-background">
+    <!-- Sidebar -->
+    <nav id="admin-sidebar" class="admin-sidebar">
+        <!-- Brand -->
+        <div class="brand">
+            <span class="material-symbols-outlined text-primary mr-3" style="font-size: 28px;">apartment</span>
+            <div>
+                <h1>Admin Central</h1>
+                <p>Hệ thống hỗ trợ nhà ở</p>
+            </div>
+        </div>
+        
+        <div class="admin-nav">
+            <!-- Simple items -->
+            <a class="nav-item active" data-page="dashboard" href="#dashboard">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span>Tổng quan</span>
+            </a>
+            
+            <a class="nav-item" data-page="users" href="#users">
+                <span class="material-symbols-outlined">group</span>
+                <span>Người dùng</span>
+            </a>
+            
+            <!-- Expandable: Dự án -->
+            <div class="nav-parent" data-parent="projects" data-default="projects">
+                <div class="nav-parent-header">
+                    <span class="material-symbols-outlined">home_work</span>
+                    <span class="nav-label">Dự án</span>
+                    <span class="material-symbols-outlined expand-icon">expand_more</span>
+                </div>
+                <div class="nav-submenu">
+                    <a class="nav-submenu-item" data-page="projects" href="#projects">Danh sách</a>
+                    <a class="nav-submenu-item" data-page="projects-new" href="#projects-new">Thêm dự án mới</a>
+                </div>
+            </div>
+            
+            <!-- Expandable: Tài liệu -->
+            <div class="nav-parent" data-parent="docs" data-default="docs">
+                <div class="nav-parent-header">
+                    <span class="material-symbols-outlined">folder_open</span>
+                    <span class="nav-label">Tài liệu</span>
+                    <span class="material-symbols-outlined expand-icon">expand_more</span>
+                </div>
+                <div class="nav-submenu">
+                    <a class="nav-submenu-item" data-page="docs" href="#docs">Danh sách</a>
+                    <a class="nav-submenu-item" data-page="docs-new" href="#docs-new">Tải lên mới</a>
+                    <a class="nav-submenu-item" data-page="docs-guide" href="#docs-guide">Hướng dẫn</a>
+                </div>
+            </div>
+            
+            <!-- Simple: FAQ -->
+            <a class="nav-item" data-page="faq" href="#faq">
+                <span class="material-symbols-outlined">quiz</span>
+                <span>FAQ</span>
+            </a>
+            
+            <!-- Expandable: Tin tức -->
+            <div class="nav-parent" data-parent="news" data-default="news">
+                <div class="nav-parent-header">
+                    <span class="material-symbols-outlined">newspaper</span>
+                    <span class="nav-label">Tin tức</span>
+                    <span class="material-symbols-outlined expand-icon">expand_more</span>
+                </div>
+                <div class="nav-submenu">
+                    <a class="nav-submenu-item" data-page="news" href="#news">Tin tức</a>
+                    <a class="nav-submenu-item" data-page="news-new" href="#news-new">Tạo tin mới</a>
+                </div>
+            </div>
+            
+            <!-- Red Bordered Logout Button -->
+            <div class="pt-6 mt-6 border-t border-outline-variant/40 px-2">
+                <button type="button" id="btn-admin-logout" onclick="handleAdminLogout()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border-2 border-error/50 text-error hover:bg-error hover:text-white font-semibold text-sm transition-all duration-200 shadow-xs cursor-pointer group">
+                    <span class="material-symbols-outlined text-[20px] transition-transform group-hover:-translate-x-0.5">logout</span>
+                    <span>Đăng xuất</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main wrapper -->
+    <div class="admin-main-wrapper">
+        <!-- Header with breadcrumb -->
+        <header class="admin-header">
+            <div class="flex items-center">
+                <button id="sidebar-toggle" class="md:hidden mr-4 p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+                <div id="breadcrumb" class="breadcrumb">Tổng quan</div>
+            </div>
+        </header>
+        
+        <!-- Content area -->
+        <main class="admin-content flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 w-full">
+            <!-- PAGE: DASHBOARD -->
+            <section id="page-dashboard" class="page-section active w-full">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-semibold text-on-surface mb-1">Xin chào, Admin</h2>
+                    <p class="text-on-surface-variant">Dưới đây là tổng quan về hoạt động hệ thống của bạn.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-on-surface-variant mb-1">Lượng truy cập 30 ngày</p>
+                            <h3 id="dash-stat-visits" class="text-2xl font-bold text-on-surface">--</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-primary-fixed text-primary rounded-full flex items-center justify-center">
+                            <span class="material-symbols-outlined">visibility</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-on-surface-variant mb-1">Thời gian trung bình</p>
+                            <h3 id="dash-stat-duration" class="text-2xl font-bold text-on-surface">--</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-primary-fixed text-primary rounded-full flex items-center justify-center">
+                            <span class="material-symbols-outlined">schedule</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-on-surface-variant mb-1">Tỷ lệ thoát</p>
+                            <h3 id="dash-stat-bounce" class="text-2xl font-bold text-on-surface">--</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-primary-fixed text-primary rounded-full flex items-center justify-center">
+                            <span class="material-symbols-outlined">trending_down</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-on-surface-variant mb-1">User chưa đăng ký</p>
+                            <h3 id="dash-stat-unreg" class="text-2xl font-bold text-on-surface">--</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-primary-fixed text-primary rounded-full flex items-center justify-center">
+                            <span class="material-symbols-outlined">person_off</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-on-surface-variant mb-1">User đã đăng ký</p>
+                            <h3 id="dash-stat-reg" class="text-2xl font-bold text-on-surface">--</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-primary-fixed text-primary rounded-full flex items-center justify-center">
+                            <span class="material-symbols-outlined">how_to_reg</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-on-surface-variant mb-1">Lượt yêu cầu hỗ trợ</p>
+                            <h3 id="dash-stat-support" class="text-2xl font-bold text-on-surface">--</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-primary-fixed text-primary rounded-full flex items-center justify-center">
+                            <span class="material-symbols-outlined">support_agent</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <!-- Chart 1: Tăng trưởng truy cập -->
+                    <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-semibold text-on-surface">Tăng trưởng truy cập trong 60 ngày</h3>
+                        </div>
+                        <div class="w-full h-[300px]">
+                            <canvas id="applicationsChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart 2: Tăng trưởng người đăng ký -->
+                    <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-semibold text-on-surface">Tăng trưởng người đăng ký</h3>
+                        </div>
+                        <div class="w-full h-[300px]">
+                            <canvas id="registeredUsersChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden mb-8">
+                    <div class="p-6 border-b border-outline-variant flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-on-surface">Dự án được quan tâm</h3>
+                        <a href="#projects" class="text-primary font-medium hover:bg-surface-container px-3 py-1.5 rounded-lg transition-colors text-sm inline-block">Xem tất cả</a>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-surface-container-low text-on-surface-variant text-sm font-medium">
+                                    <th class="p-4 border-b border-outline-variant font-medium">ID</th>
+                                    <th class="p-4 border-b border-outline-variant font-medium">Tên dự án</th>
+                                    <th class="p-4 border-b border-outline-variant font-medium">Địa điểm</th>
+                                    <th class="p-4 border-b border-outline-variant font-medium whitespace-nowrap min-w-[150px]">Trạng thái</th>
+                                    <th class="p-4 border-b border-outline-variant font-medium text-right whitespace-nowrap">Lượt xem</th>
+                                </tr>
+                            </thead>
+                                <tr>
+                                    <td colspan="5" class="p-8 text-center text-on-surface-variant text-sm">Không có dữ liệu</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- PAGE: USERS -->
+            <section id="page-users" class="page-section w-full">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                    <div>
+                        <h2 class="text-2xl font-semibold text-on-surface mb-1">Quản lý Người dùng</h2>
+                        <p class="text-on-surface-variant text-sm">Quản lý và giám sát tài khoản người dùng trên hệ thống.</p>
+                    </div>
+                    <button id="btn-export-xlsx" class="bg-primary hover:bg-surface-tint text-on-primary font-medium py-2 px-4 rounded-lg flex items-center gap-2 transition-colors w-fit">
+                        <span class="material-symbols-outlined text-sm">download</span>
+                        <span>Xuất ra XLSX</span>
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-primary-fixed text-primary flex items-center justify-center">
+                            <span class="material-symbols-outlined">group</span>
+                        </div>
+                        <div>
+                            <p class="text-sm text-on-surface-variant">Tổng số người dùng</p>
+                            <h3 id="user-stat-total" class="text-2xl font-bold text-on-surface">--</h3>
+                        </div>
+                    </div>
+                    <div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center">
+                            <span class="material-symbols-outlined">how_to_reg</span>
+                        </div>
+                        <div>
+                            <p class="text-sm text-on-surface-variant">Đang hoạt động</p>
+                            <h3 class="text-2xl font-bold text-on-surface">--</h3>
+                        </div>
+                    </div>
+                    <div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-tertiary-fixed text-tertiary flex items-center justify-center">
+                            <span class="material-symbols-outlined">person_add</span>
+                        </div>
+                        <div>
+                            <p class="text-sm text-on-surface-variant">Đã đăng ký mới (30 ngày)</p>
+                            <h3 class="text-2xl font-bold text-on-surface">--</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden mb-8">
+                    <div class="p-4 border-b border-outline-variant flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div class="relative w-full sm:w-96">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+                            <input id="user-search-input" type="text" placeholder="Tìm kiếm theo tên, email, SĐT..." class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all">
+                        </div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                            <span id="user-search-count" class="text-xs text-on-surface-variant hidden sm:inline"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[800px]">
+                            <thead>
+                                <tr class="bg-surface-container-low text-on-surface-variant text-sm">
+                                    <th class="p-4 border-b border-outline-variant font-medium w-12 text-center">
+                                        <input type="checkbox" class="rounded border-outline-variant text-primary focus:ring-primary">
+                                    </th>
+                                    <th class="p-4 border-b border-outline-variant font-medium">Người dùng</th>
+                                    <th class="p-4 border-b border-outline-variant font-medium">Email & Số điện thoại</th>
+                                    <th class="p-4 border-b border-outline-variant font-medium">Ngày tham gia</th>
+                                    <th class="p-4 border-b border-outline-variant font-medium text-right">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="user-table-tbody">
+                                <!-- Populated dynamically by admin.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="p-4 border-t border-outline-variant flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-on-surface-variant">
+                        <p id="user-pagination-info">Hiển thị 1 đến 5 của 12,450 mục</p>
+                        <div class="flex items-center gap-1">
+                            <button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-surface-container disabled:opacity-50" disabled>
+                                <span class="material-symbols-outlined text-sm">chevron_left</span>
+                            </button>
+                            <button class="w-8 h-8 flex items-center justify-center rounded bg-primary text-on-primary font-medium">1</button>
+                            <button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-surface-container">2</button>
+                            <button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-surface-container">3</button>
+                            <span class="w-8 h-8 flex items-center justify-center">...</span>
+                            <button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-surface-container">
+                                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Confirmation Modal -->
+                <div id="user-confirm-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden p-4">
+                    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 max-w-md w-full shadow-lg text-center">
+                        <div class="w-12 h-12 rounded-full bg-primary-fixed text-primary flex items-center justify-center mx-auto mb-4">
+                            <span class="material-symbols-outlined text-2xl">help_outline</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-on-surface mb-2">Xác nhận thông tin</h3>
+                        <p class="text-sm text-on-surface-variant mb-6">Hãy chắc chắn thông tin là chính xác trước khi tiến hành lưu.</p>
+                        <div class="flex items-center justify-center gap-3">
+                            <button id="modal-btn-continue-edit" class="px-4 py-2 border border-outline-variant text-on-surface rounded-lg text-sm font-medium hover:bg-surface-container transition-colors">
+                                Chỉnh sửa tiếp
+                            </button>
+                            <button id="modal-btn-save-info" class="px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors shadow-sm">
+                                Lưu thông tin
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- PAGE: PROJECTS -->
+            <section id="page-projects" class="page-section w-full">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                    <div>
+                        <h2 class="text-2xl font-semibold text-on-surface mb-1">Quản lý Dự án</h2>
+                        <p class="text-on-surface-variant text-sm">Quản lý danh sách và tiến độ các dự án nhà ở xã hội.</p>
+                    </div>
+                    <button onclick="location.hash='#projects-new'" class="bg-primary hover:bg-surface-tint text-on-primary font-medium py-2 px-4 rounded-lg flex items-center gap-2 transition-colors w-fit">
+                        <span class="material-symbols-outlined text-sm">add</span>
+                        <span>Thêm dự án mới</span>
+                    </button>
+                </div>
+                
+                <div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden mb-8">
+                    <div class="p-4 border-b border-outline-variant flex flex-col md:flex-row gap-4">
+                        <div class="relative flex-1">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+                            <input id="admin-project-search" type="text" placeholder="Tìm kiếm dự án (Tên, Vị trí, Chủ đầu tư, ID)..." class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all">
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <select id="admin-project-filter-location" class="px-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg text-sm focus:outline-none focus:border-primary cursor-pointer">
+                                <option value="">Tất cả Vị trí</option>
+                                <option value="Long Biên, Hà Nội">Long Biên, Hà Nội</option>
+                                <option value="Hoàng Mai, Hà Nội">Hoàng Mai, Hà Nội</option>
+                                <option value="Nam Từ Liêm, Hà Nội">Nam Từ Liêm, Hà Nội</option>
+                                <option value="Gia Lâm, Hà Nội">Gia Lâm, Hà Nội</option>
+                                <option value="Mê Linh, Hà Nội">Mê Linh, Hà Nội</option>
+                            </select>
+                            <select id="admin-project-filter-status" class="px-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg text-sm focus:outline-none focus:border-primary cursor-pointer">
+                                <option value="">Tất cả Trạng thái</option>
+                                <option value="Chờ xây dựng">Chờ xây dựng</option>
+                                <option value="Đang xây dựng">Đang xây dựng</option>
+                                <option value="Đang nhận đơn">Đang nhận đơn</option>
+                                <option value="Chờ bàn giao">Chờ bàn giao</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[850px]">
+                            <thead>
+                                <tr class="bg-surface-container-low text-on-surface-variant text-sm">
+                                    <th class="p-4 border-b border-outline-variant font-medium whitespace-nowrap">ID</th>
+                                    <th class="p-4 border-b border-outline-variant font-medium">Tên dự án</th>
+                                    <th class="p-4 border-b border-outline-variant font-medium">Vị trí</th>
+                                    <th class="p-4 border-b border-outline-variant font-medium">Chủ đầu tư</th>
+                                    <th class="p-4 border-b border-outline-variant font-medium whitespace-nowrap min-w-[150px]">Trạng thái</th>
+                                    <th class="p-4 border-b border-outline-variant font-medium text-right whitespace-nowrap">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-projects-tbody">
+                                <!-- Populated dynamically by admin.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="p-4 border-t border-outline-variant flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-on-surface-variant">
+                        <p>Hiển thị 1 đến 3 của 15 mục</p>
+                        <div class="flex items-center gap-1">
+                            <button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-surface-container disabled:opacity-50" disabled>
+                                <span class="material-symbols-outlined text-sm">chevron_left</span>
+                            </button>
+                            <button class="w-8 h-8 flex items-center justify-center rounded bg-primary text-on-primary">1</button>
+                            <button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-surface-container">2</button>
+                            <button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-surface-container">
+                                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- PAGE: PROJECTS NEW -->
+            <section id="page-projects-new" class="page-section w-full">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                    <div>
+                        <h2 id="prj-form-header-title" class="text-2xl font-semibold text-on-surface mb-1">Thông tin chi tiết Dự án</h2>
+                        <p class="text-on-surface-variant text-sm">Thêm mới hoặc chỉnh sửa thông tin dự án.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button id="btn-cancel-project-form" class="px-4 py-2 border border-outline-variant text-on-surface-variant font-medium rounded-lg hover:bg-surface-container transition-colors cursor-pointer">Hủy</button>
+                        <button id="btn-save-project-form" class="bg-primary hover:bg-surface-tint text-on-primary font-medium py-2 px-6 rounded-lg transition-colors shadow-sm cursor-pointer">Lưu dự án</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <!-- Left 2/3 -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <!-- Thông tin cơ bản -->
+                        <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
+                            <h3 class="text-lg font-semibold text-on-surface mb-4">Thông tin cơ bản</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-on-surface mb-1">Tên dự án <span class="text-error">*</span></label>
+                                    <input id="prj-input-name" type="text" class="w-full px-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg focus:outline-none focus:border-primary" placeholder="Nhập tên dự án">
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-on-surface mb-1">Chủ đầu tư</label>
+                                        <input id="prj-input-owner" type="text" class="w-full px-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg focus:outline-none focus:border-primary" placeholder="Tên chủ đầu tư">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-on-surface mb-1">Trạng thái</label>
+                                        <select id="prj-select-status" class="w-full px-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg focus:outline-none focus:border-primary">
+                                            <option>Chờ xây dựng</option>
+                                            <option>Đang xây dựng</option>
+                                            <option>Đang nhận đơn</option>
+                                            <option>Chờ bàn giao</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-on-surface mb-1">Mô tả dự án</label>
+                                    <textarea id="prj-textarea-desc" rows="4" class="w-full px-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg focus:outline-none focus:border-primary" placeholder="Nhập mô tả chi tiết..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tiện ích nổi bật -->
+                        <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
+                            <h3 class="text-lg font-semibold text-on-surface mb-4">Tiện ích nổi bật</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                <div class="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-surface-container-low border border-transparent focus-within:border-primary transition-all">
+                                    <input type="checkbox" class="text-primary rounded border-outline focus:ring-primary h-4 w-4 cursor-pointer flex-shrink-0">
+                                    <input type="text" value="" class="w-full bg-transparent border-0 focus:ring-0 focus:outline-none text-sm font-medium text-on-surface placeholder:text-on-surface-variant/50 placeholder:font-normal" placeholder="Thêm tiện ích...">
+                                </div>
+                                <div class="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-surface-container-low border border-transparent focus-within:border-primary transition-all">
+                                    <input type="checkbox" class="text-primary rounded border-outline focus:ring-primary h-4 w-4 cursor-pointer flex-shrink-0">
+                                    <input type="text" value="" class="w-full bg-transparent border-0 focus:ring-0 focus:outline-none text-sm font-medium text-on-surface placeholder:text-on-surface-variant/50 placeholder:font-normal" placeholder="Thêm tiện ích...">
+                                </div>
+                                <div class="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-surface-container-low border border-transparent focus-within:border-primary transition-all">
+                                    <input type="checkbox" class="text-primary rounded border-outline focus:ring-primary h-4 w-4 cursor-pointer flex-shrink-0">
+                                    <input type="text" value="" class="w-full bg-transparent border-0 focus:ring-0 focus:outline-none text-sm font-medium text-on-surface placeholder:text-on-surface-variant/50 placeholder:font-normal" placeholder="Thêm tiện ích...">
+                                </div>
+                                <div class="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-surface-container-low border border-transparent focus-within:border-primary transition-all">
+                                    <input type="checkbox" class="text-primary rounded border-outline focus:ring-primary h-4 w-4 cursor-pointer flex-shrink-0">
+                                    <input type="text" value="" class="w-full bg-transparent border-0 focus:ring-0 focus:outline-none text-sm font-medium text-on-surface placeholder:text-on-surface-variant/50 placeholder:font-normal" placeholder="Thêm tiện ích...">
+                                </div>
+                                <div class="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-surface-container-low border border-transparent focus-within:border-primary transition-all">
+                                    <input type="checkbox" class="text-primary rounded border-outline focus:ring-primary h-4 w-4 cursor-pointer flex-shrink-0">
+                                    <input type="text" value="" class="w-full bg-transparent border-0 focus:ring-0 focus:outline-none text-sm font-medium text-on-surface placeholder:text-on-surface-variant/50 placeholder:font-normal" placeholder="Thêm tiện ích...">
+                                </div>
+                                <div class="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-surface-container-low border border-transparent focus-within:border-primary transition-all">
+                                    <input type="checkbox" class="text-primary rounded border-outline focus:ring-primary h-4 w-4 cursor-pointer flex-shrink-0">
+                                    <input type="text" value="" class="w-full bg-transparent border-0 focus:ring-0 focus:outline-none text-sm font-medium text-on-surface placeholder:text-on-surface-variant/50 placeholder:font-normal" placeholder="Thêm tiện ích...">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section: Mặt bằng căn hộ -->
+                        <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-semibold text-on-surface">Mặt bằng căn hộ</h3>
+                                <!-- Toggle Switch ON/OFF -->
+                                <label class="relative inline-flex items-center cursor-pointer" title="Bật/Tắt hiển thị Mặt bằng căn hộ">
+                                    <input type="checkbox" checked class="sr-only peer">
+                                    <div class="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
+                            
+                            <div id="floorplans-container" class="space-y-4 mb-4">
+                                <div class="floorplan-item p-4 border border-outline-variant rounded-xl bg-surface-container-low relative space-y-3">
+                                    <button type="button" class="btn-remove-floorplan absolute top-3 right-3 w-7 h-7 bg-error/10 hover:bg-error text-error hover:text-white rounded-full flex items-center justify-center transition-all z-10" title="Xóa mặt bằng">
+                                        <span class="material-symbols-outlined text-sm font-bold">close</span>
+                                    </button>
+                                    <input type="file" accept="image/*" class="hidden floorplan-file-input">
+                                    <div class="floorplan-upload-box border-2 border-dashed border-outline-variant rounded-xl p-6 text-center bg-surface-container-lowest hover:bg-surface-container hover:border-primary transition-all cursor-pointer relative group">
+                                        <img src="" class="floorplan-img-preview w-full h-40 object-cover rounded-lg mb-2 hidden">
+                                        <div class="floorplan-placeholder-content">
+                                            <span class="material-symbols-outlined text-4xl text-primary mb-1">map</span>
+                                            <p class="text-xs text-on-surface font-semibold">Kéo thả hoặc click để tải ảnh mặt bằng</p>
+                                            <p class="text-[11px] text-on-surface-variant mt-0.5">PNG, JPG, tối đa 5MB</p>
+                                        </div>
+                                    </div>
+                                    <input type="text" placeholder="Ghi chú thông tin mặt bằng (vd: Mặt bằng tổng thể Tòa A, căn hộ 2 phòng ngủ)..." class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-xs text-on-surface focus:outline-none focus:border-primary">
+                                </div>
+                            </div>
+
+                            <button id="btn-add-floorplan" type="button" class="w-full py-2.5 border border-dashed border-primary text-primary font-medium rounded-xl hover:bg-primary/5 transition-colors text-sm flex items-center justify-center gap-2 cursor-pointer">
+                                <span class="material-symbols-outlined text-sm">add_circle</span> Thêm ảnh mặt bằng
+                            </button>
+                        </div>
+
+                        <!-- Section: Vị trí Dự án -->
+                        <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-semibold text-on-surface">Vị trí Dự án</h3>
+                                <!-- Toggle Switch ON/OFF -->
+                                <label class="relative inline-flex items-center cursor-pointer" title="Bật/Tắt hiển thị Vị trí Dự án">
+                                    <input type="checkbox" checked class="sr-only peer">
+                                    <div class="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-on-surface mb-1">Ảnh sơ đồ / Bản đồ vị trí</label>
+                                    <input id="location-map-file-input" type="file" accept="image/*" class="hidden">
+                                    <div id="location-map-upload-box" class="border-2 border-dashed border-outline-variant rounded-xl p-6 text-center bg-surface-container-low hover:bg-surface-container hover:border-primary transition-all cursor-pointer relative group">
+                                        <img id="location-map-img-preview" src="" class="w-full h-36 object-cover rounded-lg mb-2 hidden">
+                                        <div id="location-map-placeholder">
+                                            <span class="material-symbols-outlined text-4xl text-on-surface-variant mb-1">location_on</span>
+                                            <p class="text-sm text-on-surface font-medium">Kéo thả hoặc click để tải lên ảnh bản đồ vị trí</p>
+                                            <p class="text-xs text-on-surface-variant mt-1">PNG, JPG, tối đa 5MB</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-on-surface mb-1">Địa chỉ chi tiết</label>
+                                    <input type="text" class="w-full px-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg focus:outline-none focus:border-primary" placeholder="Số nhà, đường, phường/xã...">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-on-surface mb-1">Link Google Maps</label>
+                                    <input type="url" class="w-full px-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg focus:outline-none focus:border-primary" placeholder="https://maps.google.com/...">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right 1/3 -->
+                    <div class="space-y-6">
+                        <!-- Ảnh đại diện -->
+                        <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
+                            <h3 class="text-lg font-semibold text-on-surface mb-4">Ảnh đại diện dự án</h3>
+                            <input id="prj-main-image-input" type="file" accept="image/*" class="hidden" onchange="previewMainImage(this)">
+                            <div id="prj-main-image-box" onclick="document.getElementById('prj-main-image-input').click()" class="aspect-video w-full bg-surface-container rounded-xl overflow-hidden mb-3 relative group cursor-pointer border border-outline-variant hover:border-primary transition-all">
+                                <img id="prj-main-image-preview" src="https://placehold.co/600x400/e5eeff/004ac6?text=Ảnh+đại+diện" alt="Preview" class="w-full h-full object-cover transition-opacity group-hover:opacity-70">
+                                <div class="absolute inset-0 bg-inverse-surface/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <span class="material-symbols-outlined text-white text-3xl mb-1">photo_camera</span>
+                                    <span class="text-white text-xs font-semibold px-3 py-1 bg-black/50 rounded-full">Tải lên / Đổi ảnh khác</span>
+                                </div>
+                            </div>
+                            <p class="text-xs text-on-surface-variant text-center">Nên sử dụng ảnh tỉ lệ 16:9, độ phân giải cao</p>
+                        </div>
+
+                        <!-- Thư viện ảnh -->
+                        <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
+                            <h3 class="text-lg font-semibold text-on-surface mb-4">Thư viện ảnh</h3>
+                            
+                            <!-- Dynamic Gallery Container with 2 default boxes + '+' box -->
+                            <div id="gallery-container" class="grid grid-cols-2 gap-3">
+                                <!-- Box 1 -->
+                                <div class="gallery-item aspect-square bg-surface-container rounded-xl overflow-hidden relative group cursor-pointer border border-outline-variant hover:border-primary transition-all" onclick="triggerGalleryUpload(this, event)">
+                                    <input type="file" accept="image/*" class="hidden gallery-file-input" onchange="previewGalleryImage(this)">
+                                    <img src="https://placehold.co/300x300/e5eeff/004ac6?text=Ảnh+1" class="gallery-img-preview w-full h-full object-cover group-hover:opacity-75 transition-opacity">
+                                    <div class="gallery-upload-overlay absolute inset-0 bg-inverse-surface/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <span class="material-symbols-outlined text-white text-2xl">photo_camera</span>
+                                        <span class="text-[11px] text-white font-medium mt-1">Đổi ảnh</span>
+                                    </div>
+                                    <button type="button" onclick="removeGalleryItem(this, event)" class="btn-remove-gallery absolute top-2 right-2 w-7 h-7 bg-error text-white rounded-full flex items-center justify-center hover:bg-error/90 transition-transform hover:scale-110 z-20" title="Xóa ảnh">
+                                        <span class="material-symbols-outlined text-sm font-bold">close</span>
+                                    </button>
+                                </div>
+                                
+                                <!-- Box 2 -->
+                                <div class="gallery-item aspect-square bg-surface-container rounded-xl overflow-hidden relative group cursor-pointer border border-outline-variant hover:border-primary transition-all" onclick="triggerGalleryUpload(this, event)">
+                                    <input type="file" accept="image/*" class="hidden gallery-file-input" onchange="previewGalleryImage(this)">
+                                    <img src="https://placehold.co/300x300/e5eeff/004ac6?text=Ảnh+2" class="gallery-img-preview w-full h-full object-cover group-hover:opacity-75 transition-opacity">
+                                    <div class="gallery-upload-overlay absolute inset-0 bg-inverse-surface/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <span class="material-symbols-outlined text-white text-2xl">photo_camera</span>
+                                        <span class="text-[11px] text-white font-medium mt-1">Đổi ảnh</span>
+                                    </div>
+                                    <button type="button" onclick="removeGalleryItem(this, event)" class="btn-remove-gallery absolute top-2 right-2 w-7 h-7 bg-error text-white rounded-full flex items-center justify-center hover:bg-error/90 transition-transform hover:scale-110 z-20" title="Xóa ảnh">
+                                        <span class="material-symbols-outlined text-sm font-bold">close</span>
+                                    </button>
+                                </div>
+
+                                <!-- Box Add New '+' -->
+                                <div id="btn-add-gallery-box" onclick="addGalleryBox(event)" class="aspect-square rounded-xl border-2 border-dashed border-primary/40 bg-primary/5 hover:bg-primary/10 hover:border-primary transition-all flex flex-col items-center justify-center cursor-pointer text-primary p-2 group" title="Thêm ảnh mới vào thư viện">
+                                    <span class="material-symbols-outlined text-3xl group-hover:scale-110 transition-transform">add_circle</span>
+                                    <span class="text-xs font-semibold mt-1">Thêm ảnh</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Trạng thái -->
+                        <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
+                            <h3 class="text-lg font-semibold text-on-surface mb-4">Trạng thái</h3>
+                            <div class="space-y-5">
+                                <!-- Status 1 -->
+                                <div class="space-y-2">
+                                    <label class="flex items-center gap-2 cursor-pointer select-none">
+                                        <input type="checkbox" checked class="text-primary rounded border-outline focus:ring-primary h-4.5 w-4.5 cursor-pointer">
+                                        <span class="font-bold text-sm text-on-surface">Chờ xây dựng</span>
+                                    </label>
+                                    <input type="text" placeholder="Nhập ghi chú / thông tin chi tiết..." value="" class="w-full px-3.5 py-2 bg-surface-container-low border border-outline-variant rounded-lg text-sm text-on-surface focus:outline-none focus:border-primary transition-all">
+                                </div>
+
+                                <!-- Status 2 -->
+                                <div class="space-y-2">
+                                    <label class="flex items-center gap-2 cursor-pointer select-none">
+                                        <input type="checkbox" checked class="text-primary rounded border-outline focus:ring-primary h-4.5 w-4.5 cursor-pointer">
+                                        <span class="font-bold text-sm text-on-surface">Đang xây dựng</span>
+                                    </label>
+                                    <input type="text" placeholder="Nhập ghi chú / thông tin chi tiết..." value="" class="w-full px-3.5 py-2 bg-surface-container-low border border-outline-variant rounded-lg text-sm text-on-surface focus:outline-none focus:border-primary transition-all">
+                                </div>
+
+                                <!-- Status 3 -->
+                                <div class="space-y-2">
+                                    <label class="flex items-center gap-2 cursor-pointer select-none">
+                                        <input type="checkbox" class="text-primary rounded border-outline focus:ring-primary h-4.5 w-4.5 cursor-pointer">
+                                        <span class="font-bold text-sm text-on-surface">Đang nhận đơn</span>
+                                    </label>
+                                    <input type="text" placeholder="Nhập ghi chú / thông tin chi tiết..." value="" class="w-full px-3.5 py-2 bg-surface-container-low border border-outline-variant rounded-lg text-sm text-on-surface focus:outline-none focus:border-primary transition-all">
+                                </div>
+
+                                <!-- Status 4 -->
+                                <div class="space-y-2">
+                                    <label class="flex items-center gap-2 cursor-pointer select-none">
+                                        <input type="checkbox" class="text-primary rounded border-outline focus:ring-primary h-4.5 w-4.5 cursor-pointer">
+                                        <span class="font-bold text-sm text-on-surface">Chờ bàn giao</span>
+                                    </label>
+                                    <input type="text" placeholder="Nhập ghi chú / thông tin chi tiết..." value="" class="w-full px-3.5 py-2 bg-surface-container-low border border-outline-variant rounded-lg text-sm text-on-surface focus:outline-none focus:border-primary transition-all">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- PAGE: DOCS -->
+            <section id="page-docs" class="page-section w-full">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                    <div>
+                        <h2 class="text-2xl font-semibold text-on-surface mb-1">Quản lý Tài liệu</h2>
+                        <p class="text-on-surface-variant text-sm">Quản lý và tổ chức các tài liệu, biểu mẫu trong hệ thống.</p>
+                    </div>
+                    <button onclick="location.hash='#docs-new'" class="bg-primary hover:bg-surface-tint text-on-primary font-medium py-2 px-4 rounded-lg flex items-center gap-2 transition-colors w-fit">
+                        <span class="material-symbols-outlined text-sm">upload_file</span>
+                        <span>Tải lên tài liệu</span>
+                    </button>
+                </div>
+                
+                <div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-outline-variant flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div class="relative w-full sm:w-80">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+                            <input type="text" placeholder="Tìm kiếm tài liệu..." class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg text-sm focus:outline-none focus:border-primary transition-all">
+                        </div>
+                        <div class="relative w-full sm:w-auto" id="docs-filter-container">
+                            <button type="button" id="docs-filter-btn" class="w-full sm:w-auto flex items-center justify-between gap-2 px-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg text-sm font-medium text-on-surface hover:bg-surface-container transition-colors cursor-pointer">
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-sm text-on-surface-variant">filter_list</span>
+                                    <span id="docs-filter-label">Lọc: Tất cả</span>
+                                </div>
+                                <span class="material-symbols-outlined text-sm text-on-surface-variant transition-transform duration-200" id="docs-filter-arrow">expand_more</span>
+                            </button>
+                            
+                            <div id="docs-filter-menu" class="absolute right-0 mt-2 w-44 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg hidden flex-col py-1 z-50">
+                                <button type="button" class="docs-filter-option w-full px-4 py-2.5 text-left text-sm text-on-surface hover:bg-surface-container-low transition-colors flex items-center justify-between font-medium active" data-value="all">
+                                    <span>Tất cả</span>
+                                    <span class="material-symbols-outlined text-primary text-sm check-icon">check</span>
+                                </button>
+                                <button type="button" class="docs-filter-option w-full px-4 py-2.5 text-left text-sm text-on-surface hover:bg-surface-container-low transition-colors flex items-center justify-between font-medium" data-value="Đơn mua">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-2 h-2 rounded-full bg-primary"></span>
+                                        <span>Đơn mua</span>
+                                    </div>
+                                    <span class="material-symbols-outlined text-primary text-sm check-icon hidden">check</span>
+                                </button>
+                                <button type="button" class="docs-filter-option w-full px-4 py-2.5 text-left text-sm text-on-surface hover:bg-surface-container-low transition-colors flex items-center justify-between font-medium" data-value="Đơn thuê">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                        <span>Đơn thuê</span>
+                                    </div>
+                                    <span class="material-symbols-outlined text-primary text-sm check-icon hidden">check</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[700px]">
+                            <thead>
+                                <tr class="bg-surface-container-low text-on-surface-variant text-sm">
+                                    <th class="p-4 border-b border-outline-variant font-medium text-center">Tên tài liệu</th>
+                                    <th class="p-4 border-b border-outline-variant font-medium text-center">Loại đơn</th>
+                                    <th class="p-4 border-b border-outline-variant font-medium text-center">Loại tài liệu</th>
+                                    <th class="p-4 border-b border-outline-variant font-medium text-center">Ngày tạo</th>
+                                    <th class="p-4 border-b border-outline-variant font-medium text-center">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="5" class="p-8 text-center text-on-surface-variant text-sm">Không có tài liệu nào</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="p-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-on-surface-variant">
+                        <p>Hiển thị 1 đến 3 của 42 mục</p>
+                        <div class="flex items-center gap-1">
+                            <button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-surface-container disabled:opacity-50" disabled>
+                                <span class="material-symbols-outlined text-sm">chevron_left</span>
+                            </button>
+                            <button class="w-8 h-8 flex items-center justify-center rounded bg-primary text-on-primary">1</button>
+                            <button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-surface-container">2</button>
+                            <span class="w-8 h-8 flex items-center justify-center">...</span>
+                            <button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-surface-container">
+                                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- PAGE: DOCS NEW -->
+            <section id="page-docs-new" class="page-section w-full">
+                <div class="mb-6 flex items-center text-sm text-on-surface-variant gap-2">
+                    <a href="#docs" class="hover:text-primary transition-colors">Tài liệu</a>
+                    <span class="material-symbols-outlined text-sm">chevron_right</span>
+                    <span class="text-on-surface font-medium">Tải lên tài liệu</span>
+                </div>
+                
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                    <h2 class="text-2xl font-semibold text-on-surface">Tải lên tài liệu mới</h2>
+                    <div class="flex items-center gap-3">
+                        <button onclick="location.hash='#docs'" class="px-4 py-2 border border-outline-variant text-on-surface-variant font-medium rounded-lg hover:bg-surface-container transition-colors">Lưu nháp</button>
+                        <button class="bg-primary hover:bg-surface-tint text-on-primary font-medium py-2 px-6 rounded-lg transition-colors shadow-sm">Lưu tài liệu</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
+                            <h3 class="text-lg font-semibold text-on-surface mb-4">Thông tin chung</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-on-surface mb-1">Tên tài liệu</label>
+                                    <input type="text" class="w-full px-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg focus:outline-none focus:border-primary" placeholder="Ví dụ: Đơn đăng ký thuê mua">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-on-surface mb-1">Danh mục</label>
+                                    <select class="w-full px-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg focus:outline-none focus:border-primary">
+                                        <option value="Đơn mua">Đơn mua</option>
+                                        <option value="Đơn thuê">Đơn thuê</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-on-surface mb-1">Nội dung</label>
+                                    <textarea rows="3" class="w-full px-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg focus:outline-none focus:border-primary" placeholder="Nhập nội dung tài liệu..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
+                            <h3 class="text-lg font-semibold text-on-surface mb-4">Tập tin đính kèm</h3>
+                            
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-on-surface mb-2">Tệp PDF (Bản in)</label>
+                                <div id="pdf-dropzone" class="border-2 border-dashed border-outline-variant rounded-xl p-6 text-center bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer relative">
+                                    <input type="file" id="pdf-input" accept=".pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                    <span class="material-symbols-outlined text-3xl text-error mb-2">picture_as_pdf</span>
+                                    <p class="text-sm font-medium text-on-surface">Tải lên PDF</p>
+                                    <p class="text-xs text-on-surface-variant mt-1">Kéo thả hoặc click</p>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-on-surface mb-2">Tệp DOCX (Bản mẫu điền)</label>
+                                <div id="docx-dropzone" class="border-2 border-dashed border-outline-variant rounded-xl p-6 text-center bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer relative">
+                                    <input type="file" id="docx-input" accept=".docx,.doc" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                    <span class="material-symbols-outlined text-3xl text-primary mb-2">description</span>
+                                    <p class="text-sm font-medium text-on-surface">Tải lên Word</p>
+                                    <p class="text-xs text-on-surface-variant mt-1">Kéo thả hoặc click</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- PAGE: DOCS GUIDE -->
+            <section id="page-docs-guide" class="page-section w-full">
+                <!-- LIST VIEW -->
+                <div id="docs-guide-list-view">
+                    <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-2xl font-semibold text-on-surface mb-1">Quản lý Hướng dẫn điền</h2>
+                            <p class="font-body-md text-[16px] text-on-surface-variant mt-2">Quản lý các tài liệu mẫu và các bước hướng dẫn chi tiết cho người dùng.</p>
+                        </div>
+                        <button onclick="openGuideForm()" class="bg-primary hover:bg-primary/90 text-on-primary font-semibold py-2.5 px-6 rounded-full flex items-center gap-2 transition-colors shadow-sm w-fit">
+                            <span class="material-symbols-outlined text-sm">add</span>
+                            <span>Tạo hướng dẫn mới</span>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="docs-guide-list-container">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- FORM VIEW -->
+                <div id="docs-guide-form-view" class="hidden">
+                    <div class="mb-4 flex flex-col lg:flex-row lg:justify-between lg:items-end gap-4">
+                        <div>
+                            <button onclick="closeGuideForm()" class="flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors font-medium text-sm mb-2">
+                                <span class="material-symbols-outlined text-sm">arrow_back</span>
+                                Quay lại danh sách
+                            </button>
+                            <h2 class="text-2xl font-semibold text-on-surface mb-1" id="guide-form-title">Tạo Hướng dẫn mới</h2>
+                            <p class="font-body-md text-[16px] text-on-surface-variant mt-1">Thiết lập tài liệu mẫu và các bước hướng dẫn chi tiết cho người dùng.</p>
+                        </div>
+                        <div class="flex gap-4">
+                            <button onclick="saveGuideForm('draft')" class="px-6 py-2.5 border-2 border-outline-variant text-on-surface font-semibold text-sm rounded-full hover:bg-surface-container transition-colors cursor-pointer">Lưu nháp</button>
+                            <button onclick="saveGuideForm('published')" class="px-6 py-2.5 bg-primary text-on-primary font-semibold text-sm rounded-full hover:bg-primary/90 transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
+                                <span class="material-symbols-outlined text-sm">save</span>
+                                Lưu
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-5">
+                        <label class="block text-[14px] font-semibold text-on-surface mb-2">Tên tài liệu / Hướng dẫn <span class="text-error">*</span></label>
+                        <input type="text" id="guide-form-name" class="w-full max-w-xl p-3 bg-white border border-outline-variant rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none font-body-md" placeholder="VD: Hướng dẫn điền Mẫu C01">
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                        <!-- Left Column: Upload -->
+                        <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm sticky top-0">
+                            <h3 class="font-headline-md text-[20px] font-bold text-on-background mb-2">Hình ảnh tài liệu mẫu</h3>
+                            <p class="font-body-sm text-[14px] text-on-surface-variant mb-4">Tải lên hình ảnh tài liệu để người dùng dễ dàng đối chiếu.</p>
+                            
+                            <div class="border-2 border-dashed border-outline-variant rounded-xl p-8 flex flex-col items-center justify-center text-center bg-surface transition-all duration-200 cursor-pointer group min-h-[400px] hover:border-primary hover:bg-surface-container-low" id="guide-image-dropzone" onclick="document.getElementById('guide-image-input').click()">
+                                <div class="w-16 h-16 bg-primary-container/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                    <span class="material-symbols-outlined text-primary text-[32px]">add_photo_alternate</span>
+                                </div>
+                                <h4 class="font-label-md text-[16px] font-semibold text-on-surface mb-1">Tải ảnh lên</h4>
+                                <p class="font-body-md text-[14px] text-on-surface-variant mb-4">Kéo và thả tệp ảnh vào đây</p>
+                                <button class="px-4 py-2 border border-outline text-on-surface font-semibold text-[14px] rounded-full group-hover:bg-surface-container transition-colors cursor-pointer" type="button">Chọn tệp</button>
+                                <input accept="image/png, image/jpeg, image/jpg" class="hidden" id="guide-image-input" type="file"/>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Fields -->
+                        <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm flex flex-col min-h-[600px]">
+                            <h3 class="font-headline-md text-[20px] font-bold text-on-background mb-2">Các trường thông tin</h3>
+                            <p class="font-body-sm text-[14px] text-on-surface-variant mb-6">Thêm các bước hướng dẫn điền tương ứng với tài liệu mẫu.</p>
+                            
+                            <div id="guide-steps-container" class="space-y-6 flex-1">
+                                <!-- Rendered by JS -->
+                            </div>
+                            
+                            <div class="mt-8 pt-6 border-t border-outline-variant">
+                                <button type="button" onclick="addGuideStep()" class="w-full py-3.5 bg-surface-container border-2 border-dashed border-primary text-primary rounded-xl font-bold text-[15px] hover:bg-primary hover:text-on-primary hover:border-solid transition-all flex items-center justify-center gap-2 cursor-pointer">
+                                    <span class="material-symbols-outlined">add_circle</span>
+                                    Thêm thông tin
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notes Section -->
+                    <div class="mt-6 bg-white border border-outline-variant rounded-xl p-6 shadow-sm">
+                        <h3 class="font-headline-md text-[20px] font-bold text-on-background mb-2">Lưu ý</h3>
+                        <p class="font-body-sm text-[14px] text-on-surface-variant mb-6">Thêm các lưu ý quan trọng cần ghi nhớ khi điền tài liệu này.</p>
+                        
+                        <div id="guide-notes-container" class="space-y-4">
+                            <!-- Rendered by JS -->
+                        </div>
+                        
+                        <div class="mt-6 pt-4 border-t border-outline-variant">
+                            <button type="button" onclick="addGuideNote()" class="py-2.5 px-6 bg-surface-container border border-dashed border-outline-variant text-on-surface-variant rounded-lg font-medium text-[14px] hover:bg-surface-container-high transition-colors flex items-center gap-2 cursor-pointer">
+                                <span class="material-symbols-outlined text-[20px]">add</span>
+                                Bổ sung lưu ý mới
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Delete Docs Guide Confirmation Modal -->
+            <div id="docs-guide-delete-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-xs">
+                <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant shadow-xl max-w-md w-full mx-4 space-y-4">
+                    <div class="flex items-center gap-3 text-error">
+                        <span class="material-symbols-outlined text-3xl">delete</span>
+                        <h3 class="text-lg font-bold text-on-surface">Xác nhận xóa</h3>
+                    </div>
+                    <p class="text-sm text-on-surface-variant">Bạn có chắc chắn muốn xóa hướng dẫn này? Hành động này không thể hoàn tác.</p>
+                    <div class="flex items-center justify-end gap-3 pt-2">
+                        <button type="button" onclick="closeDocsGuideDeleteModal()" class="px-4 py-2 border border-outline-variant rounded-lg text-sm font-medium text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer">Hủy</button>
+                        <button type="button" onclick="confirmDocsGuideDelete()" class="px-4 py-2 bg-error text-white rounded-lg text-sm font-medium hover:bg-error/90 transition-colors cursor-pointer">Xóa</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete Docs Note Confirmation Modal -->
+            <div id="docs-note-delete-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-xs">
+                <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant shadow-xl max-w-md w-full mx-4 space-y-4">
+                    <div class="flex items-center gap-3 text-error">
+                        <span class="material-symbols-outlined text-3xl">delete</span>
+                        <h3 class="text-lg font-bold text-on-surface">Xác nhận xóa</h3>
+                    </div>
+                    <p class="text-sm text-on-surface-variant">Bạn chắc chắn muốn xóa lưu ý?</p>
+                    <div class="flex items-center justify-end gap-3 pt-2">
+                        <button type="button" onclick="closeDocsNoteDeleteModal()" class="px-4 py-2 border border-outline-variant rounded-lg text-sm font-medium text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer">Hủy</button>
+                        <button type="button" onclick="confirmDocsNoteDelete()" class="px-4 py-2 bg-error text-white rounded-lg text-sm font-medium hover:bg-error/90 transition-colors cursor-pointer">Xóa</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- PAGE: FAQ -->
+            <section id="page-faq" class="page-section w-full">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-semibold text-on-surface mb-1">Quản lý FAQ</h2>
+                    <p class="text-on-surface-variant text-sm">Chỉnh sửa, tìm kiếm và tổ chức các câu hỏi thường gặp trên trang chủ.</p>
+                </div>
+                
+                <!-- Live Search Box -->
+                <div class="max-w-4xl mb-6">
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl pointer-events-none">search</span>
+                        <input type="text" id="faq-admin-search-input" placeholder="Bạn cần tìm gì? (VD: Lãi suất vay, Thủ tục, Căn hộ, Thu nhập thấp...)" class="w-full pl-12 pr-10 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-xs transition-all">
+                        <button type="button" id="faq-admin-search-clear" class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant/60 hover:text-on-surface p-1 rounded-full hidden cursor-pointer" title="Xóa tìm kiếm">
+                            <span class="material-symbols-outlined text-lg">close</span>
+                        </button>
+                    </div>
+                    <div id="faq-search-count" class="text-xs text-on-surface-variant mt-2 hidden font-medium"></div>
+                </div>
+
+                <div class="flex flex-wrap gap-2 mb-6" id="faq-category-buttons">
+                    <button type="button" class="faq-cat-btn px-4 py-2 rounded-full text-sm font-medium bg-primary text-on-primary shadow-xs transition-colors cursor-pointer active" data-cat="doi-tuong">Đối tượng thụ hưởng</button>
+                    <button type="button" class="faq-cat-btn px-4 py-2 rounded-full text-sm font-medium bg-surface-container-lowest border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer" data-cat="dieu-kien">Điều kiện, Hồ sơ &amp; Quy trình</button>
+                    <button type="button" class="faq-cat-btn px-4 py-2 rounded-full text-sm font-medium bg-surface-container-lowest border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer" data-cat="vay-von">Vay vốn &amp; Tài chính</button>
+                    <button type="button" class="faq-cat-btn px-4 py-2 rounded-full text-sm font-medium bg-surface-container-lowest border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer" data-cat="quyen-so-huu">Quyền sở hữu, Chuyển nhượng và Pháp lý</button>
+                </div>
+                
+                <div class="max-w-4xl space-y-4" id="faq-admin-list">
+                    <!-- Dynamic FAQ Items Rendered by admin.js -->
+                </div>
+
+                <div class="max-w-4xl mt-4">
+                    <button type="button" id="btn-add-faq-item" class="w-full py-4 border-2 border-dashed border-outline-variant text-on-surface-variant font-medium rounded-xl hover:bg-surface-container hover:border-primary transition-colors flex items-center justify-center gap-2 cursor-pointer">
+                        <span class="material-symbols-outlined">add</span> Thêm FAQ mới
+                    </button>
+                </div>
+            </section>
+            
+            <!-- Delete FAQ Confirmation Modal -->
+            <div id="faq-delete-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-xs">
+                <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant shadow-xl max-w-md w-full mx-4 space-y-4">
+                    <div class="flex items-center gap-3 text-error">
+                        <span class="material-symbols-outlined text-3xl">help_outline</span>
+                        <h3 class="text-lg font-bold text-on-surface">Xác nhận xóa</h3>
+                    </div>
+                    <p class="text-sm text-on-surface-variant">Bạn có chắc chắn muốn xóa FAQ này?</p>
+                    <div class="flex items-center justify-end gap-3 pt-2">
+                        <button type="button" id="btn-cancel-delete-faq" class="px-4 py-2 border border-outline-variant rounded-lg text-sm font-medium text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer">Hủy</button>
+                        <button type="button" id="btn-confirm-delete-faq" class="px-4 py-2 bg-error text-white rounded-lg text-sm font-medium hover:bg-error/90 transition-colors cursor-pointer">Xóa FAQ</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- PAGE: NEWS -->
+            <section id="page-news" class="page-section w-full">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                    <div>
+                        <h2 class="text-2xl font-semibold text-on-surface mb-1">Quản lý Tin tức</h2>
+                        <p class="text-on-surface-variant text-sm">Cập nhật tin tức, thông báo mới nhất về các dự án và chính sách.</p>
+                    </div>
+                    <button onclick="location.hash='#news-new'" class="bg-primary hover:bg-surface-tint text-on-primary font-medium py-2 px-4 rounded-lg flex items-center gap-2 transition-colors w-fit">
+                        <span class="material-symbols-outlined text-sm">edit_document</span>
+                        <span>Tạo tin mới</span>
+                    </button>
+                </div>
+                
+                <div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden mb-8">
+                    <div class="p-4 border-b border-outline-variant flex flex-col md:flex-row gap-4">
+                        <div class="relative flex-1">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+                            <input type="text" placeholder="Tìm kiếm tin tức..." class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg text-sm focus:outline-none focus:border-primary transition-all">
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[800px]">
+                            <thead>
+                                <tr class="bg-surface-container-low text-on-surface-variant text-sm">
+                                    <th class="p-4 border-b border-outline-variant font-medium w-1/3">Tên tin tức</th>
+                                    <th class="p-4 border-b border-outline-variant font-medium">Nội dung tóm tắt</th>
+                                    <th class="p-4 border-b border-outline-variant font-medium">Trạng thái</th>
+                                    <th class="p-4 border-b border-outline-variant font-medium">Ngày đăng</th>
+                                    <th class="p-4 border-b border-outline-variant font-medium text-right">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="5" class="p-8 text-center text-on-surface-variant text-sm">Không có tin tức nào</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="p-4 flex items-center justify-between gap-4 text-sm text-on-surface-variant">
+                        <p>Hiển thị 1 đến 4 của 28 mục</p>
+                        <div class="flex items-center gap-1">
+                            <button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-surface-container disabled:opacity-50" disabled>
+                                <span class="material-symbols-outlined text-sm">chevron_left</span>
+                            </button>
+                            <button class="w-8 h-8 flex items-center justify-center rounded bg-primary text-on-primary">1</button>
+                            <button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-surface-container">2</button>
+                            <button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-surface-container">
+                                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- PAGE: NEWS NEW -->
+            <section id="page-news-new" class="page-section w-full hidden">
+                <div class="mb-6 flex items-center text-sm text-on-surface-variant gap-2">
+                    <a href="#news" class="hover:text-primary transition-colors">Tin tức</a>
+                    <span class="material-symbols-outlined text-sm">chevron_right</span>
+                    <span class="text-on-surface font-medium">Tạo tin mới</span>
+                </div>
+
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                    <h2 class="text-2xl font-semibold text-on-surface">Tạo tin tức mới</h2>
+                    <div class="flex items-center gap-3">
+                        <button onclick="location.hash='#news'" class="px-4 py-2 border border-outline-variant text-on-surface-variant font-medium rounded-lg hover:bg-surface-container transition-colors cursor-pointer">Lưu nháp</button>
+                        <button class="bg-primary hover:bg-surface-tint text-on-primary font-medium py-2 px-6 rounded-lg transition-colors shadow-sm cursor-pointer">Đăng ngay</button>
+                    </div>
+                </div>
+
+                <div class="w-full bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-on-surface mb-1">Tiêu đề tin tức <span class="text-error">*</span></label>
+                        <input type="text" class="w-full px-4 py-2.5 bg-surface-container-low border border-outline-variant rounded-lg focus:outline-none focus:border-primary text-base text-on-surface" placeholder="Nhập tiêu đề tin tức...">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-on-surface mb-2">Ảnh đại diện tin tức</label>
+                        <div class="relative group border-2 border-dashed border-outline-variant rounded-xl p-6 text-center bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer w-full md:w-96" onclick="document.getElementById('news-image-input').click()">
+                            <input type="file" id="news-image-input" accept="image/*" class="hidden" onchange="previewNewsMainImage(this)">
+                            <img id="news-main-image-preview" src="" class="w-full h-44 object-cover rounded-lg mb-2 hidden">
+                            <div id="news-image-placeholder">
+                                <span class="material-symbols-outlined text-4xl text-on-surface-variant mb-1">cloud_upload</span>
+                                <p class="text-sm text-on-surface font-medium">Tải ảnh lên</p>
+                                <p class="text-xs text-on-surface-variant mt-0.5">JPEG, PNG tối đa 2MB</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-on-surface mb-2">Nội dung chi tiết</label>
+                        <div class="border border-outline-variant rounded-xl overflow-hidden shadow-xs">
+                            <!-- Toolbar -->
+                            <div class="bg-surface-container-low border-b border-outline-variant p-2 flex flex-wrap gap-1 items-center">
+                                <button type="button" class="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant transition-colors" title="In đậm"><span class="material-symbols-outlined text-[20px]">format_bold</span></button>
+                                <button type="button" class="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant transition-colors" title="In nghiêng"><span class="material-symbols-outlined text-[20px]">format_italic</span></button>
+                                <button type="button" class="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant transition-colors" title="Gạch chân"><span class="material-symbols-outlined text-[20px]">format_underlined</span></button>
+                                <div class="w-px h-5 bg-outline-variant mx-1 self-center"></div>
+                                <button type="button" class="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant transition-colors" title="Danh sách chấm"><span class="material-symbols-outlined text-[20px]">format_list_bulleted</span></button>
+                                <button type="button" class="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant transition-colors" title="Danh sách số"><span class="material-symbols-outlined text-[20px]">format_list_numbered</span></button>
+                                <div class="w-px h-5 bg-outline-variant mx-1 self-center"></div>
+                                <button type="button" class="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant transition-colors" title="Chèn ảnh"><span class="material-symbols-outlined text-[20px]">image</span></button>
+                                <button type="button" class="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant transition-colors" title="Chèn liên kết"><span class="material-symbols-outlined text-[20px]">link</span></button>
+                            </div>
+                            <!-- Editor Area -->
+                            <textarea class="w-full h-80 p-4 bg-surface-container-lowest text-on-surface focus:outline-none resize-y text-sm leading-relaxed" placeholder="Nhập nội dung bài viết ở đây..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <!-- Modal Xóa Dự án (Nhấn giữ 5s) -->
+    <div id="delete-project-modal" class="fixed inset-0 z-[9999] bg-inverse-surface/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-[0_20px_50px_rgba(0,0,0,0.2)] max-w-md w-full p-6 space-y-5 animate-in fade-in zoom-in-95 duration-200">
+            <div class="flex items-center gap-3 text-error">
+                <span class="material-symbols-outlined text-3xl">warning</span>
+                <h3 class="text-xl font-bold text-on-surface">Xác nhận xóa dự án</h3>
+            </div>
+            
+            <p class="text-on-surface-variant text-sm leading-relaxed">
+                Bạn chắc chắn muốn xóa dự án <strong id="delete-project-name" class="text-on-surface font-semibold">...</strong>? Hành động này không thể hoàn tác.
+            </p>
+            
+            <div class="p-3 bg-error-container/30 border border-error-container rounded-lg text-xs text-error font-medium flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">touch_app</span>
+                <span>Để tránh xóa nhầm, vui lòng <strong>nhấn và giữ nút Xóa trong 5 giây</strong>.</span>
+            </div>
+            
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <button id="btn-cancel-delete-project" type="button" class="px-4 py-2.5 border border-outline-variant text-on-surface-variant font-medium text-sm rounded-xl hover:bg-surface-container transition-colors cursor-pointer">
+                    Hủy
+                </button>
+                
+                <!-- Hold-to-Delete Button with fill animation -->
+                <button id="btn-hold-delete-project" type="button" class="relative overflow-hidden bg-error hover:bg-error/90 text-white font-semibold text-sm py-2.5 px-5 rounded-xl transition-all shadow-sm select-none cursor-pointer flex items-center justify-center gap-2 min-w-[170px]">
+                    <!-- Progress fill bar overlay (darker red) -->
+                    <div id="delete-hold-progress" class="absolute left-0 top-0 bottom-0 bg-[#800000] w-0 pointer-events-none opacity-80"></div>
+                    <span class="material-symbols-outlined text-sm relative z-10">delete_forever</span>
+                    <span id="delete-hold-label" class="relative z-10">Xóa (Giữ 5s)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/admin.js"></script>
+</body>
+</html>
