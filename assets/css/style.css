@@ -433,3 +433,17 @@ body:not(:has(.homepage-hero-section)) [class*="pt-[100px]"] {
 body:not(:has(.homepage-hero-section)) [class*="mt-[80px]"] {
     margin-top: clamp(4rem, 6vw, 5.5rem) !important;
 }
+
+/* Prevent navbar links from wrapping into multiple lines */
+.nav-link {
+    white-space: nowrap;
+}
+
+/* Hide scrollbar for elements with no-scrollbar */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
