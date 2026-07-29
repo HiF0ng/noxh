@@ -1,5 +1,6 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // Load components
+    await loadNavbar();
     loadFooter();
     
     // Run once on page load
@@ -20,6 +21,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+async function loadNavbar() {
+    const placeholder = document.getElementById('navbar-placeholder');
+    if (!placeholder) return;
+    try {
+        const response = await fetch('components/navbar.html');
+        if (response.ok) {
+            const html = await response.text();
+            placeholder.innerHTML = html;
+        }
+    } catch (err) {
+        console.error('Failed to load navbar component', err);
+    }
+}
 
 async function loadFooter() {
     const placeholder = document.getElementById('footer-placeholder');
@@ -46,6 +61,7 @@ function initPageScripts() {
     setupPasswordToggles();
     setupAuthForms();
     initSettingsForm();
+    initLoanCalculator();
     setupProjectFilterSort();
 }
 
@@ -336,10 +352,7 @@ function setupSPARouter() {
             const currentHasSidebar = document.querySelector('.sidebar-menu') !== null;
             const newHasSidebar = doc.querySelector('.sidebar-menu') !== null;
             
-            const currentHasHero = document.querySelector('.homepage-hero-section') !== null;
-            const newHasHero = doc.querySelector('.homepage-hero-section') !== null;
-            
-            if (currentHasSidebar !== newHasSidebar || currentHasHero !== newHasHero) {
+            if (currentHasSidebar !== newHasSidebar) {
                 window.location.href = href;
                 return;
             }
@@ -449,7 +462,7 @@ function setupUserDropdown() {
         
         // Create dropdown menu
         const dropdown = document.createElement('div');
-        dropdown.className = 'absolute right-0 top-full mt-2 w-56 bg-surface-container-lowest rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-outline-variant py-2 hidden flex-col z-50 user-dropdown-menu';
+        dropdown.className = 'absolute right-0 top-full mt-6 w-56 bg-surface-container-lowest rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-outline-variant py-2 hidden flex-col z-50 user-dropdown-menu';
         
         // Use localStorage for login state persistence
         const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
@@ -545,7 +558,7 @@ function highlightActiveLink() {
     if (!currentPage || currentPage === '/' || currentPage === 'index.html') currentPage = 'homepage.html';
 
     // Top Navbar Links
-    const topNavLinks = document.querySelectorAll('.top-navbar a:not(.user-dropdown-menu a)');
+    const topNavLinks = document.querySelectorAll('.top-navbar a.nav-link:not(.user-dropdown-menu a)');
     topNavLinks.forEach(link => {
         let href = link.getAttribute('href');
         if (!href || href.startsWith('http') || href.startsWith('#')) return;
@@ -1485,4 +1498,272 @@ function renderFeedbackFileList() {
         `;
         listContainer.appendChild(fileItem);
     });
+}
+
+// ==========================================
+// LOAN CALCULATOR
+// ==========================================
+function initLoanCalculator() {
+    const inputTotal = document.getElementById('input-total-price');
+    if (!inputTotal) return; // Not on loan page
+    
+    let viewMode = 'month';
+    const btnViewMonth = document.getElementById('btn-view-month');
+    const btnViewYear = document.getElementById('btn-view-year');
+    
+    if (btnViewMonth && btnViewYear) {
+        btnViewMonth.addEventListener('click', () => {
+            viewMode = 'month';
+            btnViewMonth.classList.add('bg-surface', 'shadow-sm', 'text-on-surface');
+            btnViewMonth.classList.remove('text-on-surface-variant');
+            btnViewYear.classList.remove('bg-surface', 'shadow-sm', 'text-on-surface');
+            btnViewYear.classList.add('text-on-surface-variant');
+            calculateLoan();
+        });
+        btnViewYear.addEventListener('click', () => {
+            viewMode = 'year';
+            btnViewYear.classList.add('bg-surface', 'shadow-sm', 'text-on-surface');
+            btnViewYear.classList.remove('text-on-surface-variant');
+            btnViewMonth.classList.remove('bg-surface', 'shadow-sm', 'text-on-surface');
+            btnViewMonth.classList.add('text-on-surface-variant');
+            calculateLoan();
+        });
+    }
+    
+    const rangeTotal = document.getElementById('range-total-price');
+    const inputAvail = document.getElementById('input-available-money');
+    const rangeAvail = document.getElementById('range-available-money');
+    const inputTerm = document.getElementById('input-loan-term');
+    const rangeTerm = document.getElementById('range-loan-term');
+    
+    const textNeedBorrow = document.getElementById('text-need-borrow');
+    
+    const bankRadios = document.querySelectorAll('input[name="bank_type"]');
+    const inputInterest1 = document.getElementById('input-interest-1');
+    const inputInterestTime = document.getElementById('input-interest-time');
+    const inputInterest2 = document.getElementById('input-interest-2');
+    const colInterestTime = document.getElementById('col-interest-time');
+    const rowInterest2 = document.getElementById('row-interest-2');
+    const labelInterest1 = document.getElementById('label-interest-1');
+    
+    const methodRadios = document.querySelectorAll('input[name="repayment_method"]');
+    
+    const summaryTotal = document.getElementById('summary-total');
+    const summaryAvail = document.getElementById('summary-available');
+    const summaryBorrow = document.getElementById('summary-borrow');
+    const summaryPrincipal = document.getElementById('summary-principal');
+    const summaryInterest = document.getElementById('summary-interest');
+    const tbody = document.getElementById('schedule-tbody');
+
+    // Utility formatting
+    function formatCurrency(num) {
+        return num.toLocaleString('vi-VN');
+    }
+    
+    function parseCurrency(str) {
+        if (!str) return 0;
+        return parseInt(str.toString().replace(/\./g, '').replace(/,/g, '')) || 0;
+    }
+    
+    function updateCurrencyInput(inputEl, val) {
+        inputEl.value = formatCurrency(val);
+    }
+    
+    // Sync logic
+    function syncInputRange(inputEl, rangeEl, isCurrency) {
+        inputEl.addEventListener('focus', (e) => {
+            if (e.target.value === '0' || e.target.value === '0 ₫') {
+                e.target.value = '';
+            }
+        });
+
+        inputEl.addEventListener('input', (e) => {
+            let val = isCurrency ? parseCurrency(e.target.value) : parseFloat(e.target.value) || 0;
+            if (val > parseFloat(rangeEl.max)) val = parseFloat(rangeEl.max);
+            
+            rangeEl.value = val;
+            
+            if (isCurrency && e.target.value !== '') {
+                // Formatting on the fly
+                let cursorPosition = e.target.selectionStart;
+                let originalLength = e.target.value.length;
+                
+                e.target.value = formatCurrency(val);
+                
+                let newLength = e.target.value.length;
+                cursorPosition = cursorPosition + (newLength - originalLength);
+                try { e.target.setSelectionRange(cursorPosition, cursorPosition); } catch(err) {}
+            }
+            
+            calculateLoan();
+        });
+        
+        inputEl.addEventListener('blur', (e) => {
+            let val = isCurrency ? parseCurrency(e.target.value) : parseFloat(e.target.value) || 0;
+            if (val < parseFloat(rangeEl.min)) val = parseFloat(rangeEl.min);
+            if (val > parseFloat(rangeEl.max)) val = parseFloat(rangeEl.max);
+            
+            if (isCurrency) {
+                e.target.value = val === 0 ? '' : formatCurrency(val);
+            } else {
+                e.target.value = val === 0 ? '' : val;
+            }
+            rangeEl.value = val;
+            calculateLoan();
+        });
+        
+        rangeEl.addEventListener('input', (e) => {
+            let val = parseFloat(e.target.value);
+            if (isCurrency) {
+                updateCurrencyInput(inputEl, val);
+            } else {
+                inputEl.value = val === 0 ? '' : val;
+            }
+            calculateLoan();
+        });
+    }
+
+    syncInputRange(inputTotal, rangeTotal, true);
+    syncInputRange(inputAvail, rangeAvail, true);
+    syncInputRange(inputTerm, rangeTerm, false);
+    
+    inputInterest1.addEventListener('input', calculateLoan);
+    inputInterest2.addEventListener('input', calculateLoan);
+    inputInterestTime.addEventListener('input', calculateLoan);
+    
+    bankRadios.forEach(r => r.addEventListener('change', () => {
+        if (document.querySelector('input[name="bank_type"]:checked').value === 'csxh') {
+            colInterestTime.classList.add('hidden');
+            rowInterest2.classList.add('hidden');
+            labelInterest1.textContent = 'Lãi suất xuyên suốt';
+        } else {
+            colInterestTime.classList.remove('hidden');
+            rowInterest2.classList.remove('hidden');
+            labelInterest1.textContent = 'Lãi suất (ưu đãi)';
+        }
+        calculateLoan();
+    }));
+    
+    methodRadios.forEach(r => r.addEventListener('change', calculateLoan));
+
+    function calculateLoan() {
+        const total = parseCurrency(inputTotal.value);
+        let avail = parseCurrency(inputAvail.value);
+        if (avail > total) {
+            avail = total;
+            updateCurrencyInput(inputAvail, avail);
+            rangeAvail.value = avail;
+        }
+        const borrow = total - avail;
+        textNeedBorrow.textContent = formatCurrency(borrow);
+        
+        summaryTotal.textContent = formatCurrency(total) + ' ₫';
+        summaryAvail.textContent = formatCurrency(avail) + ' ₫';
+        summaryBorrow.textContent = formatCurrency(borrow) + ' ₫';
+        summaryPrincipal.textContent = formatCurrency(borrow) + ' ₫';
+        
+        if (borrow <= 0) {
+            summaryInterest.textContent = '0 ₫';
+            tbody.innerHTML = '';
+            return;
+        }
+        
+        const termYears = parseFloat(inputTerm.value) || 0;
+        const termMonths = termYears * 12;
+        const bankType = document.querySelector('input[name="bank_type"]:checked').value;
+        const method = document.querySelector('input[name="repayment_method"]:checked').value;
+        
+        const rate1 = (parseFloat(inputInterest1.value) || 0) / 100 / 12;
+        const rate2 = bankType === 'csxh' ? rate1 : ((parseFloat(inputInterest2.value) || 0) / 100 / 12);
+        const time1 = bankType === 'csxh' ? termMonths : (parseFloat(inputInterestTime.value) || 0);
+        
+        let totalInterest = 0;
+        let scheduleHtml = '';
+        
+        let scheduleData = [];
+        
+        let remainingPrincipal = borrow;
+        let monthlyPrincipal = method === 'giam_dan' ? borrow / termMonths : 0;
+        
+        let currentPmt = 0;
+        if (method === 'deu') {
+            if (rate1 > 0) {
+                currentPmt = borrow * rate1 * Math.pow(1+rate1, termMonths) / (Math.pow(1+rate1, termMonths) - 1);
+            } else {
+                currentPmt = borrow / termMonths;
+            }
+        }
+        
+        for (let i = 1; i <= termMonths; i++) {
+            const isPromo = i <= time1;
+            const currentRate = isPromo ? rate1 : rate2;
+            
+            let interest = remainingPrincipal * currentRate;
+            
+            if (method === 'deu' && i === time1 + 1) {
+                const remainingMonths = termMonths - i + 1;
+                if (rate2 > 0) {
+                    currentPmt = remainingPrincipal * rate2 * Math.pow(1+rate2, remainingMonths) / (Math.pow(1+rate2, remainingMonths) - 1);
+                } else {
+                    currentPmt = remainingPrincipal / remainingMonths;
+                }
+            }
+            
+            let principalRepayment = 0;
+            if (method === 'giam_dan') {
+                principalRepayment = monthlyPrincipal;
+                if (i === termMonths) principalRepayment = remainingPrincipal;
+            } else { // deu
+                principalRepayment = currentPmt - interest;
+                if (i === termMonths) principalRepayment = remainingPrincipal;
+            }
+            
+            totalInterest += interest;
+            let totalPayment = principalRepayment + interest;
+            remainingPrincipal -= principalRepayment;
+            if (remainingPrincipal < 0) remainingPrincipal = 0;
+            
+            scheduleData.push({ month: i, principalRepayment, interest, totalPayment, remainingPrincipal });
+        }
+        
+        if (viewMode === 'year') {
+            let totalYears = Math.ceil(termMonths / 12);
+            for (let y = 0; y < totalYears; y++) {
+                let startIdx = y * 12;
+                let yearMonths = scheduleData.slice(startIdx, startIdx + 12);
+                if (yearMonths.length === 0) break;
+                
+                let yPrincipal = yearMonths.reduce((sum, m) => sum + m.principalRepayment, 0);
+                let yInterest = yearMonths.reduce((sum, m) => sum + m.interest, 0);
+                let yTotal = yearMonths.reduce((sum, m) => sum + m.totalPayment, 0);
+                let yRemaining = yearMonths[yearMonths.length - 1].remainingPrincipal;
+                
+                scheduleHtml += `
+                <tr class="border-b border-outline-variant/20 hover:bg-surface-container transition-colors">
+                <td class="py-3 px-1 md:px-2 text-on-background align-middle text-center whitespace-nowrap">Năm ${y + 1}</td>
+                <td class="py-3 px-1 md:px-2 text-on-surface-variant text-center align-middle whitespace-nowrap">${formatCurrency(Math.round(yPrincipal))}</td>
+                <td class="py-3 px-1 md:px-2 text-on-surface-variant text-center align-middle whitespace-nowrap">${formatCurrency(Math.round(yInterest))}</td>
+                <td class="py-3 px-1 md:px-2 text-primary font-medium text-center align-middle whitespace-nowrap">${formatCurrency(Math.round(yTotal))}</td>
+                <td class="py-3 px-1 md:px-2 text-on-background text-center align-middle whitespace-nowrap">${formatCurrency(Math.round(yRemaining))}</td>
+                </tr>`;
+            }
+        } else {
+            for (let m of scheduleData) {
+                scheduleHtml += `
+                <tr class="border-b border-outline-variant/20 hover:bg-surface-container transition-colors">
+                <td class="py-3 px-1 md:px-2 text-on-background align-middle text-center whitespace-nowrap">Tháng ${m.month}</td>
+                <td class="py-3 px-1 md:px-2 text-on-surface-variant text-center align-middle whitespace-nowrap">${formatCurrency(Math.round(m.principalRepayment))}</td>
+                <td class="py-3 px-1 md:px-2 text-on-surface-variant text-center align-middle whitespace-nowrap">${formatCurrency(Math.round(m.interest))}</td>
+                <td class="py-3 px-1 md:px-2 text-primary font-medium text-center align-middle whitespace-nowrap">${formatCurrency(Math.round(m.totalPayment))}</td>
+                <td class="py-3 px-1 md:px-2 text-on-background text-center align-middle whitespace-nowrap">${formatCurrency(Math.round(m.remainingPrincipal))}</td>
+                </tr>`;
+            }
+        }
+        
+        summaryInterest.textContent = formatCurrency(Math.round(totalInterest)) + ' ₫';
+        tbody.innerHTML = scheduleHtml;
+    }
+    
+    // Initial calculate
+    calculateLoan();
 }

@@ -1,0 +1,201 @@
+﻿<!DOCTYPE html><html class="light" lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Tính chi tiết gói vay - Hỗ trợ Nhà ở Xã hội</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="assets/js/tailwind-config.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<div id="navbar-placeholder"></div>
+
+<!-- Main Content -->
+<main class="flex-grow">
+<!-- Page Header -->
+<section class="bg-surface-container-low pt-[100px] pb-4 relative overflow-hidden">
+<div class="max-w-3xl mx-auto px-6 md:px-12 text-center relative z-10 pt-4">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface mb-4">Công cụ tính khoản vay</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto">
+    Công cụ giúp bạn tính nhanh lộ trình vay vốn mua NOXH
+</p>
+</div>
+</section>
+
+<!-- Calculator Section -->
+<section class="pt-4 pb-6 max-w-5xl mx-auto px-6 md:px-12">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Left Column: Loan Information (Bento/Glassmorphism style) -->
+<div class="lg:col-span-5 flex flex-col gap-sm">
+<div class="bg-surface-container-lowest rounded-xl shadow-level-1 p-md border border-outline-variant/30 relative overflow-hidden group">
+<h2 class="text-headline-md font-headline-md text-on-background mb-lg flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">calculate</span>
+                        Thông tin khoản vay
+                    </h2>
+<!-- Tổng số tiền căn hộ -->
+<div class="mb-lg">
+<div class="flex justify-between items-center mb-sm">
+<label class="font-label-md text-label-md text-on-surface-variant">Tổng số tiền căn hộ</label>
+<div class="relative">
+<input id="input-total-price" class="w-40 text-right px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-shadow" type="text" value="">
+</div>
+</div>
+<input id="range-total-price" class="w-full" max="5000000000" min="0" step="10000000" type="range" value="0">
+<div class="flex justify-between mt-1 text-label-sm font-label-sm text-outline">
+<span class="">100 triệu</span>
+<span class="">5 tỷ</span>
+</div>
+</div>
+<!-- Số tiền sẵn có -->
+<div class="mb-lg">
+<div class="flex justify-between items-center mb-sm">
+<label class="font-label-md text-label-md text-on-surface-variant">Số tiền sẵn có</label>
+<div class="relative">
+<input id="input-available-money" class="w-40 text-right px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-shadow" type="text" value="">
+</div>
+</div>
+<input id="range-available-money" class="w-full" max="5000000000" min="0" step="10000000" type="range" value="0">
+<div class="flex justify-between mt-1 text-label-sm font-label-sm text-outline">
+<span class="">0</span>
+<span class="">5 tỷ</span>
+</div>
+</div>
+<!-- Số tiền cần vay (Calculated Display) -->
+<div class="mb-lg bg-surface-container-low rounded-lg p-sm flex justify-between items-center border border-primary/10 gap-2">
+<span class="font-label-md text-label-md text-on-background flex-shrink-0 leading-tight">Số tiền<br>cần vay:</span>
+<span id="text-need-borrow" class="text-headline-md font-headline-md text-primary text-right break-words min-w-0 flex-1">0</span>
+</div>
+<!-- Thời gian vay -->
+<div class="mb-lg">
+<div class="flex justify-between items-center mb-sm">
+<label class="font-label-md text-label-md text-on-surface-variant">Thời gian vay</label>
+<div class="relative">
+<input id="input-loan-term" class="w-24 text-right pr-14 pl-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-shadow" type="text" value="">
+<span class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-label-md pointer-events-none">Năm</span>
+</div>
+</div>
+<input id="range-loan-term" class="w-full" max="30" min="0" step="1" type="range" value="0">
+<div class="flex justify-between mt-1 text-label-sm font-label-sm text-outline">
+<span class="">1 năm</span>
+<span class="">30 năm</span>
+</div>
+</div>
+<div class="w-full h-px bg-outline-variant/30 my-md"></div>
+<!-- Bank Options & Interest Rates -->
+<div class="mb-lg">
+<label class="font-label-md text-label-md text-on-background block mb-sm">Vay tại</label>
+<div class="flex gap-md mb-md">
+<label class="flex items-center gap-2 cursor-pointer group">
+<input class="w-5 h-5 text-primary border-outline-variant focus:ring-primary/20 cursor-pointer" name="bank_type" type="radio" value="thuong_mai">
+<span class="font-body-md text-body-md text-on-surface-variant group-hover:text-on-background transition-colors">Ngân hàng thương mại</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer group">
+<input checked="" class="w-5 h-5 text-primary border-outline-variant focus:ring-primary/20 cursor-pointer" name="bank_type" type="radio" value="csxh">
+<span class="font-body-md text-body-md text-on-surface-variant group-hover:text-on-background transition-colors">Ngân hàng chính sách xã hội</span>
+</label>
+</div>
+<div class="grid grid-cols-2 gap-sm mb-sm">
+<div>
+<label id="label-interest-1" class="font-label-sm text-label-sm text-on-surface-variant block mb-1">Lãi suất xuyên suốt</label>
+<div class="relative">
+<input id="input-interest-1" class="w-full text-right pr-8 pl-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-shadow" type="text" value="">
+<span class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-label-md pointer-events-none">%</span>
+</div>
+</div>
+<div id="col-interest-time" class="hidden">
+<label class="font-label-sm text-label-sm text-on-surface-variant block mb-1">Thời gian ưu đãi</label>
+<div class="relative">
+<input id="input-interest-time" class="w-full text-right pr-14 pl-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-shadow" type="text" value="">
+<span class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-label-md pointer-events-none">Tháng</span>
+</div>
+</div>
+</div>
+<div id="row-interest-2" class="hidden">
+<label class="font-label-sm text-label-sm text-on-surface-variant block mb-1">Lãi suất (sau ưu đãi/bình thường)</label>
+<div class="relative w-1/2 pr-sm">
+<input id="input-interest-2" class="w-full text-right pr-8 pl-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-shadow" type="text" value="">
+<span class="absolute right-[calc(1.5rem+12px)] top-1/2 -translate-y-1/2 text-on-surface-variant font-label-md pointer-events-none">%</span>
+</div>
+</div>
+</div>
+<div class="w-full h-px bg-outline-variant/30 my-md"></div>
+<!-- Repayment Method -->
+<div>
+<label class="font-label-md text-label-md text-on-background block mb-sm">Phương thức trả nợ</label>
+<div class="flex flex-col gap-sm">
+<label class="flex items-start gap-3 p-sm rounded-lg border border-outline-variant hover:border-primary bg-surface-container-lowest cursor-pointer transition-colors shadow-sm">
+<input checked="" class="mt-1 w-5 h-5 text-primary border-outline-variant focus:ring-primary/20 cursor-pointer" name="repayment_method" type="radio" value="giam_dan">
+<div>
+<div class="font-label-md text-label-md text-on-background">Dư nợ giảm dần</div>
+<div class="font-body-md text-body-md text-on-surface-variant mt-1 text-sm">Thanh toán cao ở giai đoạn đầu, thấp dần về sau do lãi tính trên dư nợ thực tế.</div>
+</div>
+</label>
+<label class="flex items-start gap-3 p-sm rounded-lg border border-outline-variant hover:border-primary bg-surface-container-lowest cursor-pointer transition-colors shadow-sm">
+<input class="mt-1 w-5 h-5 text-primary border-outline-variant focus:ring-primary/20 cursor-pointer" name="repayment_method" type="radio" value="deu">
+<div>
+<div class="font-label-md text-label-md text-on-background">Gốc &amp; Lãi trả đều</div>
+<div class="font-body-md text-body-md text-on-surface-variant mt-1 text-sm">Số tiền thanh toán hàng tháng cố định một mức trong suốt thời gian vay.</div>
+</div>
+</label>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Results & Schedule -->
+<div class="lg:col-span-7 flex flex-col gap-lg">
+<!-- Summary Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-level-1 p-md border border-outline-variant/30">
+<h3 class="text-headline-md font-headline-md text-on-background mb-md">Kết quả tính toán</h3>
+<div class="grid grid-cols-1 gap-md">
+<div class="flex flex-col gap-sm w-full">
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/20"><span class="font-body-md text-body-md text-on-surface-variant">Tổng giá trị căn hộ</span><span id="summary-total" class="font-label-md text-label-md text-on-background">1.500.000.000 ₫</span></div>
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/20"><span class="font-body-md text-body-md text-on-surface-variant">Số tiền bạn có</span><span id="summary-available" class="font-label-md text-label-md text-primary">500.000.000 ₫</span></div>
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/20"><span class="font-body-md text-body-md text-on-surface-variant">Tổng số tiền vay</span><span id="summary-borrow" class="font-label-md text-label-md text-error">1.000.000.000 ₫</span></div>
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/20 pl-8"><span class="font-body-md text-body-md text-on-surface-variant">Số tiền gốc phải trả</span><span id="summary-principal" class="font-label-md text-label-md text-on-background">1.000.000.000 ₫</span></div>
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/20 pl-8"><span class="font-body-md text-body-md text-on-surface-variant">Tổng tiền lãi dự kiến</span><span id="summary-interest" class="font-label-md text-label-md text-on-background">362.400.000 ₫</span></div>
+</div>
+</div>
+</div>
+<!-- Schedule Section -->
+<div class="bg-surface-container-lowest rounded-xl shadow-level-1 p-md border border-outline-variant/30 flex-grow flex flex-col">
+<div class="flex justify-between items-center mb-md w-full gap-2">
+<h3 class="text-headline-md font-headline-md text-on-background">Lịch trình thanh toán</h3>
+<div class="flex gap-sm items-center">
+<div class="flex items-center bg-surface-container rounded-full p-1 border border-outline-variant/30 w-max">
+<button id="btn-view-month" class="px-3 py-1 rounded-full text-label-sm font-label-sm bg-surface shadow-sm text-on-surface transition-all">Tháng</button>
+<button id="btn-view-year" class="px-3 py-1 rounded-full text-label-sm font-label-sm text-on-surface-variant hover:text-on-surface transition-all">Năm</button>
+</div>
+<button class="hidden flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-full font-label-md shadow-sm hover:shadow-md hover:bg-on-primary-fixed-variant transition-all"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">download</span>Xuất PDF</button>
+<button class="hidden flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-full font-label-md shadow-sm hover:shadow-md hover:bg-on-primary-fixed-variant transition-all"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">download</span>Xuất Excel</button>
+</div>
+</div>
+<div class="overflow-x-hidden h-[400px] overflow-y-auto no-scrollbar">
+<table class="w-full border-collapse table-fixed">
+<thead class="sticky top-0 bg-surface-container-lowest shadow-sm z-10">
+<tr class="border-b-2 border-outline-variant/50">
+<th class="py-3 px-1 md:px-2 font-label-md text-label-md text-on-surface-variant w-1/5 align-middle text-center whitespace-nowrap">Kỳ hạn</th>
+<th class="py-3 px-1 md:px-2 font-label-md text-label-md text-on-surface-variant text-center w-1/5 align-middle whitespace-nowrap">Gốc</th>
+<th class="py-3 px-1 md:px-2 font-label-md text-label-md text-on-surface-variant text-center w-1/5 align-middle whitespace-nowrap">Lãi</th>
+<th class="py-3 px-1 md:px-2 font-label-md text-label-md text-on-surface-variant text-center w-1/5 align-middle whitespace-nowrap">Tổng</th>
+<th class="py-3 px-1 md:px-2 font-label-md text-label-md text-on-surface-variant text-center w-1/5 align-middle whitespace-nowrap">Dư nợ</th>
+</tr>
+</thead>
+<tbody id="schedule-tbody" class="font-label-sm text-[12px] md:text-label-sm">
+<!-- Dữ liệu render từ JS -->
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<div id="footer-placeholder"></div>
+
+<script src="assets/js/supabase-config.js"></script>
+<script src="assets/js/supabase-service.js"></script>
+<script src="assets/js/main.js"></script>
+</body></html>
