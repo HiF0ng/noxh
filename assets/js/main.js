@@ -111,14 +111,37 @@ async function loadNavbar() {
                     }
                 });
 
-                document.addEventListener('click', () => {
+                document.addEventListener('click', (e) => {
                     if (btnFunctions.classList.contains('dropdown-open')) {
-                        btnFunctions.classList.remove('dropdown-open');
+                        // Close dropdown visually
                         dropdownFunctions.classList.remove('opacity-100', 'visible');
                         dropdownFunctions.classList.add('opacity-0', 'invisible');
                         
-                        if (window.realActiveItem && window.slideNavIndicator) {
-                            window.slideNavIndicator(window.realActiveItem, 'is-active');
+                        const clickedLink = e.target.closest('a');
+                        let willNavigate = false;
+                        
+                        if (clickedLink) {
+                            const href = clickedLink.getAttribute('href');
+                            const currentPath = window.location.pathname.split('/').pop() || 'homepage.html';
+                            
+                            if (href && !href.startsWith('http') && !href.startsWith('#') && !href.startsWith('javascript:') && clickedLink.getAttribute('target') !== '_blank') {
+                                const targetPath = href.split('/').pop() || 'homepage.html';
+                                if (targetPath !== currentPath) {
+                                    willNavigate = true;
+                                }
+                            }
+                        }
+                        
+                        if (!willNavigate) {
+                            // Slide back smoothly. slideNavIndicator will automatically handle removing dropdown-open
+                            // from currentActive (btnFunctions) during the animation setup.
+                            if (window.realActiveItem && window.slideNavIndicator) {
+                                window.slideNavIndicator(window.realActiveItem, 'is-active');
+                            }
+                        } else {
+                            // They clicked a valid SPA link. The SPA router will handle navigation.
+                            // We just clean up the dropdown-open class so highlightActiveLink sees it as clean.
+                            btnFunctions.classList.remove('dropdown-open');
                         }
                     }
                 });
@@ -654,7 +677,14 @@ function highlightActiveLink() {
     const indicator = document.getElementById('nav-indicator');
     const isInitialized = indicator && indicator.style.width && indicator.style.width !== '0px';
     const topNavLinks = document.querySelectorAll('.top-navbar a.nav-link:not(.user-dropdown-menu a)');
+    const btnFunctions = document.getElementById('btn-functions');
     let targetLink = null;
+
+    const functionPages = {
+        'faq.html': { icon: 'help', text: 'Câu hỏi thường gặp' },
+        'compare.html': { icon: 'compare_arrows', text: 'So sánh' },
+        'loan.html': { icon: 'calculate', text: 'Tính khoản vay' }
+    };
 
     topNavLinks.forEach(link => {
         let href = link.getAttribute('href');
@@ -664,9 +694,43 @@ function highlightActiveLink() {
 
         if (href === currentPage) {
             targetLink = link;
-            window.realActiveItem = link;
         }
     });
+
+    if (!targetLink && btnFunctions && functionPages[currentPage]) {
+        targetLink = btnFunctions;
+    }
+
+    if (targetLink) {
+        window.realActiveItem = targetLink;
+    }
+
+    // Update btn-functions UI
+    if (btnFunctions) {
+        const iconEl = btnFunctions.querySelector('.nav-icon');
+        const textEl = btnFunctions.querySelector('.nav-text');
+        
+        // Disable transition temporarily to change text/icon instantly without slide glitch
+        btnFunctions.classList.add('no-transitions');
+        
+        if (functionPages[currentPage]) {
+            if (iconEl) {
+                // Hide icon completely for function pages
+                iconEl.style.display = 'none';
+            }
+            if (textEl) textEl.textContent = functionPages[currentPage].text;
+        } else {
+            if (iconEl) {
+                iconEl.style.display = '';
+                iconEl.textContent = 'widgets';
+            }
+            if (textEl) textEl.textContent = 'Chức năng';
+        }
+        
+        // Force reflow and restore
+        void btnFunctions.offsetHeight;
+        btnFunctions.classList.remove('no-transitions');
+    }
 
     if (targetLink) {
         if (isInitialized && window.slideNavIndicator) {
@@ -676,21 +740,23 @@ function highlightActiveLink() {
             // Initial page load: snap without animation
             // First apply the class so CSS applies, then snap indicator
             topNavLinks.forEach(link => link.classList.remove('is-active'));
+            if (btnFunctions) btnFunctions.classList.remove('is-active');
+            
             targetLink.classList.add('is-active');
             setTimeout(() => {
                 if (window.slideNavIndicator) window.slideNavIndicator(targetLink, 'is-active', false);
             }, 50);
         }
-    }
-
-    // Handle function button active state
-    const btnFunctions = document.getElementById('btn-functions');
-    if (btnFunctions) {
-        if (['faq.html', 'compare.html', 'loan.html'].includes(currentPage)) {
-            btnFunctions.classList.add('is-active');
-        } else {
-            btnFunctions.classList.remove('is-active');
+    } else {
+        // Current page is not in the navbar (e.g. login.html, signup.html)
+        topNavLinks.forEach(link => link.classList.remove('is-active'));
+        if (btnFunctions) btnFunctions.classList.remove('is-active', 'dropdown-open');
+        
+        if (indicator) {
+            indicator.style.opacity = '0';
+            indicator.style.width = '0px';
         }
+        window.realActiveItem = null;
     }
 
     // Sidebar Menu Links
