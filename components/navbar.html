@@ -3,9 +3,9 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 44px;
+      height: 38px;
       border-radius: 9999px;
-      padding: 0 12px;
+      padding: 0 10px;
       color: var(--on-surface-variant, #475569);
       cursor: pointer;
       position: relative;
@@ -16,7 +16,7 @@
       background-color: var(--surface-container, #f1f5f9);
   }
   .nav-item .nav-icon {
-      font-size: 24px;
+      font-size: 22px;
   }
   .nav-item .nav-text {
       max-width: 0;
@@ -34,20 +34,20 @@
   }
   .nav-item.is-active .nav-text,
   .nav-item.dropdown-open .nav-text {
-      max-width: 150px;
+      max-width: 200px;
       opacity: 1;
-      margin-left: 8px;
+      margin-left: 6px;
   }
   .no-transitions * {
       transition: none !important;
   }
 </style>
 
-<nav class="top-navbar fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-2 md:px-6 md:py-3 max-w-max mx-auto bg-surface-container-lowest rounded-full mt-margin-mobile lg:mt-sm shadow-sm transition-all duration-300">
+<nav class="top-navbar fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-3 py-1.5 md:px-5 md:py-2 max-w-max mx-auto bg-surface-container-lowest rounded-full mt-margin-mobile lg:mt-sm shadow-sm transition-all duration-300">
     <!-- Links -->
-    <div class="relative flex items-center gap-1 md:gap-2" id="nav-links-container">
+    <div class="relative flex items-center gap-0.5 md:gap-1" id="nav-links-container">
         <!-- Sliding Indicator -->
-        <div id="nav-indicator" class="absolute h-[44px] bg-primary rounded-full transition-all duration-300 ease-out z-0" style="width: 0; left: 0; opacity: 0;"></div>
+        <div id="nav-indicator" class="absolute h-[38px] bg-primary rounded-full transition-all duration-300 ease-out z-0" style="width: 0; left: 0; opacity: 0;"></div>
         
         <a class="nav-link nav-item" href="homepage.html" title="Trang chủ">
             <span class="material-symbols-outlined nav-icon">home</span>
