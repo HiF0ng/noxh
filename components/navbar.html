@@ -1,20 +1,90 @@
-<nav class="top-navbar fixed top-0 left-0 right-0 z-50 flex items-center justify-between gap-4 px-6 py-3 max-w-5xl mx-4 lg:mx-auto bg-surface-container-lowest rounded-full mt-margin-mobile lg:mt-sm shadow-sm transition-all duration-300">
-<div class="flex items-center gap-sm shrink-0">
-<a href="homepage.html" class="flex items-center">
-<img src="img/logo.svg" alt="Vietnam Housing" class="h-6 md:h-7 w-auto hidden sm:block -translate-y-0.5">
-</a>
-</div>
-<div class="hidden md:flex items-center gap-4 lg:gap-6 mx-auto">
-<a class="nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="homepage.html">Trang chủ</a>
-<a class="nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="all-projects.html">Dự án</a>
-<a class="nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="documents.html">Tài liệu</a>
-<a class="nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="faq.html">Câu hỏi thường gặp</a>
-<a class="nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="compare.html">So sánh</a>
-<a class="nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="loan.html">Tính khoản vay</a>
-</div>
-<div class="flex items-center gap-sm shrink-0">
-<div class="h-10 w-10 rounded-full overflow-hidden border-2 border-primary/50 bg-primary/5 flex items-center justify-center cursor-pointer avatar-wrapper">
-<span class="material-symbols-outlined text-primary">person</span>
-</div>
-</div>
+<style>
+  .nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 44px;
+      border-radius: 9999px;
+      padding: 0 12px;
+      color: var(--on-surface-variant, #475569);
+      cursor: pointer;
+      position: relative;
+      z-index: 10;
+      transition: color 0.3s ease;
+  }
+  .nav-item:not(.is-active):not(.dropdown-open):hover {
+      background-color: var(--surface-container, #f1f5f9);
+  }
+  .nav-item .nav-icon {
+      font-size: 24px;
+  }
+  .nav-item .nav-text {
+      max-width: 0;
+      opacity: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      font-size: 14px;
+      font-weight: 600;
+      margin-left: 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .nav-item.is-active,
+  .nav-item.dropdown-open {
+      color: #ffffff;
+  }
+  .nav-item.is-active .nav-text,
+  .nav-item.dropdown-open .nav-text {
+      max-width: 150px;
+      opacity: 1;
+      margin-left: 8px;
+  }
+  .no-transitions * {
+      transition: none !important;
+  }
+</style>
+
+<nav class="top-navbar fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-2 md:px-6 md:py-3 max-w-max mx-auto bg-surface-container-lowest rounded-full mt-margin-mobile lg:mt-sm shadow-sm transition-all duration-300">
+    <!-- Links -->
+    <div class="relative flex items-center gap-1 md:gap-2" id="nav-links-container">
+        <!-- Sliding Indicator -->
+        <div id="nav-indicator" class="absolute h-[44px] bg-primary rounded-full transition-all duration-300 ease-out z-0" style="width: 0; left: 0; opacity: 0;"></div>
+        
+        <a class="nav-link nav-item" href="homepage.html" title="Trang chủ">
+            <span class="material-symbols-outlined nav-icon">home</span>
+            <span class="nav-text font-label-md">Trang chủ</span>
+        </a>
+        <a class="nav-link nav-item" href="all-projects.html" title="Dự án">
+            <span class="material-symbols-outlined nav-icon">apartment</span>
+            <span class="nav-text font-label-md">Dự án</span>
+        </a>
+        <a class="nav-link nav-item" href="documents.html" title="Tài liệu">
+            <span class="material-symbols-outlined nav-icon">description</span>
+            <span class="nav-text font-label-md">Tài liệu</span>
+        </a>
+        
+        <!-- Dropdown Chức năng -->
+        <div class="relative">
+            <button class="nav-item outline-none" id="btn-functions" title="Chức năng">
+                <span class="material-symbols-outlined nav-icon">widgets</span>
+                <span class="nav-text font-label-md">Chức năng</span>
+            </button>
+            <div id="dropdown-functions" class="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-48 bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.1)] border border-outline-variant opacity-0 invisible transition-all duration-200 flex flex-col p-2">
+                <a href="faq.html" class="px-3 py-2 text-label-md text-on-surface hover:bg-surface-container active:scale-95 active:bg-surface-container-highest rounded-lg transition-all duration-150">Câu hỏi thường gặp</a>
+                <a href="compare.html" class="px-3 py-2 text-label-md text-on-surface hover:bg-surface-container active:scale-95 active:bg-surface-container-highest rounded-lg transition-all duration-150">So sánh</a>
+                <a href="loan.html" class="px-3 py-2 text-label-md text-on-surface hover:bg-surface-container active:scale-95 active:bg-surface-container-highest rounded-lg transition-all duration-150">Tính khoản vay</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="w-px h-6 bg-outline-variant mx-2 md:mx-4"></div>
+
+    <!-- Avatar -->
+    <div class="flex items-center shrink-0">
+        <div class="h-9 w-9 rounded-full overflow-hidden border-2 border-primary/50 bg-primary/5 flex items-center justify-center cursor-pointer avatar-wrapper">
+            <span class="material-symbols-outlined text-primary text-[20px]">person</span>
+        </div>
+    </div>
 </nav>
+
+

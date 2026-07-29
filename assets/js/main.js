@@ -1,3 +1,50 @@
+// --- Custom Local Analytics Tracker ---
+(function() {
+    // 1. Unique Visitors (User chưa đăng ký)
+    if (!localStorage.getItem('noxh_uuid')) {
+        localStorage.setItem('noxh_uuid', Math.random().toString(36).substring(2) + Date.now().toString(36));
+        let unreg = parseInt(localStorage.getItem('noxh_unregistered_users') || '0');
+        localStorage.setItem('noxh_unregistered_users', unreg + 1);
+    }
+    
+    // 2. Session & Visit Tracking (Prevent F5 spam)
+    // A session is maintained as long as the tab is open (sessionStorage). 
+    // We only increment "Total Visits" when a NEW session starts.
+    if (!sessionStorage.getItem('noxh_current_session')) {
+        sessionStorage.setItem('noxh_current_session', Date.now().toString());
+        
+        let visits = parseInt(localStorage.getItem('noxh_total_visits') || '0');
+        localStorage.setItem('noxh_total_visits', visits + 1);
+        
+        let sessionCount = parseInt(localStorage.getItem('noxh_session_count') || '0');
+        localStorage.setItem('noxh_session_count', sessionCount + 1);
+    }
+
+    // 3. Duration & Bounce Tracking
+    const pageLoadTime = Date.now();
+    let hasInteracted = false;
+    
+    const interactHandler = () => { hasInteracted = true; };
+    window.addEventListener('click', interactHandler, {once:true});
+    window.addEventListener('scroll', interactHandler, {once:true});
+    window.addEventListener('keypress', interactHandler, {once:true});
+
+    window.addEventListener('beforeunload', () => {
+        const timeSpentOnPage = Math.floor((Date.now() - pageLoadTime) / 1000); // seconds
+        
+        // Add to total duration
+        let totalDuration = parseInt(localStorage.getItem('noxh_total_duration') || '0');
+        localStorage.setItem('noxh_total_duration', totalDuration + timeSpentOnPage);
+        
+        // Bounce check: If they didn't interact AND spent less than 10 seconds
+        if (!hasInteracted && timeSpentOnPage < 10) {
+            let bounces = parseInt(localStorage.getItem('noxh_bounce_count') || '0');
+            localStorage.setItem('noxh_bounce_count', bounces + 1);
+        }
+    });
+})();
+// -------------------------------------
+
 document.addEventListener('DOMContentLoaded', async () => {
     // Load components
     await loadNavbar();
@@ -30,6 +77,52 @@ async function loadNavbar() {
         if (response.ok) {
             const html = await response.text();
             placeholder.innerHTML = html;
+            
+            // Initialize dropdown logic
+            const btnFunctions = document.getElementById('btn-functions');
+            const dropdownFunctions = document.getElementById('dropdown-functions');
+            
+            if (btnFunctions && dropdownFunctions) {
+                btnFunctions.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isOpen = btnFunctions.classList.contains('dropdown-open');
+                    
+                    // Close other menus if any
+                    document.querySelectorAll('.dropdown-open').forEach(el => el.classList.remove('dropdown-open'));
+                    document.querySelectorAll('#dropdown-functions.opacity-100').forEach(el => {
+                        el.classList.remove('opacity-100', 'visible');
+                        el.classList.add('opacity-0', 'invisible');
+                    });
+
+                    if (!isOpen) {
+                        btnFunctions.classList.add('dropdown-open');
+                        dropdownFunctions.classList.remove('opacity-0', 'invisible');
+                        dropdownFunctions.classList.add('opacity-100', 'visible');
+                        
+                        if (window.slideNavIndicator) window.slideNavIndicator(btnFunctions, 'dropdown-open');
+                    } else {
+                        btnFunctions.classList.remove('dropdown-open');
+                        dropdownFunctions.classList.remove('opacity-100', 'visible');
+                        dropdownFunctions.classList.add('opacity-0', 'invisible');
+                        
+                        if (window.realActiveItem && window.slideNavIndicator) {
+                            window.slideNavIndicator(window.realActiveItem, 'is-active');
+                        }
+                    }
+                });
+
+                document.addEventListener('click', () => {
+                    if (btnFunctions.classList.contains('dropdown-open')) {
+                        btnFunctions.classList.remove('dropdown-open');
+                        dropdownFunctions.classList.remove('opacity-100', 'visible');
+                        dropdownFunctions.classList.add('opacity-0', 'invisible');
+                        
+                        if (window.realActiveItem && window.slideNavIndicator) {
+                            window.slideNavIndicator(window.realActiveItem, 'is-active');
+                        }
+                    }
+                });
+            }
         }
     } catch (err) {
         console.error('Failed to load navbar component', err);
@@ -558,7 +651,11 @@ function highlightActiveLink() {
     if (!currentPage || currentPage === '/' || currentPage === 'index.html') currentPage = 'homepage.html';
 
     // Top Navbar Links
+    const indicator = document.getElementById('nav-indicator');
+    const isInitialized = indicator && indicator.style.width && indicator.style.width !== '0px';
     const topNavLinks = document.querySelectorAll('.top-navbar a.nav-link:not(.user-dropdown-menu a)');
+    let targetLink = null;
+
     topNavLinks.forEach(link => {
         let href = link.getAttribute('href');
         if (!href || href.startsWith('http') || href.startsWith('#')) return;
@@ -566,11 +663,35 @@ function highlightActiveLink() {
         if (!href || href === '/' || href === 'index.html') href = 'homepage.html';
 
         if (href === currentPage) {
-            link.className = "nav-link font-label-md text-label-md text-primary border-b-2 border-primary pb-1 font-bold transition-colors active";
-        } else {
-            link.className = "nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors";
+            targetLink = link;
+            window.realActiveItem = link;
         }
     });
+
+    if (targetLink) {
+        if (isInitialized && window.slideNavIndicator) {
+            // SPA navigation: animate smoothly
+            window.slideNavIndicator(targetLink, 'is-active', true);
+        } else {
+            // Initial page load: snap without animation
+            // First apply the class so CSS applies, then snap indicator
+            topNavLinks.forEach(link => link.classList.remove('is-active'));
+            targetLink.classList.add('is-active');
+            setTimeout(() => {
+                if (window.slideNavIndicator) window.slideNavIndicator(targetLink, 'is-active', false);
+            }, 50);
+        }
+    }
+
+    // Handle function button active state
+    const btnFunctions = document.getElementById('btn-functions');
+    if (btnFunctions) {
+        if (['faq.html', 'compare.html', 'loan.html'].includes(currentPage)) {
+            btnFunctions.classList.add('is-active');
+        } else {
+            btnFunctions.classList.remove('is-active');
+        }
+    }
 
     // Sidebar Menu Links
     const sidebarLinks = document.querySelectorAll('.sidebar-menu a');
@@ -615,6 +736,58 @@ function highlightActiveLink() {
         }
     });
 }
+
+window.slideNavIndicator = function(targetItem, activeClass = 'is-active', animate = true) {
+    const container = document.getElementById('nav-links-container');
+    const indicator = document.getElementById('nav-indicator');
+    if (!container || !indicator || !targetItem) return;
+
+    const currentActive = container.querySelector('.nav-item.is-active') || container.querySelector('.nav-item.dropdown-open');
+    
+    // Disable transitions to calculate final state instantly
+    container.classList.add('no-transitions');
+    
+    // Swap classes to target state
+    if (currentActive) currentActive.classList.remove('is-active', 'dropdown-open');
+    targetItem.classList.add(activeClass);
+    
+    // Force layout flush and measure accurately regardless of nested relative divs
+    const targetRect = targetItem.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+    const finalLeft = targetRect.left - containerRect.left;
+    const finalWidth = targetRect.width;
+    
+    if (animate && currentActive && currentActive !== targetItem) {
+        // Revert to current state
+        targetItem.classList.remove(activeClass);
+        if (currentActive.id === 'btn-functions') currentActive.classList.add('dropdown-open');
+        else currentActive.classList.add('is-active');
+        
+        // Force layout flush for the reverted state
+        void container.offsetHeight;
+        
+        // Re-enable transitions
+        container.classList.remove('no-transitions');
+        
+        // Apply final target classes to start CSS animation on items
+        if (currentActive) currentActive.classList.remove('is-active', 'dropdown-open');
+        targetItem.classList.add(activeClass);
+        
+        indicator.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+    } else {
+        // No animation needed (e.g. page load)
+        container.classList.remove('no-transitions');
+        indicator.style.transition = 'none';
+        // Ensure target is active
+        if (currentActive && currentActive !== targetItem) currentActive.classList.remove('is-active', 'dropdown-open');
+        targetItem.classList.add(activeClass);
+    }
+
+    // Move indicator to final target
+    indicator.style.left = `${finalLeft}px`;
+    indicator.style.width = `${finalWidth}px`;
+    indicator.style.opacity = '1';
+};
 
 
 function setupLocationDropdowns() {

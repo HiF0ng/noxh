@@ -294,75 +294,208 @@ window.handleAdminLogout = function() {
                     }
                 },
                 y: {
+                    beginAtZero: true,
+                    suggestedMax: 10,
                     grid: { color: 'rgba(195, 198, 215, 0.3)' },
                     ticks: {
                         font: { family: 'Be Vietnam Pro', size: 12 },
-                        color: '#737686'
+                        color: '#737686',
+                        stepSize: 1
                     }
                 }
             }
         };
     };
 
+    function loadDashboardMetrics() {
+        function animateValue(obj, start, end, duration, formatStr = '') {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const easeOut = progress * (2 - progress);
+                const currentVal = Math.floor(easeOut * (end - start) + start);
+                
+                if (formatStr === 'time') {
+                    const m = Math.floor(currentVal / 60).toString().padStart(2, '0');
+                    const s = (currentVal % 60).toString().padStart(2, '0');
+                    obj.textContent = m + ':' + s;
+                } else if (formatStr === 'percent') {
+                    obj.textContent = (easeOut * (end - start) + start).toFixed(1) + '%';
+                } else {
+                    obj.textContent = currentVal.toLocaleString('vi-VN');
+                }
+                
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                } else {
+                    if (formatStr === 'time') {
+                        const m = Math.floor(end / 60).toString().padStart(2, '0');
+                        const s = (end % 60).toString().padStart(2, '0');
+                        obj.textContent = m + ':' + s;
+                    } else if (formatStr === 'percent') {
+                        obj.textContent = end.toFixed(1) + '%';
+                    } else {
+                        obj.textContent = end.toLocaleString('vi-VN');
+                    }
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // Read from tracker
+        const visits = parseInt(localStorage.getItem('noxh_total_visits') || '0');
+        const totalDuration = parseInt(localStorage.getItem('noxh_total_duration') || '0');
+        const sessionCount = parseInt(localStorage.getItem('noxh_session_count') || '0');
+        const avgDuration = sessionCount > 0 ? Math.floor(totalDuration / sessionCount) : 0;
+        
+        const bounces = parseInt(localStorage.getItem('noxh_bounce_count') || '0');
+        const bounceRate = sessionCount > 0 ? (bounces / sessionCount) * 100 : 0;
+
+        const unreg = parseInt(localStorage.getItem('noxh_unregistered_users') || '0');
+
+        const elVisits = document.getElementById('dash-stat-visits');
+        if (elVisits && elVisits.textContent === '--') animateValue(elVisits, 0, visits, 1500);
+        
+        const elDuration = document.getElementById('dash-stat-duration');
+        if (elDuration && elDuration.textContent === '--') animateValue(elDuration, 0, avgDuration, 1500, 'time');
+        
+        const elBounce = document.getElementById('dash-stat-bounce');
+        if (elBounce && elBounce.textContent === '--') animateValue(elBounce, 0, bounceRate, 1500, 'percent');
+        
+        const elUnreg = document.getElementById('dash-stat-unreg');
+        if (elUnreg && elUnreg.textContent === '--') animateValue(elUnreg, 0, unreg, 1500);
+
+        const elReg = document.getElementById('dash-stat-reg');
+        if (elReg && typeof usersList !== 'undefined') {
+            if (elReg.textContent === '--') animateValue(elReg, 0, usersList.length, 1000);
+            else elReg.textContent = usersList.length.toLocaleString('vi-VN');
+        }
+
+        const elSupport = document.getElementById('dash-stat-support');
+        if (elSupport && typeof SupabaseService !== 'undefined') {
+            if (typeof SupabaseService.getFeedbacks === 'function') {
+                SupabaseService.getFeedbacks().then(feedbacks => {
+                    const count = feedbacks ? feedbacks.length : 0;
+                    if (elSupport.textContent === '--') animateValue(elSupport, 0, count, 1000);
+                    else elSupport.textContent = count.toLocaleString('vi-VN');
+                }).catch(e => {
+                    console.error(e);
+                    elSupport.textContent = '0';
+                });
+            } else {
+                if (elSupport.textContent === '--') animateValue(elSupport, 0, 0, 1000);
+                else elSupport.textContent = '0';
+            }
+        }
+    }
+
+    function prepareChartData() {
+        const today = new Date();
+        const historyLength = 60;
+        
+        accessDailyData.labels = [];
+        accessDailyData.data = [];
+        registeredDailyData.labels = [];
+        registeredDailyData.data = [];
+
+        const userCountsByDate = {};
+        if (typeof usersList !== 'undefined') {
+            usersList.forEach(u => {
+                if (!userCountsByDate[u.date]) userCountsByDate[u.date] = 0;
+                userCountsByDate[u.date]++;
+            });
+        }
+
+        const currentVisits = parseInt(localStorage.getItem('noxh_total_visits') || '0');
+
+        for (let i = historyLength - 1; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(today.getDate() - i);
+            const dateStr = d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+            const fullDateStr = d.toLocaleDateString('vi-VN');
+
+            accessDailyData.labels.push(dateStr);
+            registeredDailyData.labels.push(dateStr);
+
+            // No mockdata! Only actual tracked visits for today, past 59 days are 0.
+            if (i === 0) {
+                accessDailyData.data.push(currentVisits);
+            } else {
+                accessDailyData.data.push(0);
+            }
+
+            registeredDailyData.data.push(userCountsByDate[fullDateStr] || 0);
+        }
+    }
+
     function initDashboardChart() {
+        loadDashboardMetrics();
+        prepareChartData();
         // 1. Chart: Tăng trưởng truy cập
         var canvasAccess = document.getElementById('applicationsChart');
         if (canvasAccess) {
-            if (chartInstanceAccess) {
-                chartInstanceAccess.destroy();
+            try {
+                if (chartInstanceAccess) chartInstanceAccess.destroy();
+                var ctxAccess = canvasAccess.getContext('2d');
+                chartInstanceAccess = new Chart(ctxAccess, {
+                    type: 'line',
+                    data: {
+                        labels: accessDailyData.labels,
+                        datasets: [{
+                            label: 'Lượt truy cập',
+                            data: accessDailyData.data,
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.08)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: true,
+                            pointRadius: 0,
+                            pointHoverRadius: 6,
+                            pointHoverBackgroundColor: '#ffffff',
+                            pointHoverBorderColor: '#2563eb',
+                            pointHoverBorderWidth: 3
+                        }]
+                    },
+                    options: commonChartOptions(' lượt')
+                });
+            } catch (err) {
+                console.error("Lỗi vẽ Chart 1:", err);
+                canvasAccess.parentElement.innerHTML = '<div class="text-red-500 p-4">Lỗi vẽ biểu đồ truy cập: ' + err.message + '</div>';
             }
-            var ctxAccess = canvasAccess.getContext('2d');
-            chartInstanceAccess = new Chart(ctxAccess, {
-                type: 'line',
-                data: {
-                    labels: accessDailyData.labels,
-                    datasets: [{
-                        label: 'Lượt truy cập',
-                        data: accessDailyData.data,
-                        borderColor: '#2563eb',
-                        backgroundColor: 'rgba(37, 99, 235, 0.08)',
-                        borderWidth: 2,
-                        tension: 0.3,
-                        fill: true,
-                        pointRadius: 0, // Không hiện nút tròn mặc định
-                        pointHoverRadius: 6, // Chỉ hiện nút tròn tại điểm trỏ chuột
-                        pointHoverBackgroundColor: '#ffffff',
-                        pointHoverBorderColor: '#2563eb',
-                        pointHoverBorderWidth: 3
-                    }]
-                },
-                options: commonChartOptions(' lượt')
-            });
         }
 
         // 2. Chart: Tăng trưởng người đăng ký
         var canvasRegistered = document.getElementById('registeredUsersChart');
         if (canvasRegistered) {
-            if (chartInstanceRegistered) {
-                chartInstanceRegistered.destroy();
+            try {
+                if (chartInstanceRegistered) chartInstanceRegistered.destroy();
+                var ctxRegistered = canvasRegistered.getContext('2d');
+                chartInstanceRegistered = new Chart(ctxRegistered, {
+                    type: 'line',
+                    data: {
+                        labels: registeredDailyData.labels,
+                        datasets: [{
+                            label: 'Người đăng ký mới',
+                            data: registeredDailyData.data,
+                            borderColor: '#006c49',
+                            backgroundColor: 'rgba(0, 108, 73, 0.08)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: true,
+                            pointRadius: 0,
+                            pointHoverRadius: 6,
+                            pointHoverBackgroundColor: '#ffffff',
+                            pointHoverBorderColor: '#006c49',
+                            pointHoverBorderWidth: 3
+                        }]
+                    },
+                    options: commonChartOptions(' người')
+                });
+            } catch (err) {
+                console.error("Lỗi vẽ Chart 2:", err);
+                canvasRegistered.parentElement.innerHTML = '<div class="text-red-500 p-4">Lỗi vẽ biểu đồ người đăng ký: ' + err.message + '</div>';
             }
-            var ctxRegistered = canvasRegistered.getContext('2d');
-            chartInstanceRegistered = new Chart(ctxRegistered, {
-                type: 'line',
-                data: {
-                    labels: registeredDailyData.labels,
-                    datasets: [{
-                        label: 'Người đăng ký mới',
-                        data: registeredDailyData.data,
-                        borderColor: '#006c49',
-                        backgroundColor: 'rgba(0, 108, 73, 0.08)',
-                        borderWidth: 2,
-                        tension: 0.3,
-                        fill: true,
-                        pointRadius: 0, // Không hiện nút tròn mặc định
-                        pointHoverRadius: 6, // Chỉ hiện nút tròn tại điểm trỏ chuột
-                        pointHoverBackgroundColor: '#ffffff',
-                        pointHoverBorderColor: '#006c49',
-                        pointHoverBorderWidth: 3
-                    }]
-                },
-                options: commonChartOptions(' người')
-            });
         }
     }
 
@@ -2301,6 +2434,10 @@ window.handleAdminLogout = function() {
                 var dashRegStat = document.getElementById('dash-stat-reg');
                 if (dashRegStat) {
                     dashRegStat.textContent = usersList.length.toLocaleString('vi-VN');
+                }
+
+                if (getCurrentPage() === 'dashboard') {
+                    initDashboardChart();
                 }
             } catch(e) {
                 console.error('Error loading data from Supabase:', e);

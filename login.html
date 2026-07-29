@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html><html lang="vi" style=""><head>
+<!DOCTYPE html><html lang="vi" style=""><head>
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>Đăng nhập - HousingSupportVN</title>
@@ -13,8 +13,11 @@
 <!-- TopNavBar -->
 <div id="navbar-placeholder"></div>
 <!-- Main Content: Login Form -->
-<main class="flex-grow flex justify-center pt-[120px] pb-lg px-4 md:px-8 bg-cityscape relative">
-<div class="max-w-[720px] w-full bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] overflow-hidden flex flex-col md:flex-row h-fit">
+<main class="flex-grow flex flex-col items-center pt-[96px] pb-lg px-8 md:px-12 bg-cityscape relative">
+<a href="homepage.html" class="mb-6 z-10 drop-shadow-md">
+    <img src="img/logo.svg" alt="noxh.help" class="h-8 md:h-10 w-auto">
+</a>
+<div class="max-w-[720px] w-full bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] overflow-hidden flex flex-col md:flex-row h-fit z-10">
 <!-- Left Side: Illustration -->
 <div class="hidden md:block md:w-1/2 relative bg-surface-container">
 <img class="w-full h-full object-cover absolute inset-0 z-0" alt="Media Placeholder" src="https://placehold.co/600x800/e2e8f0/64748b?text=Media+Placeholder">
@@ -29,7 +32,7 @@
 <form class="space-y-3" id="login-form">
 <div>
 <label class="block font-label-md text-[12px] text-on-surface mb-1" for="email">Email hoặc Số điện thoại</label>
-<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-1.5 text-body-sm text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" id="email" placeholder="Nhập email hoặc số điện thoại" required="" type="text">
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-1.5 font-body-sm text-[13px] text-on-surface-variant placeholder:text-outline-variant focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" id="email" placeholder="Nhập email hoặc số điện thoại" required="" type="text">
 </div>
 <div>
 <div class="flex justify-between items-center mb-1">
@@ -38,7 +41,7 @@
 </div>
 <div class="relative">
 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline">lock</span>
-<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-1.5 pl-9 pr-9 text-body-sm text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" id="password" placeholder="••••••••" required="" type="password">
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-1.5 pl-9 pr-9 font-body-sm text-[13px] text-on-surface-variant placeholder:text-outline-variant focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" id="password" placeholder="••••••••" required="" type="password">
 <button class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors cursor-pointer flex items-center justify-center" type="button">
 <span class="material-symbols-outlined text-[18px] leading-none">visibility_off</span>
 </button>
