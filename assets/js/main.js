@@ -179,6 +179,7 @@ function initPageScripts() {
     initSettingsForm();
     initLoanCalculator();
     setupProjectFilterSort();
+    setupScrollDownBtn();
 }
 
 function initSettingsForm() {
@@ -508,33 +509,39 @@ function adjustFeatureSubtext() {
         el.style.fontSize = '';
     });
     
-    let minFontSize = 16; // default max font-size (16px)
+    let minFontSize = Infinity;
     
     elements.forEach(el => {
         const parent = el.parentElement;
         if (!parent) return;
         
-        // Horizontal padding: px-md is 24px left and 24px right (total 48px).
-        // Let's use 56px for safe margin
-        const parentWidth = parent.clientWidth - 56;
+        const computedPaddingLeft = parseFloat(window.getComputedStyle(parent).paddingLeft) || 0;
+        const computedPaddingRight = parseFloat(window.getComputedStyle(parent).paddingRight) || 0;
+        const parentWidth = parent.clientWidth - (computedPaddingLeft + computedPaddingRight);
         const textWidth = el.scrollWidth;
+        
+        const computedFontSize = parseFloat(window.getComputedStyle(el).fontSize) || 16;
         
         if (textWidth > parentWidth && parentWidth > 0) {
             const ratio = parentWidth / textWidth;
-            const targetSize = 16 * ratio;
+            const targetSize = computedFontSize * ratio;
             if (targetSize < minFontSize) {
                 minFontSize = targetSize;
             }
+        } else if (computedFontSize < minFontSize) {
+            minFontSize = computedFontSize; // Keep track of the minimum natural size
         }
     });
     
     // Don't shrink below a readable size
-    if (minFontSize < 10) minFontSize = 10;
-    
-    // Apply the same minimum size to all 4 cards
-    elements.forEach(el => {
-        el.style.fontSize = `${minFontSize}px`;
-    });
+    if (minFontSize !== Infinity) {
+        if (minFontSize < 6) minFontSize = 6;
+        
+        // Apply the same minimum size to all 4 cards
+        elements.forEach(el => {
+            el.style.fontSize = `${minFontSize}px`;
+        });
+    }
 }
 
 
@@ -799,6 +806,21 @@ function highlightActiveLink() {
         } else {
             // Default inactive state
             link.className = 'px-4 py-2 flex items-center gap-2 transition-colors text-on-surface hover:text-primary hover:bg-surface-container-low font-label-md text-label-md font-medium';
+        }
+    });
+
+    // Classic Desktop Navbar Links
+    const desktopNavLinks = document.querySelectorAll('.top-navbar-desktop a.nav-link:not(.user-dropdown-menu a)');
+    desktopNavLinks.forEach(link => {
+        let href = link.getAttribute('href');
+        if (!href || href.startsWith('http') || href.startsWith('#')) return;
+        href = href.split('/').pop();
+        if (!href || href === '/' || href === 'index.html') href = 'homepage.html';
+
+        if (href === currentPage) {
+            link.className = "nav-link font-label-md text-label-md text-primary border-b-2 border-primary pb-1 font-bold transition-colors active";
+        } else {
+            link.className = "nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors";
         }
     });
 }
@@ -1233,7 +1255,7 @@ function renderProjectsSkeleton(container, count = 3) {
     for (let i = 0; i < count; i++) {
         html += `
             <div class="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/60 shadow-sm flex flex-col justify-between space-y-4">
-                <div class="skeleton-shimmer h-48 w-full rounded-lg mb-2"></div>
+                <div class="skeleton-shimmer aspect-[2/3] w-full rounded-lg mb-2"></div>
                 <div class="skeleton-shimmer h-6 w-3/4 rounded-md"></div>
                 <div class="skeleton-shimmer h-4 w-1/2 rounded-md"></div>
                 <div class="skeleton-shimmer h-3 w-full rounded-md mt-2"></div>
@@ -1334,7 +1356,7 @@ function renderProjectsList(container, list) {
         html += `
             <div class="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/60 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
                 <div>
-                    <div class="relative h-48 w-full rounded-lg overflow-hidden mb-4 bg-surface-container">
+                    <div class="relative aspect-[2/3] w-full rounded-lg overflow-hidden mb-4 bg-surface-container">
                         <img src="${p.imageUrl || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80'}" alt="${p.name || p.title}" class="w-full h-full object-cover">
                         <span class="absolute top-3 right-3 status-pill ${statusClass}">${p.status || 'Đang mở bán'}</span>
                     </div>
@@ -1542,7 +1564,7 @@ window.addProjectToCompareList = function(id, title, location, status, progress)
             <button onclick="this.closest('.bg-surface-container-lowest').remove()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 shadow text-slate-400 hover:text-red-600 flex items-center justify-center transition-colors">
                 <span class="material-symbols-outlined text-base">close</span>
             </button>
-            <div class="relative h-44 w-full rounded-lg overflow-hidden mb-3 bg-surface-container">
+            <div class="relative aspect-[2/3] w-full rounded-lg overflow-hidden mb-3 bg-surface-container">
                 <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" alt="${title}" class="w-full h-full object-cover">
                 <span class="absolute top-3 left-3 status-pill ${statusClass}">${status}</span>
             </div>
@@ -1778,12 +1800,11 @@ function initLoanCalculator() {
     const textNeedBorrow = document.getElementById('text-need-borrow');
     
     const bankRadios = document.querySelectorAll('input[name="bank_type"]');
-    const inputInterest1 = document.getElementById('input-interest-1');
-    const inputInterestTime = document.getElementById('input-interest-time');
-    const inputInterest2 = document.getElementById('input-interest-2');
-    const colInterestTime = document.getElementById('col-interest-time');
+    const promoPeriodsContainer = document.getElementById('promo-periods-container');
+    const addPromoBtnWrapper = document.getElementById('add-promo-btn-wrapper');
+    const btnAddPromo = document.getElementById('btn-add-promo');
     const rowInterest2 = document.getElementById('row-interest-2');
-    const labelInterest1 = document.getElementById('label-interest-1');
+    const inputInterest2 = document.getElementById('input-interest-2');
     
     const methodRadios = document.querySelectorAll('input[name="repayment_method"]');
     
@@ -1866,22 +1887,72 @@ function initLoanCalculator() {
     syncInputRange(inputAvail, rangeAvail, true);
     syncInputRange(inputTerm, rangeTerm, false);
     
-    inputInterest1.addEventListener('input', calculateLoan);
-    inputInterest2.addEventListener('input', calculateLoan);
-    inputInterestTime.addEventListener('input', calculateLoan);
+    if (inputInterest2) inputInterest2.addEventListener('input', calculateLoan);
+    
+    // Bind initial promo inputs
+    document.querySelectorAll('.promo-rate-input, .promo-time-input').forEach(input => {
+        input.addEventListener('input', calculateLoan);
+    });
     
     bankRadios.forEach(r => r.addEventListener('change', () => {
-        if (document.querySelector('input[name="bank_type"]:checked').value === 'csxh') {
-            colInterestTime.classList.add('hidden');
-            rowInterest2.classList.add('hidden');
-            labelInterest1.textContent = 'Lãi suất xuyên suốt';
+        const bankType = document.querySelector('input[name="bank_type"]:checked').value;
+        const firstRow = promoPeriodsContainer.querySelector('.promo-row');
+        if (bankType === 'csxh') {
+            firstRow.querySelector('.promo-time-col').classList.add('hidden');
+            firstRow.querySelector('.promo-rate-label').textContent = 'Lãi suất xuyên suốt';
+            if (addPromoBtnWrapper) addPromoBtnWrapper.classList.add('hidden');
+            if (rowInterest2) rowInterest2.classList.add('hidden');
+            
+            // Hide/remove all subsequent promo rows
+            const rows = promoPeriodsContainer.querySelectorAll('.promo-row');
+            rows.forEach((row, idx) => {
+                if (idx > 0) row.remove();
+            });
         } else {
-            colInterestTime.classList.remove('hidden');
-            rowInterest2.classList.remove('hidden');
-            labelInterest1.textContent = 'Lãi suất (ưu đãi)';
+            firstRow.querySelector('.promo-time-col').classList.remove('hidden');
+            firstRow.querySelector('.promo-rate-label').textContent = 'Lãi suất (ưu đãi) 1';
+            if (addPromoBtnWrapper) addPromoBtnWrapper.classList.remove('hidden');
+            if (rowInterest2) rowInterest2.classList.remove('hidden');
         }
         calculateLoan();
     }));
+    
+    if (btnAddPromo) {
+        btnAddPromo.addEventListener('click', () => {
+            const rows = promoPeriodsContainer.querySelectorAll('.promo-row');
+            const rowCount = rows.length;
+            
+            const firstRow = rows[0];
+            const newRow = firstRow.cloneNode(true);
+            
+            newRow.querySelector('.promo-rate-label').textContent = 'Lãi suất (ưu đãi) ' + (rowCount + 1);
+            newRow.querySelector('.promo-rate-input').value = '';
+            newRow.querySelector('.promo-time-input').value = '';
+            
+            const deleteCol = newRow.querySelector('.promo-delete-col');
+            deleteCol.classList.remove('hidden');
+            deleteCol.innerHTML = `<button type="button" class="text-error hover:text-error/80 transition-colors flex items-center justify-center pt-0.5" title="Xóa giai đoạn"><span class="material-symbols-outlined text-[20px] block leading-none">delete</span></button>`;
+            
+            deleteCol.querySelector('button').addEventListener('click', () => {
+                newRow.remove();
+                updatePromoLabels();
+                calculateLoan();
+            });
+            
+            newRow.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', calculateLoan);
+            });
+            
+            promoPeriodsContainer.appendChild(newRow);
+        });
+    }
+    
+    function updatePromoLabels() {
+        const rows = promoPeriodsContainer.querySelectorAll('.promo-row');
+        rows.forEach((row, idx) => {
+            row.querySelector('.promo-rate-label').textContent = 'Lãi suất (ưu đãi) ' + (idx + 1);
+        });
+    }
     
     methodRadios.forEach(r => r.addEventListener('change', calculateLoan));
 
@@ -1894,16 +1965,16 @@ function initLoanCalculator() {
             rangeAvail.value = avail;
         }
         const borrow = total - avail;
-        textNeedBorrow.textContent = formatCurrency(borrow);
+        if (textNeedBorrow) textNeedBorrow.textContent = formatCurrency(borrow);
         
-        summaryTotal.textContent = formatCurrency(total) + ' ₫';
-        summaryAvail.textContent = formatCurrency(avail) + ' ₫';
-        summaryBorrow.textContent = formatCurrency(borrow) + ' ₫';
-        summaryPrincipal.textContent = formatCurrency(borrow) + ' ₫';
+        if (summaryTotal) summaryTotal.textContent = formatCurrency(total) + ' ₫';
+        if (summaryAvail) summaryAvail.textContent = formatCurrency(avail) + ' ₫';
+        if (summaryBorrow) summaryBorrow.textContent = formatCurrency(borrow) + ' ₫';
+        if (summaryPrincipal) summaryPrincipal.textContent = formatCurrency(borrow) + ' ₫';
         
         if (borrow <= 0) {
-            summaryInterest.textContent = '0 ₫';
-            tbody.innerHTML = '';
+            if (summaryInterest) summaryInterest.textContent = '0 ₫';
+            if (tbody) tbody.innerHTML = '';
             return;
         }
         
@@ -1912,40 +1983,54 @@ function initLoanCalculator() {
         const bankType = document.querySelector('input[name="bank_type"]:checked').value;
         const method = document.querySelector('input[name="repayment_method"]:checked').value;
         
-        const rate1 = (parseFloat(inputInterest1.value) || 0) / 100 / 12;
-        const rate2 = bankType === 'csxh' ? rate1 : ((parseFloat(inputInterest2.value) || 0) / 100 / 12);
-        const time1 = bankType === 'csxh' ? termMonths : (parseFloat(inputInterestTime.value) || 0);
+        let promoPeriods = [];
+        const promoRows = promoPeriodsContainer.querySelectorAll('.promo-row');
+        if (bankType === 'thuong_mai') {
+            promoRows.forEach(row => {
+                const rRate = (parseFloat(row.querySelector('.promo-rate-input').value) || 0) / 100 / 12;
+                const rTime = parseFloat(row.querySelector('.promo-time-input').value) || 0;
+                promoPeriods.push({ rate: rRate, months: rTime });
+            });
+        } else {
+            const rRate = (parseFloat(promoRows[0].querySelector('.promo-rate-input').value) || 0) / 100 / 12;
+            promoPeriods.push({ rate: rRate, months: termMonths });
+        }
+        
+        const rate2 = (parseFloat(inputInterest2.value) || 0) / 100 / 12;
+        
+        function getRateForMonth(month) {
+            let currentMonthSum = 0;
+            for (let i = 0; i < promoPeriods.length; i++) {
+                currentMonthSum += promoPeriods[i].months;
+                if (month <= currentMonthSum) {
+                    return promoPeriods[i].rate;
+                }
+            }
+            return rate2;
+        }
         
         let totalInterest = 0;
         let scheduleHtml = '';
-        
         let scheduleData = [];
         
         let remainingPrincipal = borrow;
         let monthlyPrincipal = method === 'giam_dan' ? borrow / termMonths : 0;
         
         let currentPmt = 0;
-        if (method === 'deu') {
-            if (rate1 > 0) {
-                currentPmt = borrow * rate1 * Math.pow(1+rate1, termMonths) / (Math.pow(1+rate1, termMonths) - 1);
-            } else {
-                currentPmt = borrow / termMonths;
-            }
-        }
+        let lastRate = -1;
         
         for (let i = 1; i <= termMonths; i++) {
-            const isPromo = i <= time1;
-            const currentRate = isPromo ? rate1 : rate2;
-            
+            const currentRate = getRateForMonth(i);
             let interest = remainingPrincipal * currentRate;
             
-            if (method === 'deu' && i === time1 + 1) {
+            if (method === 'deu' && (i === 1 || currentRate !== lastRate)) {
                 const remainingMonths = termMonths - i + 1;
-                if (rate2 > 0) {
-                    currentPmt = remainingPrincipal * rate2 * Math.pow(1+rate2, remainingMonths) / (Math.pow(1+rate2, remainingMonths) - 1);
+                if (currentRate > 0) {
+                    currentPmt = remainingPrincipal * currentRate * Math.pow(1+currentRate, remainingMonths) / (Math.pow(1+currentRate, remainingMonths) - 1);
                 } else {
                     currentPmt = remainingPrincipal / remainingMonths;
                 }
+                lastRate = currentRate;
             }
             
             let principalRepayment = 0;
@@ -1999,10 +2084,46 @@ function initLoanCalculator() {
             }
         }
         
-        summaryInterest.textContent = formatCurrency(Math.round(totalInterest)) + ' ₫';
-        tbody.innerHTML = scheduleHtml;
+        if (summaryInterest) summaryInterest.textContent = formatCurrency(Math.round(totalInterest)) + ' ₫';
+        if (tbody) tbody.innerHTML = scheduleHtml;
     }
     
-    // Initial calculate
     calculateLoan();
+}
+
+function setupScrollDownBtn() {
+    const btn = document.getElementById('scroll-down-btn');
+    if (!btn) return;
+    
+    // Remove old listeners to prevent duplication on SPA navigation
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    
+    newBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.getElementById('featured-projects');
+        if (!target) return;
+        
+        // Find visible navbar (mobile or desktop)
+        const mobileNav = document.querySelector('.top-navbar');
+        const desktopNav = document.querySelector('.top-navbar-desktop');
+        
+        let navbarHeight = 0;
+        if (mobileNav && window.getComputedStyle(mobileNav).display !== 'none') {
+            navbarHeight = mobileNav.offsetHeight + parseInt(window.getComputedStyle(mobileNav).marginTop || 0);
+        } else if (desktopNav && window.getComputedStyle(desktopNav).display !== 'none') {
+            navbarHeight = desktopNav.offsetHeight + parseInt(window.getComputedStyle(desktopNav).marginTop || 0);
+        }
+        
+        // Gap below navbar
+        const gap = 16;
+        
+        // Calculate scroll position
+        const targetPosition = target.getBoundingClientRect().top + window.scrollY - navbarHeight - gap;
+        
+        window.scrollTo({
+            top: targetPosition,
+            behavior: 'smooth'
+        });
+    });
 }

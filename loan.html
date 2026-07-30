@@ -96,27 +96,42 @@
 <span class="font-body-md text-body-md text-on-surface-variant group-hover:text-on-background transition-colors">Ngân hàng chính sách xã hội</span>
 </label>
 </div>
-<div class="grid grid-cols-2 gap-sm mb-sm">
-<div>
-<label id="label-interest-1" class="font-label-sm text-label-sm text-on-surface-variant block mb-1">Lãi suất xuyên suốt</label>
-<div class="relative">
-<input id="input-interest-1" class="w-full text-right pr-8 pl-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-shadow" type="text" value="">
-<span class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-label-md pointer-events-none">%</span>
+<div id="promo-periods-wrapper">
+    <div id="promo-periods-container" class="flex flex-col gap-sm mb-sm">
+        <div class="grid grid-cols-[1fr_1fr_40px] gap-sm items-stretch promo-row">
+            <div>
+                <label class="promo-rate-label font-label-sm text-label-sm text-on-surface-variant block mb-1">Lãi suất xuyên suốt</label>
+                <div class="relative">
+                    <input class="promo-rate-input w-full text-right pr-8 pl-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-shadow" type="text" value="">
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-label-md pointer-events-none">%</span>
+                </div>
+            </div>
+            <div class="promo-time-col hidden">
+                <label class="font-label-sm text-label-sm text-on-surface-variant block mb-1">Thời gian ưu đãi</label>
+                <div class="relative">
+                    <input class="promo-time-input w-full text-right pr-[70px] pl-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-shadow" type="text" value="">
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-label-md pointer-events-none">Tháng</span>
+                </div>
+            </div>
+            <div class="flex flex-col h-full">
+                <label class="font-label-sm text-label-sm block mb-1 invisible">X</label>
+                <div class="promo-delete-col hidden flex-1 flex items-center justify-center">
+                    <!-- Nút xóa sẽ được hiển thị bằng JS cho các dòng thêm mới -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="add-promo-btn-wrapper" class="hidden mb-sm mt-2">
+        <button id="btn-add-promo" class="flex items-center gap-2 text-primary font-label-sm cursor-pointer outline-none px-3 py-2 rounded-lg bg-primary/5 hover:bg-primary/10 active:bg-primary/20 active:scale-[0.98] transition-all w-fit">
+            <span class="material-symbols-outlined text-[18px]">add_circle</span> Thêm giai đoạn ưu đãi
+        </button>
+    </div>
 </div>
-</div>
-<div id="col-interest-time" class="hidden">
-<label class="font-label-sm text-label-sm text-on-surface-variant block mb-1">Thời gian ưu đãi</label>
-<div class="relative">
-<input id="input-interest-time" class="w-full text-right pr-14 pl-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-shadow" type="text" value="">
-<span class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-label-md pointer-events-none">Tháng</span>
-</div>
-</div>
-</div>
-<div id="row-interest-2" class="hidden">
+<div id="row-interest-2" class="hidden mb-sm">
 <label class="font-label-sm text-label-sm text-on-surface-variant block mb-1">Lãi suất (sau ưu đãi/bình thường)</label>
-<div class="relative w-1/2 pr-sm">
+<div class="relative w-[calc(50%-10px)] pr-sm">
 <input id="input-interest-2" class="w-full text-right pr-8 pl-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-shadow" type="text" value="">
-<span class="absolute right-[calc(1.5rem+12px)] top-1/2 -translate-y-1/2 text-on-surface-variant font-label-md pointer-events-none">%</span>
+<span class="absolute right-7 top-1/2 -translate-y-1/2 text-on-surface-variant font-label-md pointer-events-none">%</span>
 </div>
 </div>
 </div>
