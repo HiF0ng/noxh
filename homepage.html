@@ -23,7 +23,7 @@
 <main>
     <!-- Hero Section (Full Viewport Height ONLY on Homepage) -->
     <header class="homepage-hero-section flex flex-col items-center justify-center text-center px-8 md:px-12 max-w-5xl mx-auto pt-28 pb-16 relative">
-        <h1 class="font-display text-[20px] font-bold leading-[1.4] lg:text-display lg:hero-title-responsive text-primary max-w-4xl mx-auto mb-6 text-center [text-wrap:balance]">
+        <h1 class="font-display text-[20px] font-bold leading-[1.4] lg:text-display lg:hero-title-responsive text-primary max-w-4xl mx-auto mb-6 text-center [text-wrap:balance] whitespace-nowrap overflow-hidden text-ellipsis max-w-full">
             Tổng hợp và cung cấp thông tin dự án NOXH, các tài liệu mới nhất và hướng dẫn đăng ký hoàn toàn miễn phí
         </h1>
         <div class="mt-3 flex gap-md">
@@ -148,106 +148,345 @@
 <h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-center text-on-surface mb-md">Cộng đồng nói gì Về chúng tôi</h2>
 <div class="w-full relative">
 <div class="slider-track" id="testimonial-track">
+
 <!-- Set 1 -->
 <div class="slider-item">
-<div class="bg-surface-container-lowest p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
+<div class="bg-surface-container-lowest p-4 md:p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
 <span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
-<p class="font-body-md text-body-md text-on-surface-variant italic mb-sm z-10 relative">
-                                "Nhờ có hệ thống, tôi đã tiếp cận được thông tin minh bạch và nộp hồ sơ thành công. Rất cảm ơn đội ngũ hỗ trợ!"
-                            </p>
-<div class="flex items-center justify-center gap-sm mt-auto">
-<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container">
-<img class="w-full h-full object-cover" data-alt="A professional headshot portrait of an Asian woman in her 30s smiling warmly." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfYNAvCAJy5RNHgzrTs4vfZkrd8IxBflbW6hWpRLIwhCJ5LnXp3FXi8-pehMj9LznbRkFpb5ciR7AA9LMg7jiHRoiUK5y86RGo99y_ZgQUuEPL_YWqF1VEJEXMHqOK6cn1wfY1Ge7UeJXeQS-1H4ZG3g_BwMih9qcrdbX25bq243wrQixGiI5mBbUp2fG2PmQ6j46G189hZLj8FSM13XqwzFMQJuwB5O_pqhauUKnraWGBTmPEveO6EHQGCZXuAO9bYjWu7dDUY8KV"/>
-</div>
-<div class="text-left">
-<h4 class="font-label-md text-label-md text-on-surface">Nguyễn Thị A</h4>
-<p class="font-label-sm text-label-sm text-on-surface-variant">Cư dân Dự án X</p>
-</div>
-</div>
-</div>
-</div>
-<div class="slider-item">
-<div class="bg-surface-container-lowest p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
-<span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
-<p class="font-body-md text-body-md text-on-surface-variant italic mb-sm z-10 relative">
+<p class="font-body-md text-[13px] md:text-body-md text-on-surface-variant italic mb-sm z-10 relative">
                                 "Giao diện thân thiện, dễ sử dụng. Rất hữu ích cho người có thu nhập thấp muốn tìm nhà."
                             </p>
-<div class="flex items-center justify-center gap-sm mt-auto">
-<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<div class="flex items-center justify-center gap-2 md:gap-sm mt-auto">
+<div class="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
 <span class="material-symbols-outlined text-outline">person</span>
 </div>
-<div class="text-left">
-<h4 class="font-label-md text-label-md text-on-surface">Trần Văn B</h4>
-<p class="font-label-sm text-label-sm text-on-surface-variant">Người dùng mới</p>
+<div class="text-left min-w-0">
+<h4 class="font-label-md text-[13px] md:text-label-md text-on-surface whitespace-nowrap truncate">Nguyễn Hữu Dũng</h4>
+<p class="font-label-sm text-[11px] md:text-label-sm text-on-surface-variant whitespace-nowrap truncate">Người dùng mới</p>
 </div>
 </div>
 </div>
 </div>
 <div class="slider-item">
-<div class="bg-surface-container-lowest p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
+<div class="bg-surface-container-lowest p-4 md:p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
 <span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
-<p class="font-body-md text-body-md text-on-surface-variant italic mb-sm z-10 relative">
-                                "Đội ngũ tư vấn nhiệt tình, tôi đã tìm được Dự án phù hợp với gia đình mình."
+<p class="font-body-md text-[13px] md:text-body-md text-on-surface-variant italic mb-sm z-10 relative">
+                                "Nhờ có hệ thống, tôi đã tiếp cận được thông tin minh bạch và nộp hồ sơ thành công. Rất cảm ơn đội ngũ hỗ trợ!"
                             </p>
-<div class="flex items-center justify-center gap-sm mt-auto">
-<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<div class="flex items-center justify-center gap-2 md:gap-sm mt-auto">
+<div class="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
 <span class="material-symbols-outlined text-outline">person</span>
 </div>
-<div class="text-left">
-<h4 class="font-label-md text-label-md text-on-surface">Lê Thị C</h4>
-<p class="font-label-sm text-label-sm text-on-surface-variant">Cư dân Dự án Z</p>
+<div class="text-left min-w-0">
+<h4 class="font-label-md text-[13px] md:text-label-md text-on-surface whitespace-nowrap truncate">Trần Thị Thanh Trúc</h4>
+<p class="font-label-sm text-[11px] md:text-label-sm text-on-surface-variant whitespace-nowrap truncate">Người dùng mới</p>
+</div>
+</div>
+</div>
+</div>
+<div class="slider-item">
+<div class="bg-surface-container-lowest p-4 md:p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
+<span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
+<p class="font-body-md text-[13px] md:text-body-md text-on-surface-variant italic mb-sm z-10 relative">
+                                "Đội ngũ tư vấn nhiệt tình, tôi đã tìm được Dự án phù hợp với gia đình mình."
+                            </p>
+<div class="flex items-center justify-center gap-2 md:gap-sm mt-auto">
+<div class="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+<div class="text-left min-w-0">
+<h4 class="font-label-md text-[13px] md:text-label-md text-on-surface whitespace-nowrap truncate">Lê Minh Quang</h4>
+<p class="font-label-sm text-[11px] md:text-label-sm text-on-surface-variant whitespace-nowrap truncate">Người dùng mới</p>
+</div>
+</div>
+</div>
+</div>
+<div class="slider-item">
+<div class="bg-surface-container-lowest p-4 md:p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
+<span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
+<p class="font-body-md text-[13px] md:text-body-md text-on-surface-variant italic mb-sm z-10 relative">
+                                "Tính năng so sánh rất trực quan, giúp tôi dễ dàng quyết định mua căn hộ ở quận 9 thay vì quận 7."
+                            </p>
+<div class="flex items-center justify-center gap-2 md:gap-sm mt-auto">
+<div class="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+<div class="text-left min-w-0">
+<h4 class="font-label-md text-[13px] md:text-label-md text-on-surface whitespace-nowrap truncate">Phạm Văn Cường</h4>
+<p class="font-label-sm text-[11px] md:text-label-sm text-on-surface-variant whitespace-nowrap truncate">Người dùng mới</p>
+</div>
+</div>
+</div>
+</div>
+<div class="slider-item">
+<div class="bg-surface-container-lowest p-4 md:p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
+<span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
+<p class="font-body-md text-[13px] md:text-body-md text-on-surface-variant italic mb-sm z-10 relative">
+                                "Trước đây tôi không biết mình có đủ điều kiện mua NOXH không, nhờ website tôi đã tự kiểm tra được ngay."
+                            </p>
+<div class="flex items-center justify-center gap-2 md:gap-sm mt-auto">
+<div class="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+<div class="text-left min-w-0">
+<h4 class="font-label-md text-[13px] md:text-label-md text-on-surface whitespace-nowrap truncate">Bùi Thu Hà</h4>
+<p class="font-label-sm text-[11px] md:text-label-sm text-on-surface-variant whitespace-nowrap truncate">Người dùng mới</p>
+</div>
+</div>
+</div>
+</div>
+<div class="slider-item">
+<div class="bg-surface-container-lowest p-4 md:p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
+<span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
+<p class="font-body-md text-[13px] md:text-body-md text-on-surface-variant italic mb-sm z-10 relative">
+                                "Quy trình thủ tục được giải thích rất rõ ràng, từng bước một. Không còn cảm giác mơ hồ nữa."
+                            </p>
+<div class="flex items-center justify-center gap-2 md:gap-sm mt-auto">
+<div class="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+<div class="text-left min-w-0">
+<h4 class="font-label-md text-[13px] md:text-label-md text-on-surface whitespace-nowrap truncate">Đặng Xuân Phong</h4>
+<p class="font-label-sm text-[11px] md:text-label-sm text-on-surface-variant whitespace-nowrap truncate">Người dùng mới</p>
+</div>
+</div>
+</div>
+</div>
+<div class="slider-item">
+<div class="bg-surface-container-lowest p-4 md:p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
+<span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
+<p class="font-body-md text-[13px] md:text-body-md text-on-surface-variant italic mb-sm z-10 relative">
+                                "Công cụ tính khoản vay cực kỳ chính xác. Tôi đã lên được kế hoạch tài chính cụ thể trước khi mua."
+                            </p>
+<div class="flex items-center justify-center gap-2 md:gap-sm mt-auto">
+<div class="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+<div class="text-left min-w-0">
+<h4 class="font-label-md text-[13px] md:text-label-md text-on-surface whitespace-nowrap truncate">Ngô Kim Liên</h4>
+<p class="font-label-sm text-[11px] md:text-label-sm text-on-surface-variant whitespace-nowrap truncate">Người dùng mới</p>
+</div>
+</div>
+</div>
+</div>
+<div class="slider-item">
+<div class="bg-surface-container-lowest p-4 md:p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
+<span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
+<p class="font-body-md text-[13px] md:text-body-md text-on-surface-variant italic mb-sm z-10 relative">
+                                "Tôi thích nhất là có thể tra cứu tình trạng pháp lý của các dự án một cách nhanh chóng và an tâm."
+                            </p>
+<div class="flex items-center justify-center gap-2 md:gap-sm mt-auto">
+<div class="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+<div class="text-left min-w-0">
+<h4 class="font-label-md text-[13px] md:text-label-md text-on-surface whitespace-nowrap truncate">Hoàng Chí Bảo</h4>
+<p class="font-label-sm text-[11px] md:text-label-sm text-on-surface-variant whitespace-nowrap truncate">Người dùng mới</p>
+</div>
+</div>
+</div>
+</div>
+<div class="slider-item">
+<div class="bg-surface-container-lowest p-4 md:p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
+<span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
+<p class="font-body-md text-[13px] md:text-body-md text-on-surface-variant italic mb-sm z-10 relative">
+                                "Chỉ mất vài phút tôi đã tìm thấy các dự án đang mở bán gần nơi làm việc. Rất tiện lợi."
+                            </p>
+<div class="flex items-center justify-center gap-2 md:gap-sm mt-auto">
+<div class="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+<div class="text-left min-w-0">
+<h4 class="font-label-md text-[13px] md:text-label-md text-on-surface whitespace-nowrap truncate">Vũ Minh Tuấn</h4>
+<p class="font-label-sm text-[11px] md:text-label-sm text-on-surface-variant whitespace-nowrap truncate">Người dùng mới</p>
+</div>
+</div>
+</div>
+</div>
+<div class="slider-item">
+<div class="bg-surface-container-lowest p-4 md:p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
+<span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
+<p class="font-body-md text-[13px] md:text-body-md text-on-surface-variant italic mb-sm z-10 relative">
+                                "Cộng đồng hỗ trợ rất tốt. Những câu hỏi thắc mắc của tôi đều được giải đáp nhanh gọn."
+                            </p>
+<div class="flex items-center justify-center gap-2 md:gap-sm mt-auto">
+<div class="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+<div class="text-left min-w-0">
+<h4 class="font-label-md text-[13px] md:text-label-md text-on-surface whitespace-nowrap truncate">Đỗ Mai Phương</h4>
+<p class="font-label-sm text-[11px] md:text-label-sm text-on-surface-variant whitespace-nowrap truncate">Người dùng mới</p>
 </div>
 </div>
 </div>
 </div>
 <!-- Set 2 -->
 <div class="slider-item">
-<div class="bg-surface-container-lowest p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
+<div class="bg-surface-container-lowest p-4 md:p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
 <span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
-<p class="font-body-md text-body-md text-on-surface-variant italic mb-sm z-10 relative">
-                                "Nhờ có hệ thống, tôi đã tiếp cận được thông tin minh bạch và nộp hồ sơ thành công. Rất cảm ơn đội ngũ hỗ trợ!"
-                            </p>
-<div class="flex items-center justify-center gap-sm mt-auto">
-<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container">
-<img class="w-full h-full object-cover" data-alt="A professional headshot portrait of an Asian woman in her 30s smiling warmly." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfYNAvCAJy5RNHgzrTs4vfZkrd8IxBflbW6hWpRLIwhCJ5LnXp3FXi8-pehMj9LznbRkFpb5ciR7AA9LMg7jiHRoiUK5y86RGo99y_ZgQUuEPL_YWqF1VEJEXMHqOK6cn1wfY1Ge7UeJXeQS-1H4ZG3g_BwMih9qcrdbX25bq243wrQixGiI5mBbUp2fG2PmQ6j46G189hZLj8FSM13XqwzFMQJuwB5O_pqhauUKnraWGBTmPEveO6EHQGCZXuAO9bYjWu7dDUY8KV"/>
-</div>
-<div class="text-left">
-<h4 class="font-label-md text-label-md text-on-surface">Nguyễn Thị A</h4>
-<p class="font-label-sm text-label-sm text-on-surface-variant">Cư dân Dự án X</p>
-</div>
-</div>
-</div>
-</div>
-<div class="slider-item">
-<div class="bg-surface-container-lowest p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
-<span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
-<p class="font-body-md text-body-md text-on-surface-variant italic mb-sm z-10 relative">
+<p class="font-body-md text-[13px] md:text-body-md text-on-surface-variant italic mb-sm z-10 relative">
                                 "Giao diện thân thiện, dễ sử dụng. Rất hữu ích cho người có thu nhập thấp muốn tìm nhà."
                             </p>
-<div class="flex items-center justify-center gap-sm mt-auto">
-<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<div class="flex items-center justify-center gap-2 md:gap-sm mt-auto">
+<div class="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
 <span class="material-symbols-outlined text-outline">person</span>
 </div>
-<div class="text-left">
-<h4 class="font-label-md text-label-md text-on-surface">Trần Văn B</h4>
-<p class="font-label-sm text-label-sm text-on-surface-variant">Người dùng mới</p>
+<div class="text-left min-w-0">
+<h4 class="font-label-md text-[13px] md:text-label-md text-on-surface whitespace-nowrap truncate">Nguyễn Hữu Dũng</h4>
+<p class="font-label-sm text-[11px] md:text-label-sm text-on-surface-variant whitespace-nowrap truncate">Người dùng mới</p>
 </div>
 </div>
 </div>
 </div>
 <div class="slider-item">
-<div class="bg-surface-container-lowest p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
+<div class="bg-surface-container-lowest p-4 md:p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
 <span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
-<p class="font-body-md text-body-md text-on-surface-variant italic mb-sm z-10 relative">
-                                "Đội ngũ tư vấn nhiệt tình, tôi đã tìm được Dự án phù hợp với gia đình mình."
+<p class="font-body-md text-[13px] md:text-body-md text-on-surface-variant italic mb-sm z-10 relative">
+                                "Nhờ có hệ thống, tôi đã tiếp cận được thông tin minh bạch và nộp hồ sơ thành công. Rất cảm ơn đội ngũ hỗ trợ!"
                             </p>
-<div class="flex items-center justify-center gap-sm mt-auto">
-<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<div class="flex items-center justify-center gap-2 md:gap-sm mt-auto">
+<div class="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
 <span class="material-symbols-outlined text-outline">person</span>
 </div>
-<div class="text-left">
-<h4 class="font-label-md text-label-md text-on-surface">Lê Thị C</h4>
-<p class="font-label-sm text-label-sm text-on-surface-variant">Cư dân Dự án Z</p>
+<div class="text-left min-w-0">
+<h4 class="font-label-md text-[13px] md:text-label-md text-on-surface whitespace-nowrap truncate">Trần Thị Thanh Trúc</h4>
+<p class="font-label-sm text-[11px] md:text-label-sm text-on-surface-variant whitespace-nowrap truncate">Người dùng mới</p>
+</div>
+</div>
+</div>
+</div>
+<div class="slider-item">
+<div class="bg-surface-container-lowest p-4 md:p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
+<span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
+<p class="font-body-md text-[13px] md:text-body-md text-on-surface-variant italic mb-sm z-10 relative">
+                                "Đội ngũ tư vấn nhiệt tình, tôi đã tìm được Dự án phù hợp với gia đình mình."
+                            </p>
+<div class="flex items-center justify-center gap-2 md:gap-sm mt-auto">
+<div class="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+<div class="text-left min-w-0">
+<h4 class="font-label-md text-[13px] md:text-label-md text-on-surface whitespace-nowrap truncate">Lê Minh Quang</h4>
+<p class="font-label-sm text-[11px] md:text-label-sm text-on-surface-variant whitespace-nowrap truncate">Người dùng mới</p>
+</div>
+</div>
+</div>
+</div>
+<div class="slider-item">
+<div class="bg-surface-container-lowest p-4 md:p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
+<span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
+<p class="font-body-md text-[13px] md:text-body-md text-on-surface-variant italic mb-sm z-10 relative">
+                                "Tính năng so sánh rất trực quan, giúp tôi dễ dàng quyết định mua căn hộ ở quận 9 thay vì quận 7."
+                            </p>
+<div class="flex items-center justify-center gap-2 md:gap-sm mt-auto">
+<div class="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+<div class="text-left min-w-0">
+<h4 class="font-label-md text-[13px] md:text-label-md text-on-surface whitespace-nowrap truncate">Phạm Văn Cường</h4>
+<p class="font-label-sm text-[11px] md:text-label-sm text-on-surface-variant whitespace-nowrap truncate">Người dùng mới</p>
+</div>
+</div>
+</div>
+</div>
+<div class="slider-item">
+<div class="bg-surface-container-lowest p-4 md:p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
+<span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
+<p class="font-body-md text-[13px] md:text-body-md text-on-surface-variant italic mb-sm z-10 relative">
+                                "Trước đây tôi không biết mình có đủ điều kiện mua NOXH không, nhờ website tôi đã tự kiểm tra được ngay."
+                            </p>
+<div class="flex items-center justify-center gap-2 md:gap-sm mt-auto">
+<div class="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+<div class="text-left min-w-0">
+<h4 class="font-label-md text-[13px] md:text-label-md text-on-surface whitespace-nowrap truncate">Bùi Thu Hà</h4>
+<p class="font-label-sm text-[11px] md:text-label-sm text-on-surface-variant whitespace-nowrap truncate">Người dùng mới</p>
+</div>
+</div>
+</div>
+</div>
+<div class="slider-item">
+<div class="bg-surface-container-lowest p-4 md:p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
+<span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
+<p class="font-body-md text-[13px] md:text-body-md text-on-surface-variant italic mb-sm z-10 relative">
+                                "Quy trình thủ tục được giải thích rất rõ ràng, từng bước một. Không còn cảm giác mơ hồ nữa."
+                            </p>
+<div class="flex items-center justify-center gap-2 md:gap-sm mt-auto">
+<div class="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+<div class="text-left min-w-0">
+<h4 class="font-label-md text-[13px] md:text-label-md text-on-surface whitespace-nowrap truncate">Đặng Xuân Phong</h4>
+<p class="font-label-sm text-[11px] md:text-label-sm text-on-surface-variant whitespace-nowrap truncate">Người dùng mới</p>
+</div>
+</div>
+</div>
+</div>
+<div class="slider-item">
+<div class="bg-surface-container-lowest p-4 md:p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
+<span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
+<p class="font-body-md text-[13px] md:text-body-md text-on-surface-variant italic mb-sm z-10 relative">
+                                "Công cụ tính khoản vay cực kỳ chính xác. Tôi đã lên được kế hoạch tài chính cụ thể trước khi mua."
+                            </p>
+<div class="flex items-center justify-center gap-2 md:gap-sm mt-auto">
+<div class="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+<div class="text-left min-w-0">
+<h4 class="font-label-md text-[13px] md:text-label-md text-on-surface whitespace-nowrap truncate">Ngô Kim Liên</h4>
+<p class="font-label-sm text-[11px] md:text-label-sm text-on-surface-variant whitespace-nowrap truncate">Người dùng mới</p>
+</div>
+</div>
+</div>
+</div>
+<div class="slider-item">
+<div class="bg-surface-container-lowest p-4 md:p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
+<span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
+<p class="font-body-md text-[13px] md:text-body-md text-on-surface-variant italic mb-sm z-10 relative">
+                                "Tôi thích nhất là có thể tra cứu tình trạng pháp lý của các dự án một cách nhanh chóng và an tâm."
+                            </p>
+<div class="flex items-center justify-center gap-2 md:gap-sm mt-auto">
+<div class="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+<div class="text-left min-w-0">
+<h4 class="font-label-md text-[13px] md:text-label-md text-on-surface whitespace-nowrap truncate">Hoàng Chí Bảo</h4>
+<p class="font-label-sm text-[11px] md:text-label-sm text-on-surface-variant whitespace-nowrap truncate">Người dùng mới</p>
+</div>
+</div>
+</div>
+</div>
+<div class="slider-item">
+<div class="bg-surface-container-lowest p-4 md:p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
+<span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
+<p class="font-body-md text-[13px] md:text-body-md text-on-surface-variant italic mb-sm z-10 relative">
+                                "Chỉ mất vài phút tôi đã tìm thấy các dự án đang mở bán gần nơi làm việc. Rất tiện lợi."
+                            </p>
+<div class="flex items-center justify-center gap-2 md:gap-sm mt-auto">
+<div class="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+<div class="text-left min-w-0">
+<h4 class="font-label-md text-[13px] md:text-label-md text-on-surface whitespace-nowrap truncate">Vũ Minh Tuấn</h4>
+<p class="font-label-sm text-[11px] md:text-label-sm text-on-surface-variant whitespace-nowrap truncate">Người dùng mới</p>
+</div>
+</div>
+</div>
+</div>
+<div class="slider-item">
+<div class="bg-surface-container-lowest p-4 md:p-md rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] text-center relative h-full flex flex-col justify-between">
+<span class="material-symbols-outlined absolute top-4 left-4 text-4xl text-outline-variant/50">format_quote</span>
+<p class="font-body-md text-[13px] md:text-body-md text-on-surface-variant italic mb-sm z-10 relative">
+                                "Cộng đồng hỗ trợ rất tốt. Những câu hỏi thắc mắc của tôi đều được giải đáp nhanh gọn."
+                            </p>
+<div class="flex items-center justify-center gap-2 md:gap-sm mt-auto">
+<div class="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+<div class="text-left min-w-0">
+<h4 class="font-label-md text-[13px] md:text-label-md text-on-surface whitespace-nowrap truncate">Đỗ Mai Phương</h4>
+<p class="font-label-sm text-[11px] md:text-label-sm text-on-surface-variant whitespace-nowrap truncate">Người dùng mới</p>
 </div>
 </div>
 </div>
@@ -262,7 +501,7 @@
 <div class="absolute top-0 right-0 w-64 h-64 bg-white/15 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
 <div class="relative z-10 max-w-xl">
 <h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg font-bold mb-sm">Chúng tôi trân trọng sự đóng góp của bạn!</h2>
-<p class="font-body-md text-body-md opacity-90">Chúng tôi cảm ơn sự đồng hành của bạn và rất vui khi nhận được những đóng góp để cải thiện tốt hơn cho cộng đồng</p>
+<p class="font-body-md text-[13px] md:text-body-md opacity-90 text-balance">Chúng tôi cảm ơn sự đồng hành của bạn và rất vui khi nhận được những đóng góp để cải thiện tốt hơn cho cộng đồng</p>
 </div>
 <div class="relative z-10 flex flex-col sm:flex-row gap-md w-full md:w-auto flex-shrink-0">
 <button onclick="openFeedbackModal()" class="bg-white text-primary font-bold shadow-md hover:shadow-lg hover:scale-105 transition-all px-8 py-3.5 rounded-full flex items-center justify-center gap-2 whitespace-nowrap">
@@ -280,7 +519,7 @@
 <div id="feedbackModal" class="fixed inset-0 z-[100] flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeFeedbackModal()"></div>
     <!-- Modal Content -->
-    <div id="feedbackModalContent" class="bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-lg mx-4 relative z-10 overflow-hidden transition-all duration-500 transform scale-95 flex flex-col">
+    <div id="feedbackModalContent" class="bg-surface-container-lowest rounded-2xl shadow-2xl w-[calc(100%-3rem)] sm:w-[calc(100%-4rem)] md:w-full max-w-md lg:max-w-lg mx-auto relative z-10 overflow-hidden transition-all duration-500 transform scale-95 flex flex-col">
         <!-- Close button -->
         <button onclick="closeFeedbackModal()" class="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-container-low">
             <span class="material-symbols-outlined text-xl">close</span>
@@ -352,7 +591,7 @@
 <!-- Support Modal -->
 <div id="supportModal" class="fixed inset-0 z-[100] flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeSupportModal()"></div>
-    <div class="bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-3xl mx-4 relative z-10 overflow-hidden transition-all duration-300 transform scale-95 flex flex-col md:flex-row">
+    <div class="bg-surface-container-lowest rounded-2xl shadow-2xl w-[calc(100%-3rem)] sm:w-[calc(100%-4rem)] md:w-full max-w-2xl lg:max-w-3xl mx-auto relative z-10 overflow-hidden transition-all duration-300 transform scale-95 flex flex-col md:flex-row">
         <!-- Close button -->
         <button onclick="closeSupportModal()" class="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-container-low z-20">
             <span class="material-symbols-outlined text-xl">close</span>
@@ -372,30 +611,30 @@
         
         <!-- Right: Content -->
         <div class="w-full md:w-7/12 p-6 md:p-8 lg:p-10 flex flex-col justify-center">
-            <div class="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-6">
+            <div class="w-12 h-12 rounded-full bg-primary/10 text-primary hidden lg:flex items-center justify-center mb-6">
                 <span class="material-symbols-outlined text-2xl leading-none" style="display: block; margin-top: 2px;">favorite</span>
             </div>
             
-            <p class="font-body-lg text-body-lg text-on-surface leading-relaxed mb-8 italic text-on-surface-variant">
+            <p class="font-body-lg text-[14px] md:text-body-lg text-on-surface-variant leading-relaxed mb-6 md:mb-8 italic text-balance">
                 "Chúng tôi cảm ơn sự ủng hộ của bạn đối với dự án này. Sự đóng góp của bạn là động lực to lớn để chúng tôi tiếp tục làm tốt hơn trên con đường giúp mọi người hiện thực hóa ước mơ Nhà ở xã hội."
             </p>
             
-            <div class="flex flex-col gap-4 bg-surface-container-low p-5 rounded-xl border border-outline-variant/50">
-                <div class="flex justify-between items-center flex-wrap gap-2">
-                    <span class="text-sm text-on-surface-variant">Người thụ hưởng:</span>
-                    <span class="font-bold text-on-surface">Vietnam Housing</span>
+            <div class="flex flex-col gap-4 bg-surface-container-low p-4 md:p-5 rounded-xl border border-outline-variant/50">
+                <div class="flex justify-between items-center gap-2">
+                    <span class="text-[12px] md:text-sm text-on-surface-variant whitespace-nowrap">Người thụ hưởng:</span>
+                    <span class="font-bold text-[13px] md:text-base text-on-surface text-right">Vietnam Housing</span>
                 </div>
                 <hr class="border-outline-variant/30">
-                <div class="flex justify-between items-center flex-wrap gap-2">
-                    <span class="text-sm text-on-surface-variant">Số tài khoản:</span>
+                <div class="flex justify-between items-center gap-2">
+                    <span class="text-[12px] md:text-sm text-on-surface-variant whitespace-nowrap">Số tài khoản:</span>
                     <div class="flex items-center gap-2">
-                        <span class="font-bold text-primary text-lg">1234567890</span>
+                        <span class="font-bold text-primary text-base md:text-lg">1234567890</span>
                     </div>
                 </div>
                 <hr class="border-outline-variant/30">
-                <div class="flex justify-between items-center flex-wrap gap-2">
-                    <span class="text-sm text-on-surface-variant">Ngân hàng:</span>
-                    <span class="font-bold text-on-surface text-right">Vietcombank<br><span class="text-xs font-normal opacity-80">Chi nhánh Sở Giao Dịch</span></span>
+                <div class="flex justify-between items-center gap-2">
+                    <span class="text-[12px] md:text-sm text-on-surface-variant whitespace-nowrap">Ngân hàng:</span>
+                    <span class="font-bold text-[13px] md:text-base text-on-surface text-right">Vietcombank<br><span class="text-[10px] md:text-xs font-normal opacity-80">Chi nhánh Sở Giao Dịch</span></span>
                 </div>
             </div>
         </div>

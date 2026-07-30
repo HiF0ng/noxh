@@ -21,12 +21,10 @@ body {
 .slider-track {
     display: flex;
     width: max-content;
-    animation: slide-infinite 30s linear infinite;
+    animation: slide-infinite 60s linear infinite;
 }
 .slider-item {
-    width: 290px; /* Fixed width for consistent scrolling */
-    flex-shrink: 0;
-    padding: 0 1rem;
+    /* Removed from here, defined below with media queries */
 }
 
 /* Base transitions */
@@ -215,13 +213,16 @@ html {
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08), 0 0 24px rgba(37, 99, 235, 0.05) !important;
 }
 
-/* Broadly target major sections, articles, and sidebar boxes with the white background */
-section.bg-surface-container-lowest,
-}
 .slider-item {
-    width: 290px; /* Fixed width for consistent scrolling */
+    width: 230px; /* 2/3 of 290px for mobile/tablet */
     flex-shrink: 0;
-    padding: 0 1rem;
+    padding: 0 0.5rem;
+}
+@media (min-width: 768px) {
+    .slider-item {
+        width: 290px;
+        padding: 0 1rem;
+    }
 }
 
 /* Base transitions */

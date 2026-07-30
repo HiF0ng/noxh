@@ -17,8 +17,8 @@
 <!-- Page Header -->
 <section class="bg-surface-container-low pt-[100px] pb-4 relative overflow-hidden">
 <div class="max-w-3xl mx-auto px-6 md:px-12 text-center relative z-10 pt-4">
-<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface mb-4">Công cụ tính khoản vay</h1>
-<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface mb-4 whitespace-nowrap overflow-hidden text-ellipsis max-w-full">Công cụ tính khoản vay</h1>
+<p class="font-body-md text-[13px] md:text-body-md text-on-surface-variant max-w-2xl mx-auto text-balance">
     Công cụ giúp bạn tính nhanh lộ trình vay vốn mua NOXH
 </p>
 </div>
@@ -29,17 +29,17 @@
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
 <!-- Left Column: Loan Information (Bento/Glassmorphism style) -->
 <div class="lg:col-span-5 flex flex-col gap-sm">
-<div class="bg-surface-container-lowest rounded-xl shadow-level-1 p-md border border-outline-variant/30 relative overflow-hidden group">
-<h2 class="text-headline-md font-headline-md text-on-background mb-lg flex items-center gap-2">
+<div class="bg-surface-container-lowest rounded-xl shadow-level-1 p-4 md:p-md border border-outline-variant/30 relative overflow-hidden group">
+<h2 class="text-title-lg md:text-headline-md font-headline-md font-bold text-on-background mb-2 md:mb-lg flex items-center gap-2">
 <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">calculate</span>
                         Thông tin khoản vay
                     </h2>
 <!-- Tổng số tiền căn hộ -->
-<div class="mb-lg">
-<div class="flex justify-between items-center mb-sm">
+<div class="mb-2 md:mb-lg">
+<div class="flex justify-between items-center mb-1 md:mb-sm">
 <label class="font-label-md text-label-md text-on-surface-variant">Tổng số tiền căn hộ</label>
 <div class="relative">
-<input id="input-total-price" class="w-40 text-right px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-shadow" type="text" value="">
+<input id="input-total-price" class="w-40 text-right px-2 md:px-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-shadow" type="text" value="">
 </div>
 </div>
 <input id="range-total-price" class="w-full" max="5000000000" min="0" step="10000000" type="range" value="0">
@@ -49,11 +49,11 @@
 </div>
 </div>
 <!-- Số tiền sẵn có -->
-<div class="mb-lg">
-<div class="flex justify-between items-center mb-sm">
+<div class="mb-2 md:mb-lg">
+<div class="flex justify-between items-center mb-1 md:mb-sm">
 <label class="font-label-md text-label-md text-on-surface-variant">Số tiền sẵn có</label>
 <div class="relative">
-<input id="input-available-money" class="w-40 text-right px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-shadow" type="text" value="">
+<input id="input-available-money" class="w-40 text-right px-2 md:px-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-shadow" type="text" value="">
 </div>
 </div>
 <input id="range-available-money" class="w-full" max="5000000000" min="0" step="10000000" type="range" value="0">
@@ -63,13 +63,13 @@
 </div>
 </div>
 <!-- Số tiền cần vay (Calculated Display) -->
-<div class="mb-lg bg-surface-container-low rounded-lg p-sm flex justify-between items-center border border-primary/10 gap-2">
+<div class="mb-2 md:mb-lg bg-surface-container-low rounded-lg p-sm flex justify-between items-center border border-primary/10 gap-2">
 <span class="font-label-md text-label-md text-on-background flex-shrink-0 leading-tight">Số tiền<br>cần vay:</span>
 <span id="text-need-borrow" class="text-headline-md font-headline-md text-primary text-right break-words min-w-0 flex-1">0</span>
 </div>
 <!-- Thời gian vay -->
-<div class="mb-lg">
-<div class="flex justify-between items-center mb-sm">
+<div class="mb-2 md:mb-lg">
+<div class="flex justify-between items-center mb-1 md:mb-sm">
 <label class="font-label-md text-label-md text-on-surface-variant">Thời gian vay</label>
 <div class="relative">
 <input id="input-loan-term" class="w-24 text-right pr-14 pl-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-shadow" type="text" value="">
@@ -84,9 +84,9 @@
 </div>
 <div class="w-full h-px bg-outline-variant/30 my-md"></div>
 <!-- Bank Options & Interest Rates -->
-<div class="mb-lg">
-<label class="font-label-md text-label-md text-on-background block mb-sm">Vay tại</label>
-<div class="flex gap-md mb-md">
+<div class="mb-2 md:mb-lg">
+<label class="font-label-md text-label-md text-on-background block mb-1 md:mb-sm">Vay tại</label>
+<div class="flex gap-4 md:p-md mb-md">
 <label class="flex items-center gap-2 cursor-pointer group">
 <input class="w-5 h-5 text-primary border-outline-variant focus:ring-primary/20 cursor-pointer" name="bank_type" type="radio" value="thuong_mai">
 <span class="font-body-md text-body-md text-on-surface-variant group-hover:text-on-background transition-colors">Ngân hàng thương mại</span>
@@ -97,7 +97,7 @@
 </label>
 </div>
 <div id="promo-periods-wrapper">
-    <div id="promo-periods-container" class="flex flex-col gap-sm mb-sm">
+    <div id="promo-periods-container" class="flex flex-col gap-sm mb-1 md:mb-sm">
         <div class="grid grid-cols-[1fr_1fr_40px] gap-sm items-stretch promo-row">
             <div>
                 <label class="promo-rate-label font-label-sm text-label-sm text-on-surface-variant block mb-1">Lãi suất xuyên suốt</label>
@@ -121,13 +121,13 @@
             </div>
         </div>
     </div>
-    <div id="add-promo-btn-wrapper" class="hidden mb-sm mt-2">
-        <button id="btn-add-promo" class="flex items-center gap-2 text-primary font-label-sm cursor-pointer outline-none px-3 py-2 rounded-lg bg-primary/5 hover:bg-primary/10 active:bg-primary/20 active:scale-[0.98] transition-all w-fit">
+    <div id="add-promo-btn-wrapper" class="hidden mb-1 md:mb-sm mt-2">
+        <button id="btn-add-promo" class="flex items-center gap-2 text-primary font-label-sm cursor-pointer outline-none px-2 md:px-4 py-2 rounded-lg bg-primary/5 hover:bg-primary/10 active:bg-primary/20 active:scale-[0.98] transition-all w-fit">
             <span class="material-symbols-outlined text-[18px]">add_circle</span> Thêm giai đoạn ưu đãi
         </button>
     </div>
 </div>
-<div id="row-interest-2" class="hidden mb-sm">
+<div id="row-interest-2" class="hidden mb-1 md:mb-sm">
 <label class="font-label-sm text-label-sm text-on-surface-variant block mb-1">Lãi suất (sau ưu đãi/bình thường)</label>
 <div class="relative w-[calc(50%-10px)] pr-sm">
 <input id="input-interest-2" class="w-full text-right pr-8 pl-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-shadow" type="text" value="">
@@ -138,20 +138,20 @@
 <div class="w-full h-px bg-outline-variant/30 my-md"></div>
 <!-- Repayment Method -->
 <div>
-<label class="font-label-md text-label-md text-on-background block mb-sm">Phương thức trả nợ</label>
+<label class="font-label-md text-label-md text-on-background block mb-1 md:mb-sm">Phương thức trả nợ</label>
 <div class="flex flex-col gap-sm">
 <label class="flex items-start gap-3 p-sm rounded-lg border border-outline-variant hover:border-primary bg-surface-container-lowest cursor-pointer transition-colors shadow-sm">
 <input checked="" class="mt-1 w-5 h-5 text-primary border-outline-variant focus:ring-primary/20 cursor-pointer" name="repayment_method" type="radio" value="giam_dan">
 <div>
 <div class="font-label-md text-label-md text-on-background">Dư nợ giảm dần</div>
-<div class="font-body-md text-body-md text-on-surface-variant mt-1 text-sm">Thanh toán cao ở giai đoạn đầu, thấp dần về sau do lãi tính trên dư nợ thực tế.</div>
+<div class="font-body-md text-body-md text-on-surface-variant mt-1 text-sm"><span class="line-clamp-2 md:line-clamp-none">Thanh toán cao ở giai đoạn đầu, thấp dần về sau do lãi tính trên dư nợ thực tế.</span></div>
 </div>
 </label>
 <label class="flex items-start gap-3 p-sm rounded-lg border border-outline-variant hover:border-primary bg-surface-container-lowest cursor-pointer transition-colors shadow-sm">
 <input class="mt-1 w-5 h-5 text-primary border-outline-variant focus:ring-primary/20 cursor-pointer" name="repayment_method" type="radio" value="deu">
 <div>
 <div class="font-label-md text-label-md text-on-background">Gốc &amp; Lãi trả đều</div>
-<div class="font-body-md text-body-md text-on-surface-variant mt-1 text-sm">Số tiền thanh toán hàng tháng cố định một mức trong suốt thời gian vay.</div>
+<div class="font-body-md text-body-md text-on-surface-variant mt-1 text-sm"><span class="line-clamp-2 md:line-clamp-none">Số tiền thanh toán hàng tháng cố định một mức trong suốt thời gian vay.</span></div>
 </div>
 </label>
 </div>
@@ -159,11 +159,12 @@
 </div>
 </div>
 <!-- Right Column: Results & Schedule -->
-<div class="lg:col-span-7 flex flex-col gap-lg">
+<div class="lg:col-span-7 lg:relative">
+    <div class="flex flex-col gap-lg min-h-0 lg:absolute lg:inset-0 w-full h-full">
 <!-- Summary Card -->
-<div class="bg-surface-container-lowest rounded-xl shadow-level-1 p-md border border-outline-variant/30">
-<h3 class="text-headline-md font-headline-md text-on-background mb-md">Kết quả tính toán</h3>
-<div class="grid grid-cols-1 gap-md">
+<div class="bg-surface-container-lowest rounded-xl shadow-level-1 p-4 md:p-md border border-outline-variant/30">
+<h3 class="text-title-lg md:text-headline-md font-headline-md font-bold text-on-background mb-md">Kết quả tính toán</h3>
+<div class="grid grid-cols-1 gap-4 md:p-md">
 <div class="flex flex-col gap-sm w-full">
 <div class="flex justify-between items-center py-2 border-b border-outline-variant/20"><span class="font-body-md text-body-md text-on-surface-variant">Tổng giá trị căn hộ</span><span id="summary-total" class="font-label-md text-label-md text-on-background">1.500.000.000 ₫</span></div>
 <div class="flex justify-between items-center py-2 border-b border-outline-variant/20"><span class="font-body-md text-body-md text-on-surface-variant">Số tiền bạn có</span><span id="summary-available" class="font-label-md text-label-md text-primary">500.000.000 ₫</span></div>
@@ -174,27 +175,27 @@
 </div>
 </div>
 <!-- Schedule Section -->
-<div class="bg-surface-container-lowest rounded-xl shadow-level-1 p-md border border-outline-variant/30 flex-grow flex flex-col">
-<div class="flex justify-between items-center mb-md w-full gap-2">
-<h3 class="text-headline-md font-headline-md text-on-background">Lịch trình thanh toán</h3>
+<div class="bg-surface-container-lowest rounded-xl shadow-level-1 p-4 md:p-md border border-outline-variant/30 flex-grow flex flex-col min-h-0">
+<div class="flex flex-col md:flex-row md:justify-between items-start md:items-center mb-md w-full gap-3 md:gap-2">
+<h3 class="text-title-lg md:text-headline-md font-headline-md font-bold text-on-background">Lịch trình thanh toán</h3>
 <div class="flex gap-sm items-center">
 <div class="flex items-center bg-surface-container rounded-full p-1 border border-outline-variant/30 w-max">
-<button id="btn-view-month" class="px-3 py-1 rounded-full text-label-sm font-label-sm bg-surface shadow-sm text-on-surface transition-all">Tháng</button>
-<button id="btn-view-year" class="px-3 py-1 rounded-full text-label-sm font-label-sm text-on-surface-variant hover:text-on-surface transition-all">Năm</button>
+<button id="btn-view-month" class="px-2 md:px-4 py-1 rounded-full text-label-sm font-label-sm bg-surface shadow-sm text-on-surface transition-all">Tháng</button>
+<button id="btn-view-year" class="px-2 md:px-4 py-1 rounded-full text-label-sm font-label-sm text-on-surface-variant hover:text-on-surface transition-all">Năm</button>
 </div>
-<button class="hidden flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-full font-label-md shadow-sm hover:shadow-md hover:bg-on-primary-fixed-variant transition-all"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">download</span>Xuất PDF</button>
-<button class="hidden flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-full font-label-md shadow-sm hover:shadow-md hover:bg-on-primary-fixed-variant transition-all"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">download</span>Xuất Excel</button>
+<button class="hidden flex items-center gap-2 px-2 md:px-4 py-2 bg-primary text-on-primary rounded-full font-label-md shadow-sm hover:shadow-md hover:bg-on-primary-fixed-variant transition-all"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">download</span>Xuất PDF</button>
+<button class="hidden flex items-center gap-2 px-2 md:px-4 py-2 bg-primary text-on-primary rounded-full font-label-md shadow-sm hover:shadow-md hover:bg-on-primary-fixed-variant transition-all"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">download</span>Xuất Excel</button>
 </div>
 </div>
-<div class="overflow-x-hidden h-[400px] overflow-y-auto no-scrollbar">
-<table class="w-full border-collapse table-fixed">
+<div class="overflow-x-auto overflow-y-auto no-scrollbar h-[400px] lg:h-0 lg:flex-1 min-h-0">
+<table class="w-full border-collapse table-auto ">
 <thead class="sticky top-0 bg-surface-container-lowest shadow-sm z-10">
 <tr class="border-b-2 border-outline-variant/50">
-<th class="py-3 px-1 md:px-2 font-label-md text-label-md text-on-surface-variant w-1/5 align-middle text-center whitespace-nowrap">Kỳ hạn</th>
-<th class="py-3 px-1 md:px-2 font-label-md text-label-md text-on-surface-variant text-center w-1/5 align-middle whitespace-nowrap">Gốc</th>
-<th class="py-3 px-1 md:px-2 font-label-md text-label-md text-on-surface-variant text-center w-1/5 align-middle whitespace-nowrap">Lãi</th>
-<th class="py-3 px-1 md:px-2 font-label-md text-label-md text-on-surface-variant text-center w-1/5 align-middle whitespace-nowrap">Tổng</th>
-<th class="py-3 px-1 md:px-2 font-label-md text-label-md text-on-surface-variant text-center w-1/5 align-middle whitespace-nowrap">Dư nợ</th>
+<th class="py-3 px-2 md:px-4 font-label-md text-label-md text-on-surface-variant align-middle text-center whitespace-nowrap">Kỳ hạn</th>
+<th class="py-3 px-2 md:px-4 font-label-md text-label-md text-on-surface-variant text-center align-middle whitespace-nowrap">Gốc</th>
+<th class="py-3 px-2 md:px-4 font-label-md text-label-md text-on-surface-variant text-center align-middle whitespace-nowrap">Lãi</th>
+<th class="py-3 px-2 md:px-4 font-label-md text-label-md text-on-surface-variant text-center align-middle whitespace-nowrap">Tổng</th>
+<th class="py-3 px-2 md:px-4 font-label-md text-label-md text-on-surface-variant text-center align-middle whitespace-nowrap">Dư nợ</th>
 </tr>
 </thead>
 <tbody id="schedule-tbody" class="font-label-sm text-[12px] md:text-label-sm">
@@ -205,11 +206,12 @@
 </div>
 </div>
 </div>
+</div>
 <!-- Warning Alert -->
 <div class="mt-6 bg-error/5 border border-error/20 rounded-xl p-4 flex gap-3 items-start md:items-center">
     <span class="material-symbols-outlined text-error flex-shrink-0 text-2xl" style="font-variation-settings: 'FILL' 0;">error</span>
     <p class="font-body-sm text-body-sm md:font-body-md md:text-body-md text-error/90 italic leading-relaxed">
-        Đây chỉ là tính toán sơ bộ để có góc nhìn về tình hình tài chính khi bạn mua nhà. Vui lòng trao đổi kĩ hơn với nhân viên tín dụng tại ngân hàng bạn vay để có kế hoạch vay cụ thể và chính xác
+        Đây chỉ là tính toán sơ bộ để có góc nhìn về tình hình tài chính khi bạn mua nhà. Vui lòng trao đổi kĩ hơn với nhân viên tín dụng tại ngân hàng bạn vay để có kế hoạch vay cụ thể và chính xác.
     </p>
 </div>
 </section>

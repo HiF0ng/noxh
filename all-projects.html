@@ -25,10 +25,8 @@
 <li><div class="flex items-center"><span class="material-symbols-outlined text-[16px] mx-1">chevron_right</span><span class="text-on-surface font-medium truncate max-w-[200px] md:max-w-none">Dự án</span></div></li>
 </ol>
 </nav>
-<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface mb-2">
-                Danh sách Dự án Nhà ở xã hội
-            </h1>
-<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">
+<h1 class="font-headline-lg font-bold text-[18px] min-[360px]:text-[20px] sm:text-headline-lg-mobile md:text-headline-lg text-on-surface mb-sm tracking-tight text-balance whitespace-nowrap overflow-hidden text-ellipsis max-w-full">Danh sách dự án nhà ở xã hội</h1>
+<p class="font-body-md text-[13px] md:text-body-md text-on-surface-variant max-w-2xl text-balance">
                 Khám phá các Dự án Nhà ở xã hội đang và sắp triển khai.
             </p>
 </div>
@@ -37,7 +35,7 @@
 <div class="flex-1 max-w-5xl mx-auto w-full px-6 md:px-12 pt-xs pb-lg flex flex-col lg:flex-row gap-gutter relative">
 <!-- Filter Sidebar -->
 <aside class="w-full lg:w-64 flex-shrink-0">
-<div class="bg-surface-container-lowest rounded-lg border border-outline-variant p-md flex flex-col gap-sm sticky top-[100px]">
+<div class="bg-surface-container-lowest rounded-lg border border-outline-variant p-3 md:p-md flex flex-col gap-2 md:gap-sm sticky top-[100px]">
 <h2 class="font-label-md text-label-md text-on-surface flex items-center gap-xs">
 <span class="material-symbols-outlined text-[20px]">tune</span>
                     Bộ lọc Tìm kiếm
@@ -45,13 +43,13 @@
 <!-- Search -->
 <div class="relative">
 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
-<input class="w-full pl-10 pr-3 py-2 bg-surface rounded-lg border border-outline-variant focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md text-on-surface outline-none transition-shadow" placeholder="Tên Dự án..." type="text">
+<input class="w-full pl-10 pr-3 py-1.5 md:py-2 bg-surface rounded-lg border border-outline-variant focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md text-on-surface outline-none transition-shadow" placeholder="Tên Dự án..." type="text">
 </div>
 <!-- Tỉnh/Thành -->
-<div class="flex flex-col gap-base">
+<div class="flex flex-col gap-1 md:gap-base">
 <label class="font-label-sm text-label-sm text-on-surface-variant">Tỉnh/Thành phố</label>
 <div class="relative location-dropdown">
-<input class="w-full px-3 py-2 bg-surface rounded-lg border border-outline-variant focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md text-on-surface outline-none transition-shadow cursor-pointer select-none" id="province-input" readonly="" placeholder="Tất cả" type="text"/>
+<input class="w-full px-3 py-1.5 md:py-2 bg-surface rounded-lg border border-outline-variant focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md text-on-surface outline-none transition-shadow cursor-pointer select-none" id="province-input" readonly="" placeholder="Tất cả" type="text"/>
 <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none transition-transform duration-200" id="province-arrow">expand_more</span>
 <div class="absolute left-0 right-0 mt-2 bg-surface-container-lowest rounded-lg shadow-lg border border-outline-variant/30 hidden flex-col z-50 max-h-60 overflow-y-auto" id="province-list-panel">
 <div class="p-2 border-b border-outline-variant/30 sticky top-0 bg-surface-container-lowest z-10">
@@ -63,10 +61,10 @@
 </div>
 </div>
 <!-- Quận/Huyện -->
-<div class="flex flex-col gap-base">
+<div class="flex flex-col gap-1 md:gap-base">
 <label class="font-label-sm text-label-sm text-on-surface-variant">Quận/Huyện</label>
 <div class="relative location-dropdown opacity-50" id="district-dropdown-container">
-<input class="w-full px-3 py-2 bg-surface rounded-lg border border-outline-variant focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md text-on-surface outline-none transition-shadow cursor-pointer select-none" id="district-input" readonly="" disabled="" placeholder="Tất cả" type="text"/>
+<input class="w-full px-3 py-1.5 md:py-2 bg-surface rounded-lg border border-outline-variant focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md text-on-surface outline-none transition-shadow cursor-pointer select-none" id="district-input" readonly="" disabled="" placeholder="Tất cả" type="text"/>
 <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none transition-transform duration-200" id="district-arrow">expand_more</span>
 <div class="absolute left-0 right-0 mt-2 bg-surface-container-lowest rounded-lg shadow-lg border border-outline-variant/30 hidden flex-col z-50 max-h-60 overflow-y-auto" id="district-list-panel">
 <div class="p-2 border-b border-outline-variant/30 sticky top-0 bg-surface-container-lowest z-10">
@@ -78,29 +76,20 @@
 </div>
 </div>
 <!-- Trạng thái -->
-<div class="flex flex-col gap-sm">
+<div class="flex flex-col gap-1 md:gap-base">
 <label class="font-label-sm text-label-sm text-on-surface-variant">Trạng thái Dự án</label>
-<label class="flex items-center gap-xs cursor-pointer">
-<input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox">
-<span class="font-body-md text-body-md text-on-surface">Đang nhận đơn</span>
-</label>
-<label class="flex items-center gap-xs cursor-pointer">
-<input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox">
-<span class="font-body-md text-body-md text-on-surface">Đang xây dựng</span>
-</label>
-<label class="flex items-center gap-xs cursor-pointer">
-<input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox">
-<span class="font-body-md text-body-md text-on-surface">Chờ bàn giao</span>
-</label>
-<label class="flex items-center gap-xs cursor-pointer">
-<input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox">
-<span class="font-body-md text-body-md text-on-surface">Chờ xây dựng</span>
-</label>
+<select id="sidebar-status-filter" class="w-full px-3 py-1.5 md:py-2 bg-surface-container-lowest rounded-lg border border-outline-variant focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-[13px] md:text-body-md text-on-surface outline-none transition-shadow appearance-none">
+<option value="all">Tất cả</option>
+<option value="Đang nhận đơn">Đang nhận đơn</option>
+<option value="Đang xây dựng">Đang xây dựng</option>
+<option value="Chờ bàn giao">Chờ bàn giao</option>
+<option value="Chờ xây dựng">Chờ xây dựng</option>
+</select>
 </div>
 <!-- Mức giá -->
-<div class="flex flex-col gap-base">
+<div class="flex flex-col gap-1 md:gap-base">
 <label class="font-label-sm text-label-sm text-on-surface-variant">Khoảng giá</label>
-<select class="w-full px-3 py-2 bg-surface rounded-lg border border-outline-variant focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md text-on-surface outline-none transition-shadow appearance-none">
+<select class="w-full px-3 py-1.5 md:py-2 bg-surface rounded-lg border border-outline-variant focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md text-on-surface outline-none transition-shadow appearance-none">
 <option>Tất cả</option>
 <option>Dưới 15 triệu/m²</option>
 <option>15 - 20 triệu/m²</option>
@@ -122,10 +111,6 @@
 <option value="latest">Mới nhất</option>
 <option value="price-asc">Giá thấp đến cao</option>
 <option value="price-desc">Giá cao đến thấp</option>
-<option value="Chờ xây dựng">Chờ xây dựng</option>
-<option value="Đang xây dựng">Đang xây dựng</option>
-<option value="Đang nhận đơn">Đang nhận đơn</option>
-<option value="Chờ bàn giao">Chờ bàn giao</option>
 </select>
 </div>
 </div>
