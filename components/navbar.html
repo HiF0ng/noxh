@@ -38,10 +38,20 @@
       opacity: 1;
       margin-left: 6px;
   }
+  .nav-item.no-icon {
+      padding: 0 16px !important;
+  }
+  .nav-item.no-icon .nav-text {
+      margin-left: 0 !important;
+      transform: translateY(1px);
+  }
   .no-transitions * {
       transition: none !important;
   }
 </style>
+
+<!-- Navbar Blur Mask -->
+<div class="fixed top-0 left-0 right-0 h-24 sm:h-28 z-40 pointer-events-none" style="background: linear-gradient(to bottom, rgba(249,250,251,0.95) 0%, rgba(249,250,251,0.5) 60%, transparent 100%); backdrop-filter: blur(12px); -webkit-mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%); mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%);"></div>
 
 <nav class="top-navbar flex lg:hidden fixed top-0 left-0 right-0 z-50 items-center justify-between px-3 py-1.5 md:px-5 md:py-2 max-w-max mx-auto bg-surface-container-lowest rounded-full mt-margin-mobile shadow-sm transition-all duration-300">
     <!-- Links -->

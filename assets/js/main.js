@@ -361,6 +361,38 @@ function setupFAQTabs() {
     const tabContents = document.querySelectorAll('.faq-tab-content');
     
     if (tabBtns.length === 0) return;
+    const customDropdownBtn = document.getElementById('custom-faq-dropdown-btn');
+    const customDropdownMenu = document.getElementById('custom-faq-dropdown-menu');
+    const customDropdownText = document.getElementById('custom-faq-dropdown-text');
+    
+    if (customDropdownBtn && customDropdownMenu) {
+        customDropdownBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            customDropdownMenu.classList.toggle('hidden');
+            customDropdownMenu.classList.toggle('flex');
+        });
+        
+        document.addEventListener('click', (e) => {
+            if (!customDropdownBtn.contains(e.target) && !customDropdownMenu.contains(e.target)) {
+                customDropdownMenu.classList.add('hidden');
+                customDropdownMenu.classList.remove('flex');
+            }
+        });
+        
+        const dropdownItems = customDropdownMenu.querySelectorAll('.faq-dropdown-item');
+        dropdownItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                customDropdownText.textContent = item.textContent.trim();
+                customDropdownMenu.classList.add('hidden');
+                customDropdownMenu.classList.remove('flex');
+                const targetId = item.getAttribute('data-target');
+                const targetBtn = Array.from(document.querySelectorAll('.faq-tab-btn')).find(b => b.getAttribute('data-target') === targetId);
+                if (targetBtn) targetBtn.click();
+            });
+        });
+    }
+
     
     tabBtns.forEach(btn => {
         const newBtn = btn.cloneNode(true);
@@ -372,13 +404,13 @@ function setupFAQTabs() {
             
             // Deactivate all
             document.querySelectorAll('.faq-tab-btn').forEach(b => {
-                b.className = "faq-tab-btn font-label-md text-label-md px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low flex items-center justify-between transition-colors";
+                b.className = "faq-tab-btn font-label-md text-label-md px-2 md:px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low flex items-center justify-between transition-colors";
                 const icon = b.querySelector('.material-symbols-outlined');
                 if (icon) icon.classList.add('hidden');
             });
             
             // Activate clicked
-            newBtn.className = "faq-tab-btn font-label-md text-label-md px-4 py-3 rounded-lg bg-primary text-white hover:bg-primary/80 flex items-center justify-between transition-colors active-tab";
+            newBtn.className = "faq-tab-btn font-label-md text-label-md px-2 md:px-4 py-3 rounded-lg bg-primary text-white hover:bg-primary/80 flex items-center justify-between transition-colors active-tab";
             const icon = newBtn.querySelector('.material-symbols-outlined');
             if (icon) icon.classList.remove('hidden');
             
@@ -625,7 +657,7 @@ function setupUserDropdown() {
             const currentPage = window.location.pathname.split('/').pop() || 'homepage.html';
             const isActive = link.url === currentPage;
             
-            let classes = 'px-4 py-2 flex items-center gap-2 transition-colors ';
+            let classes = 'px-2 md:px-4 py-2 flex items-center gap-2 transition-colors ';
             
             if (isActive) {
                 classes += 'text-primary font-bold text-[15px] hover:bg-surface-container-low';
@@ -726,12 +758,14 @@ function highlightActiveLink() {
                 iconEl.style.display = 'none';
             }
             if (textEl) textEl.textContent = functionPages[currentPage].text;
+            btnFunctions.classList.add('no-icon');
         } else {
             if (iconEl) {
                 iconEl.style.display = '';
                 iconEl.textContent = 'widgets';
             }
             if (textEl) textEl.textContent = 'Chức năng';
+            btnFunctions.classList.remove('no-icon');
         }
         
         // Force reflow and restore
@@ -776,7 +810,7 @@ function highlightActiveLink() {
         if (link.textContent.includes('Gửi phản hồi') || link.textContent.includes('Đăng xuất')) return;
         
         // Base classes
-        const baseClasses = 'flex items-center gap-sm px-4 py-3 rounded-lg transition-all duration-200 scale-95 active:scale-90 font-label-md text-label-md truncate whitespace-nowrap';
+        const baseClasses = 'flex items-center gap-sm px-2 md:px-4 py-3 rounded-lg transition-all duration-200 scale-95 active:scale-90 font-label-md text-label-md truncate whitespace-nowrap';
         
         if (href === currentPage) {
             link.className = `${baseClasses} bg-primary text-white font-bold shadow-md`;
@@ -802,10 +836,10 @@ function highlightActiveLink() {
         if (link.textContent.includes('Đăng xuất')) return;
         
         if (href && href === currentPage) {
-            link.className = 'px-4 py-2 flex items-center gap-2 transition-colors text-primary font-bold text-[15px] hover:bg-surface-container-low';
+            link.className = 'px-2 md:px-4 py-2 flex items-center gap-2 transition-colors text-primary font-bold text-[15px] hover:bg-surface-container-low';
         } else {
             // Default inactive state
-            link.className = 'px-4 py-2 flex items-center gap-2 transition-colors text-on-surface hover:text-primary hover:bg-surface-container-low font-label-md text-label-md font-medium';
+            link.className = 'px-2 md:px-4 py-2 flex items-center gap-2 transition-colors text-on-surface hover:text-primary hover:bg-surface-container-low font-label-md text-label-md font-medium';
         }
     });
 
@@ -899,7 +933,7 @@ function setupLocationDropdowns() {
     provinces.forEach(prov => {
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'px-4 py-2 text-left hover:bg-surface-container hover:text-primary transition-colors text-sm text-on-surface province-item';
+        btn.className = 'px-2 md:px-4 py-2 text-left hover:bg-surface-container hover:text-primary transition-colors text-sm text-on-surface province-item';
         btn.textContent = prov;
         btn.addEventListener('click', () => {
             selectProvince(prov);
@@ -953,7 +987,7 @@ function setupLocationDropdowns() {
         districts.forEach(dist => {
             const btn = document.createElement('button');
             btn.type = 'button';
-            btn.className = 'px-4 py-2 text-left hover:bg-surface-container hover:text-primary transition-colors text-sm text-on-surface district-item';
+            btn.className = 'px-2 md:px-4 py-2 text-left hover:bg-surface-container hover:text-primary transition-colors text-sm text-on-surface district-item';
             btn.textContent = dist;
             btn.addEventListener('click', () => {
                 selectDistrict(dist);
@@ -1162,73 +1196,67 @@ function setupFAQSearch() {
 }
 
 function setupProjectFilterSort() {
-    const select = document.getElementById('project-filter-sort-select');
+    const sortSelect = document.getElementById('project-filter-sort-select');
+    const statusSelect = document.getElementById('sidebar-status-filter');
     const grid = document.getElementById('projects-grid');
-    if (!select || !grid) return;
+    if (!sortSelect || !grid) return;
     
     // Get all project card items
     const cards = Array.from(grid.querySelectorAll('.project-card-item'));
     if (cards.length === 0) return;
     
-    // Replace listener cleanly
-    const newSelect = select.cloneNode(true);
-    select.parentNode.replaceChild(newSelect, select);
-    
-    newSelect.addEventListener('change', () => {
-        const val = newSelect.value;
+    function updateGrid() {
         let visibleCount = 0;
+        const sortVal = sortSelect.value;
+        const statusVal = statusSelect ? statusSelect.value : 'all';
         
-        if (val === 'latest') {
-            // Sort by date descending
-            cards.sort((a, b) => (b.dataset.date || '').localeCompare(a.dataset.date || ''));
-            cards.forEach(card => {
+        // 1. Filter
+        cards.forEach(card => {
+            const status = (card.dataset.status || '').trim();
+            if (statusVal === 'all' || status === statusVal) {
                 card.style.display = '';
                 visibleCount++;
-            });
-        } else if (val === 'price-asc') {
-            // Sort by price ascending (putting zero/unknown prices at bottom)
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        // 2. Sort
+        if (sortVal === 'latest') {
+            cards.sort((a, b) => (b.dataset.date || '').localeCompare(a.dataset.date || ''));
+        } else if (sortVal === 'price-asc') {
             cards.sort((a, b) => {
                 const pA = parseFloat(a.dataset.price) || 999;
                 const pB = parseFloat(b.dataset.price) || 999;
                 return pA - pB;
             });
-            cards.forEach(card => {
-                card.style.display = '';
-                visibleCount++;
-            });
-        } else if (val === 'price-desc') {
-            // Sort by price descending
+        } else if (sortVal === 'price-desc') {
             cards.sort((a, b) => {
                 const pA = parseFloat(a.dataset.price) || 0;
                 const pB = parseFloat(b.dataset.price) || 0;
                 return pB - pA;
             });
-            cards.forEach(card => {
-                card.style.display = '';
-                visibleCount++;
-            });
-        } else {
-            // Filter by specific status (Chờ xây dựng, Đang xây dựng, Đang nhận đơn, Chờ bàn giao)
-            cards.forEach(card => {
-                const status = (card.dataset.status || '').trim();
-                if (status === val) {
-                    card.style.display = '';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
         }
         
-        // Re-append sorted/filtered cards into grid container
+        // Re-append sorted cards
         cards.forEach(card => grid.appendChild(card));
         
-        // Update Counter display text
+        // Update Counter
         const visText = document.getElementById('visible-count-text');
         const totText = document.getElementById('total-count-text');
         if (visText) visText.textContent = visibleCount > 0 ? `1 - ${visibleCount}` : '0';
         if (totText) totText.textContent = visibleCount;
-    });
+    }
+    
+    const newSortSelect = sortSelect.cloneNode(true);
+    sortSelect.parentNode.replaceChild(newSortSelect, sortSelect);
+    newSortSelect.addEventListener('change', updateGrid);
+    
+    if (statusSelect) {
+        const newStatusSelect = statusSelect.cloneNode(true);
+        statusSelect.parentNode.replaceChild(newStatusSelect, statusSelect);
+        newStatusSelect.addEventListener('change', updateGrid);
+    }
 }
 
 
@@ -1376,7 +1404,7 @@ function renderProjectsList(container, list) {
                 </div>
                 <div class="pt-3 border-t border-outline-variant/40 flex items-center justify-between">
                     <span class="text-xs text-on-surface-variant">Chủ đầu tư: <strong>${p.owner || p.investor || 'Đang cập nhật'}</strong></span>
-                    <a href="project-detail.html?id=${p.id}" class="px-4 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg text-xs font-semibold transition-colors">Chi tiết</a>
+                    <a href="project-detail.html?id=${p.id}" class="px-2 md:px-4 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg text-xs font-semibold transition-colors">Chi tiết</a>
                 </div>
             </div>
         `;
@@ -1431,7 +1459,7 @@ async function loadLiveDocuments() {
                                 </div>
                             </div>
                         </div>
-                        <a href="${d.fileUrl || '#'}\" download class="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 justify-center transition-colors">
+                        <a href="${d.fileUrl || '#'}\" download class="px-2 md:px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 justify-center transition-colors">
                             <span class="material-symbols-outlined text-base">download</span> Tải xuống
                         </a>
                     </div>
@@ -1747,7 +1775,7 @@ function renderFeedbackFileList() {
     
     window.feedbackFiles.forEach((file, index) => {
         const fileItem = document.createElement('div');
-        fileItem.className = 'flex items-center justify-between bg-surface-container py-1.5 px-3 rounded-lg border border-outline-variant/30';
+        fileItem.className = 'flex items-center justify-between bg-surface-container py-1.5 px-2 md:px-4 rounded-lg border border-outline-variant/30';
         fileItem.innerHTML = `
             <div class="flex items-center gap-2 overflow-hidden">
                 <span class="material-symbols-outlined text-on-surface-variant text-sm">image</span>
@@ -2064,22 +2092,22 @@ function initLoanCalculator() {
                 
                 scheduleHtml += `
                 <tr class="border-b border-outline-variant/20 hover:bg-surface-container transition-colors">
-                <td class="py-3 px-1 md:px-2 text-on-background align-middle text-center whitespace-nowrap">Năm ${y + 1}</td>
-                <td class="py-3 px-1 md:px-2 text-on-surface-variant text-center align-middle whitespace-nowrap">${formatCurrency(Math.round(yPrincipal))}</td>
-                <td class="py-3 px-1 md:px-2 text-on-surface-variant text-center align-middle whitespace-nowrap">${formatCurrency(Math.round(yInterest))}</td>
-                <td class="py-3 px-1 md:px-2 text-primary font-medium text-center align-middle whitespace-nowrap">${formatCurrency(Math.round(yTotal))}</td>
-                <td class="py-3 px-1 md:px-2 text-on-background text-center align-middle whitespace-nowrap">${formatCurrency(Math.round(yRemaining))}</td>
+                <td class="py-3 px-2 md:px-4 text-on-background align-middle text-center whitespace-nowrap">Năm ${y + 1}</td>
+                <td class="py-3 px-2 md:px-4 text-on-surface-variant text-center align-middle whitespace-nowrap">${formatCurrency(Math.round(yPrincipal))}</td>
+                <td class="py-3 px-2 md:px-4 text-on-surface-variant text-center align-middle whitespace-nowrap">${formatCurrency(Math.round(yInterest))}</td>
+                <td class="py-3 px-2 md:px-4 text-primary font-medium text-center align-middle whitespace-nowrap">${formatCurrency(Math.round(yTotal))}</td>
+                <td class="py-3 px-2 md:px-4 text-on-background text-center align-middle whitespace-nowrap">${formatCurrency(Math.round(yRemaining))}</td>
                 </tr>`;
             }
         } else {
             for (let m of scheduleData) {
                 scheduleHtml += `
                 <tr class="border-b border-outline-variant/20 hover:bg-surface-container transition-colors">
-                <td class="py-3 px-1 md:px-2 text-on-background align-middle text-center whitespace-nowrap">Tháng ${m.month}</td>
-                <td class="py-3 px-1 md:px-2 text-on-surface-variant text-center align-middle whitespace-nowrap">${formatCurrency(Math.round(m.principalRepayment))}</td>
-                <td class="py-3 px-1 md:px-2 text-on-surface-variant text-center align-middle whitespace-nowrap">${formatCurrency(Math.round(m.interest))}</td>
-                <td class="py-3 px-1 md:px-2 text-primary font-medium text-center align-middle whitespace-nowrap">${formatCurrency(Math.round(m.totalPayment))}</td>
-                <td class="py-3 px-1 md:px-2 text-on-background text-center align-middle whitespace-nowrap">${formatCurrency(Math.round(m.remainingPrincipal))}</td>
+                <td class="py-3 px-2 md:px-4 text-on-background align-middle text-center whitespace-nowrap">Tháng ${m.month}</td>
+                <td class="py-3 px-2 md:px-4 text-on-surface-variant text-center align-middle whitespace-nowrap">${formatCurrency(Math.round(m.principalRepayment))}</td>
+                <td class="py-3 px-2 md:px-4 text-on-surface-variant text-center align-middle whitespace-nowrap">${formatCurrency(Math.round(m.interest))}</td>
+                <td class="py-3 px-2 md:px-4 text-primary font-medium text-center align-middle whitespace-nowrap">${formatCurrency(Math.round(m.totalPayment))}</td>
+                <td class="py-3 px-2 md:px-4 text-on-background text-center align-middle whitespace-nowrap">${formatCurrency(Math.round(m.remainingPrincipal))}</td>
                 </tr>`;
             }
         }
