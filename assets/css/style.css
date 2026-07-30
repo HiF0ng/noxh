@@ -144,12 +144,6 @@ html {
     scroll-behavior: smooth;
 }
 
-@media (min-width: 1024px) {
-    :root, html {
-        /* Baseline 1440px -> 16px font-size (1rem). Scales proportionally from 13.5px on small laptops to 26px on 2K/4K monitors */
-        font-size: clamp(13.5px, 1.111vw, 26px);
-    }
-
     /* Hero section full viewport height ONLY on homepage */
     .homepage-hero-section {
         min-height: 100vh;
@@ -165,15 +159,22 @@ html {
         padding-bottom: 3rem;
         box-sizing: border-box;
     }
-    
+
+@media (min-width: 1024px) {
+    :root, html {
+        /* Baseline 1440px -> 16px font-size (1rem). Scales proportionally from 13.5px on small laptops to 26px on 2K/4K monitors */
+        font-size: clamp(13.5px, 1.111vw, 26px);
+    }
+
     .hero-title-responsive {
-        font-size: clamp(2.25rem, 3.2vw, 3.5rem) !important;
+        font-size: clamp(1.75rem, 4vw, 3.5rem) !important;
         line-height: 1.3 !important;
     }
+}
 
     .scroll-indicator {
         position: absolute;
-        bottom: 2.5rem;
+        bottom: 50px;
         left: 50%;
         transform: translateX(-50%);
         display: flex;
@@ -193,7 +194,6 @@ html {
     .scroll-indicator .scroll-icon {
         animation: float-bounce 2s infinite ease-in-out;
     }
-}
 
 @keyframes float-bounce {
     0%, 100% { transform: translateY(0); }
@@ -345,30 +345,14 @@ html {
         font-size: clamp(13.5px, 1.111vw, 26px);
     }
 
-    /* Hero section full viewport height ONLY on homepage */
-    .homepage-hero-section {
-        min-height: 100vh;
-        min-height: 100dvh;
-        height: 100vh;
-        height: 100dvh;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        position: relative;
-        padding-top: 4rem;
-        padding-bottom: 3rem;
-        box-sizing: border-box;
-    }
-    
     .hero-title-responsive {
-        font-size: clamp(2.25rem, 3.2vw, 3.5rem) !important;
+        font-size: clamp(1.75rem, 4vw, 3.5rem) !important;
         line-height: 1.3 !important;
     }
 
     .scroll-indicator {
         position: absolute;
-        bottom: 2.5rem;
+        bottom: 50px;
         left: 50%;
         transform: translateX(-50%);
         display: flex;
@@ -427,11 +411,11 @@ aside .bg-surface-container-lowest {
 /* Override hardcoded pixel paddings/margins used for navbar clearance so they scale proportionally */
 body:not(:has(.homepage-hero-section)) [class*="pt-[86px]"],
 body:not(:has(.homepage-hero-section)) [class*="pt-[100px]"] {
-    padding-top: clamp(4rem, 6vw, 5.5rem) !important;
+    padding-top: clamp(5rem, 6vw, 6rem) !important;
 }
 
 body:not(:has(.homepage-hero-section)) [class*="mt-[80px]"] {
-    margin-top: clamp(4rem, 6vw, 5.5rem) !important;
+    margin-top: clamp(5rem, 6vw, 6rem) !important;
 }
 
 /* Prevent navbar links from wrapping into multiple lines */

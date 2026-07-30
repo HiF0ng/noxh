@@ -43,7 +43,7 @@
   }
 </style>
 
-<nav class="top-navbar fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-3 py-1.5 md:px-5 md:py-2 max-w-max mx-auto bg-surface-container-lowest rounded-full mt-margin-mobile lg:mt-sm shadow-sm transition-all duration-300">
+<nav class="top-navbar flex lg:hidden fixed top-0 left-0 right-0 z-50 items-center justify-between px-3 py-1.5 md:px-5 md:py-2 max-w-max mx-auto bg-surface-container-lowest rounded-full mt-margin-mobile shadow-sm transition-all duration-300">
     <!-- Links -->
     <div class="relative flex items-center gap-0.5 md:gap-1" id="nav-links-container">
         <!-- Sliding Indicator -->
@@ -83,6 +83,28 @@
     <div class="flex items-center shrink-0">
         <div class="h-9 w-9 rounded-full overflow-hidden border-2 border-primary/50 bg-primary/5 flex items-center justify-center cursor-pointer avatar-wrapper">
             <span class="material-symbols-outlined text-primary text-[20px]">person</span>
+        </div>
+    </div>
+</nav>
+
+<!-- Desktop Navbar (Hidden on Mobile & Tablet) -->
+<nav class="top-navbar-desktop hidden lg:flex fixed top-0 left-0 right-0 z-50 items-center justify-between gap-4 px-6 py-3 max-w-5xl mx-auto bg-surface-container-lowest rounded-full mt-sm shadow-sm transition-all duration-300">
+    <div class="flex items-center gap-sm shrink-0">
+        <a href="homepage.html" class="flex items-center">
+            <img src="img/logo.svg" alt="Vietnam Housing" class="h-6 md:h-7 w-auto -translate-y-0.5">
+        </a>
+    </div>
+    <div class="flex items-center gap-6 mx-auto">
+        <a class="nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="homepage.html">Trang chủ</a>
+        <a class="nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="all-projects.html">Dự án</a>
+        <a class="nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="documents.html">Tài liệu</a>
+        <a class="nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="faq.html">Câu hỏi thường gặp</a>
+        <a class="nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="compare.html">So sánh</a>
+        <a class="nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="loan.html">Tính khoản vay</a>
+    </div>
+    <div class="flex items-center gap-sm shrink-0 relative">
+        <div class="h-10 w-10 rounded-full overflow-hidden border-2 border-primary/50 bg-primary/5 flex items-center justify-center cursor-pointer avatar-wrapper">
+            <span class="material-symbols-outlined text-primary">person</span>
         </div>
     </div>
 </nav>

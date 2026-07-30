@@ -62,7 +62,7 @@ tailwind.config = {
             },
             "spacing": {
                 "lg": "40px",
-                "margin-mobile": "16px",
+                "margin-mobile": "28px",
                 "base": "4px",
                 "max-width": "1280px",
                 "margin-desktop": "auto",
