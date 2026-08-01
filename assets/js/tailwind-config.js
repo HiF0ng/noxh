@@ -1,5 +1,6 @@
 tailwind.config = {
     darkMode: "class",
+    safelist: ['lg:text-[15px]', 'lg:text-[12px]', 'pl-8', 'pr-2', 'lg:px-4', 'flex', 'items-center', 'gap-2', 'transition-colors', 'text-primary', 'font-bold', 'text-[15px]', 'hover:bg-surface-container-low', 'text-error', 'hover:bg-error-container', 'hover:text-error', 'font-label-md', 'text-label-md', 'text-on-surface', 'font-medium'],
     theme: {
         extend: {
             "colors": {

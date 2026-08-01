@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html><html lang="vi" style=""><head>
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
-<title>Hope Residences - Vietnam Housing</title>
+<title>Chi tiết Dự án - Vietnam Housing</title>
 <!-- Google Fonts -->
 <link href="https://fonts.googleapis.com" rel="preconnect">
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
@@ -10,7 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
 <!-- Tailwind CSS -->
-<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/style.css?v=6">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script src="assets/js/tailwind-config.js"></script>
 <!-- Tailwind Configuration -->
@@ -21,47 +21,49 @@
 <!-- TopNavBar -->
 <div id="navbar-placeholder"></div>
 <!-- Main Content Container -->
-<main class="pb-xl px-6 md:px-12 max-w-5xl mx-auto flex flex-col mt-[80px]">
+<main class="pb-xl px-6 md:px-12 max-w-5xl mx-auto flex flex-col pt-[70px] md:pt-[86px] lg:pt-24">
 <!-- Breadcrumb -->
-<nav aria-label="Breadcrumb" class="flex text-on-surface-variant font-label-sm text-label-sm mb-4 mt-4">
+<nav aria-label="Breadcrumb" class="flex text-on-surface-variant font-label-sm text-label-sm lg:text-[18px] lg:font-medium my-2 lg:mt-4 lg:mb-6">
 <ol class="inline-flex items-center gap-xs">
 <li class="inline-flex items-center"><a class="hover:text-primary transition-colors" href="homepage.html">Trang chủ</a></li>
-<li><div class="flex items-center"><span class="material-symbols-outlined text-[16px] mx-1">chevron_right</span><a class="hover:text-primary transition-colors" href="all-projects.html">Dự án</a></div></li>
-<li><div class="flex items-center"><span class="material-symbols-outlined text-[16px] mx-1">chevron_right</span><span class="text-on-surface font-medium truncate max-w-[200px] md:max-w-none">Hope Residences</span></div></li>
+<li><div class="flex items-center"><span class="material-symbols-outlined text-[16px] lg:text-[22px] mx-1">chevron_right</span><a class="hover:text-primary transition-colors" href="all-projects.html">Dự án</a></div></li>
+<li><div class="flex items-center"><span class="material-symbols-outlined text-[16px] lg:text-[22px] mx-1">chevron_right</span><span id="detail-breadcrumb-title" class="text-on-surface font-medium truncate max-w-[200px] md:max-w-none">Đang tải...</span></div></li>
 </ol>
 </nav>
 <!-- Hero Bento Gallery -->
-<section class="grid grid-cols-1 md:grid-cols-4 gap-sm h-[300px] md:h-[400px] mb-sm">
+<section class="grid grid-cols-1 md:grid-cols-4 gap-sm h-[300px] md:h-[500px] mb-md">
 <!-- Main Image -->
 <div class="md:col-span-3 relative rounded-xl overflow-hidden group">
-<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A high-quality architectural visualization of a modern, multi-story affordable housing complex in Vietnam named Hope Residences. The building features clean lines, ample balconies, and is surrounded by lush green landscaping under a bright, sunny sky. The aesthetic is professional, inviting, and reliable, utilizing a bright color palette with soft whites, greys, and subtle blue accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFwYsMpwiAihnuZc3s9TPonWiBiR0X_Kr2ooMmi1VvOS6XNVnjBRPGMjaLpsi8t_IlANCNx_TLjeefrbKeqLKZKcH5S0auyj_nRQtdV_mNLP37uh9WC7gXdhwW9Mgfy4dTf5SCl0EX-XsH9Zupk2U5xsjsRH-X54Ex_tRSt-6et0cbHTC8UuYhq7YglXtfF4r9z-xBFdqb6lbKIlEyM8K5TwqeEORAfTg3495wh0z0ufpwnH_vowT_50szcSaPisbWNX3J-u6wA7SQ">
-<div class="absolute top-md left-md status-pill status-dang-nhan-don">Đang nhận đơn</div>
+<div id="detail-hero-image-skeleton" class="absolute inset-0 skeleton-shimmer"></div>
+<img id="detail-hero-image" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer opacity-0" data-alt="Ảnh dự án">
 </div>
 <!-- Thumbnails -->
 <div class="hidden md:flex flex-col gap-sm md:col-span-1 h-full">
-<div class="flex-1 rounded-xl overflow-hidden group">
-<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="An interior view of a bright, modern apartment living room within an affordable housing project. Large windows let in abundant natural light, illuminating minimalist furniture and warm wooden floors. The mood is cozy, comfortable, and aspiring, fitting a compassionate real estate brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgB3SyvsPbpQb2t76b2q6YwR-AZzzKv7x63LcfOtPrZVJuqrSXS6OFeVFBuVaBDLQrINdmKHT9HM7WU9_0szvX5Y-mzTzw7Kq5R3783mEJ3S56oc8cb1kPy1grUklxKH8rjCwbcR0-_OSRAigldTWqG37q-4LeatMQsMzhMv9IlX5iIwW1QlqjjJKG-Z0OgjuMdC4pHBqwpcQNgHcSQmWGrWxb2ARx__BGAoZX0puVsnCiHScNjGVy498axofrKKBaP_e_FDudPS-B">
+<div class="flex-1 rounded-xl overflow-hidden group relative">
+<div id="detail-gallery-thumb-0-skeleton" class="absolute inset-0 skeleton-shimmer"></div>
+<img id="detail-gallery-thumb-0" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer opacity-0" data-alt="Ảnh thư viện dự án">
 </div>
 <div class="flex-1 rounded-xl overflow-hidden group relative">
-<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A view of a landscaped community courtyard in an urban housing development. Paved walkways wind through manicured lawns and young trees, with residents enjoying the outdoor space. The lighting is soft afternoon sun, creating a peaceful and secure atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5_8UwQuxOGJjNf_cuxCenstELAa8baiIC9sZ69Rb46MPpNlsLREqBpQh_u1SJPFil9pe-dORF-tG5y3qOHOfPLeLO3h69yxoj7G5gtpOBs_AHgKSn2YrhKCZRPcI4rT6HFN6_URgS6wdxMBKa6PB5IKD891ECB1MSK_VjvrlocR-sm65QCNVpAnL9A1uVQFPi4cSmrvPRw71hQ-zJXj06AszvECatBjs5lkorAr-pfAW30YYVN0Edsd08BXMPjj8GRBW6C-tM9OST">
-<div class="absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer hover:bg-black/50 transition-colors">
+<div id="detail-gallery-thumb-1-skeleton" class="absolute inset-0 skeleton-shimmer"></div>
+<img id="detail-gallery-thumb-1" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer opacity-0" data-alt="Ảnh thư viện dự án">
+<button id="detail-view-gallery" type="button" class="absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer hover:bg-black/50 transition-colors">
 <span class="text-white font-label-md text-label-md flex items-center gap-xs">
 <span class="material-symbols-outlined">photo_library</span>
                             Xem tất cả ảnh
                         </span>
-</div>
+</button>
 </div>
 </div>
 </section>
 <!-- Two Column Layout -->
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter relative">
 <!-- Left Column: Main Content -->
-<div class="lg:col-span-8 flex flex-col gap-md">
+<div id="detail-main-sections" class="lg:col-span-8 flex flex-col gap-10">
 <!-- Title & Basic Info -->
 <div class="border-b border-outline-variant pb-sm">
 <div class="flex items-center justify-between gap-md mb-xs">
-    <h1 class="font-headline-lg text-headline-lg text-on-surface flex-1 leading-tight">Nhà ở xã hội Hope Residences</h1>
-    <button class="flex items-center justify-center gap-2 px-6 py-2 rounded-full border border-primary text-primary font-label-md text-label-md hover:bg-primary hover:text-white transition-all duration-300 active:scale-95 flex-shrink-0 whitespace-nowrap">
+    <h1 id="detail-title" class="font-headline-lg text-headline-lg text-on-surface flex-1 leading-tight">Đang tải tên dự án...</h1>
+    <button id="detail-save-btn" class="flex items-center justify-center gap-2 px-6 py-2 rounded-full border border-primary text-primary font-label-md text-label-md hover:bg-primary hover:text-white transition-all duration-300 active:scale-95 flex-shrink-0 whitespace-nowrap">
         <span class="material-symbols-outlined text-[20px]">favorite</span>
         <span>Lưu Dự án</span>
     </button>
@@ -69,33 +71,39 @@
 <div class="flex flex-row items-center justify-between w-full text-on-surface-variant font-body-md text-sm md:text-body-md overflow-hidden">
 <div class="flex items-center gap-1 whitespace-nowrap overflow-hidden text-ellipsis flex-shrink mr-4">
 <span class="material-symbols-outlined text-primary text-[18px] flex-shrink-0">location_on</span>
-<span class="truncate">Phường Phúc Đồng, Quận Long Biên, Hà Nội</span>
+<span id="detail-location" class="truncate">Đang tải vị trí...</span>
 </div>
 <div class="flex items-center gap-1 whitespace-nowrap flex-shrink-0 text-right">
 <span class="material-symbols-outlined text-secondary text-[18px] flex-shrink-0">payments</span>
-<span class="font-semibold text-secondary">16tr - 18tr / m²</span>
+<span id="detail-price" class="font-semibold text-secondary">16tr - 18tr / m²</span>
 </div>
 </div>
 </div>
 <!-- Key Specs Glassmorphism-ish Cards -->
+<div class="grid grid-cols-2 gap-2 lg:hidden">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-3 flex items-center gap-2 shadow-sm"><span class="material-symbols-outlined text-primary text-[22px]">corporate_fare</span><div class="min-w-0 flex flex-col"><span class="text-xs text-on-surface-variant">Chủ đầu tư</span><span data-detail-field="investor" class="text-sm font-semibold text-on-surface truncate">Đang cập nhật</span></div></div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-3 flex items-center gap-2 shadow-sm"><span class="material-symbols-outlined text-primary text-[22px]">straighten</span><div class="min-w-0 flex flex-col"><span class="text-xs text-on-surface-variant">Diện tích</span><span data-detail-field="area" class="text-sm font-semibold text-on-surface truncate">Đang cập nhật</span></div></div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-3 flex items-center gap-2 shadow-sm"><span class="material-symbols-outlined text-primary text-[22px]">apartment</span><div class="min-w-0 flex flex-col"><span class="text-xs text-on-surface-variant">Quy mô</span><span data-detail-field="scale" class="text-sm font-semibold text-on-surface truncate">Đang cập nhật</span></div></div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-3 flex items-center gap-2 shadow-sm"><span class="material-symbols-outlined text-primary text-[22px]">key</span><div class="min-w-0 flex flex-col"><span class="text-xs text-on-surface-variant">Bàn giao</span><span data-detail-field="handover" class="text-sm font-semibold text-on-surface truncate">Đang cập nhật</span></div></div>
+</div>
 
 <!-- Description -->
 <div>
 <h2 class="font-headline-md text-headline-md text-on-surface mb-sm">Tổng quan Dự án</h2>
-<div class="font-body-md text-body-md text-on-surface-variant leading-relaxed space-y-4">
+<div id="detail-desc" class="font-body-md text-body-md text-on-surface-variant leading-relaxed space-y-4">
 <p class="">
-                            Dự án Nhà ở xã hội Hope Residences tọa lạc tại vị trí đắc địa trung tâm quận Long Biên, được quy hoạch đồng bộ với hệ thống tiện ích hiện đại, mang đến không gian sống xanh, sạch, an toàn cho cộng đồng cư dân.
+                            Đang tải thông tin chi tiết của dự án...
                         </p>
 <p class="">
                             Sở hữu vị trí giao thông thuận tiện, dễ dàng kết nối đến các tuyến đường huyết mạch, cư dân chỉ mất ít phút để di chuyển vào trung tâm thành phố hoặc các khu công nghiệp lân cận. Dự án được thiết kế theo phong cách hiện đại, tối ưu hóa công năng sử dụng và ánh sáng tự nhiên cho từng căn hộ.
                         </p>
 <p class="">
-                            Bên cạnh đó, Hope Residences còn chú trọng phát triển không gian sinh hoạt chung, sân chơi trẻ em, và khu vực cảnh quan cây xanh, tạo môi trường phát triển toàn diện và gắn kết cộng đồng cư dân.
+
                         </p>
 </div>
 </div>
 <!-- Amenities/Features List -->
-<div class="mt-md">
+<div>
 <h2 class="font-headline-md text-headline-md text-on-surface mb-sm">Tiện ích nổi bật</h2>
 <ul class="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-md">
 <li class="flex items-center gap-2 overflow-hidden">
@@ -128,18 +136,17 @@
 <div>
 <h2 class="font-headline-md text-headline-md text-on-surface mb-md">Mặt bằng căn hộ</h2>
 <div class="rounded-xl border border-outline-variant overflow-hidden bg-surface-container-lowest p-sm">
-<img class="w-full h-auto object-contain bg-white" data-alt="A clean, professional architectural floor plan of a 2-bedroom apartment. The layout is clearly defined with distinct rooms, doors, and basic furniture placement indicated in a minimalist, blueprint style. The background is crisp white with subtle blue and grey lines for clarity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAw5vcTZ4cwloV1680mJPPS5BAGSh0OZ8rECTYQc_2fx6t64BxwN0YlGOzJ-N_qsfcPrU1KD0qtJeMyKWjKi89UPQI5aAGobkyTD0R2m97Z1wOSRDtU9C-qW3iWHX3JfnjXuOBrQc9Q46phhu6HzRHjvGsuRyPmkhsFMZsIqean6lWWB-dOmt9_TlKRlHppfS6C_iIb0OConQF4wmmJACaGGDFli-tFjZHfElyeK6HlNdgKHOw39qi1eLwcRglcIfHK-S-JIYGwAJtt">
-<div class="flex justify-center gap-sm mt-sm">
-<button class="px-4 py-2 rounded-full border border-primary text-primary font-label-md text-label-md bg-primary-fixed/10">Căn 2 PN (51m²)</button>
-<button class="px-4 py-2 rounded-full border border-outline text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-low">Căn 2 PN (68m²)</button>
-<button class="px-4 py-2 rounded-full border border-outline text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-low">Căn 3 PN (76m²)</button>
+<div class="relative min-h-[360px] md:min-h-[560px] bg-surface-container">
+<div id="detail-floorplan-skeleton" class="absolute inset-0 skeleton-shimmer"></div>
+<img id="detail-floorplan-image" data-floorplan-zoom class="w-full h-auto min-h-[360px] md:min-h-[560px] object-contain bg-white cursor-zoom-in opacity-0 transition-opacity duration-200" alt="Mặt bằng căn hộ">
 </div>
+<div id="detail-floorplan-tabs-placeholder" class="min-h-[48px] mt-sm"></div>
 </div>
 </div>
 <!-- Location Map -->
 <div>
 <h2 class="font-headline-md text-headline-md text-on-surface mb-md">Vị trí Dự án</h2>
-<div class="w-full h-[300px] md:h-[400px] rounded-xl overflow-hidden bg-surface-container-low flex items-center justify-center border border-outline-variant shadow-sm relative">
+<div id="detail-map-container" class="w-full h-[300px] md:h-[400px] rounded-xl overflow-hidden bg-surface-container-low flex items-center justify-center border border-outline-variant shadow-sm relative cursor-pointer">
 <div class="bg-cover bg-center w-full h-full absolute inset-0 opacity-80" data-alt="A highly detailed, aesthetically pleasing digital map illustration focused on the Long Biên district in Hanoi, Vietnam. The map uses a modern, light-mode corporate color palette with soft greys for roads, subtle greens for parks, and a prominent blue location marker indicating the project site. The visual style is clean, interface-ready, and professional." data-location="Long Biên, Hà Nội" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDLlY8P-7V7z7tETcTr7xpJC1mQU77dgdgYoyzmGN7NMVUFCElUtuU20RUxdTtKADHbHxim6h8E9gHnExmlYJFgJgJNaSprpvFYQIG9sGD0HLOfyvHkoBuLaxDPUzTsRJ2Ba5N4CXgxwb_xf01RxOyg7kDAAZEihw7ZlgBs1vaPeN3eDUFoLgSMg5hVwljKdtnY5kfa5lRUT0TTdz_IAIJwTYUFYjnha8TEgYsMq1txXSn8DIJwJxs2gvjHBej8GznIVLBd2VcCDAW-')"></div>
 <!-- Overlay marker -->
 <div class="relative z-10 flex flex-col items-center">
@@ -147,23 +154,24 @@
 <span class="material-symbols-outlined text-white text-[24px]">home_pin</span>
 </div>
 <div class="bg-surface-container-lowest px-4 py-2 rounded-lg shadow-md font-label-md text-label-md text-on-surface text-center">
-                                Hope Residences<br>
+                                Vị trí dự án<br>
 <span class="text-on-surface-variant font-normal text-label-sm">Phúc Đồng, Long Biên</span>
 </div>
 </div>
 </div>
+<p id="detail-address" class="mt-3 font-body-md text-body-md text-on-surface-variant"></p>
 </div>
 </div>
 <!-- Right Column: Sticky Sidebar -->
 <div class="lg:col-span-4 mt-lg lg:mt-0 relative">
-<div class="sticky top-[100px] flex flex-col gap-sm"><div class="grid grid-cols-1 gap-xs mb-sm">
+<div class="sticky top-[100px] flex flex-col gap-sm"><div class="hidden lg:grid grid-cols-1 gap-xs mb-sm">
 <div class="bg-surface-container-lowest border border-outline-variant rounded-xl py-2 px-3 flex items-center gap-sm shadow-sm hover:shadow-md transition-shadow">
 <div class="w-10 h-10 rounded-full bg-primary-fixed/30 flex-shrink-0 flex items-center justify-center text-primary">
 <span class="material-symbols-outlined">corporate_fare</span>
 </div>
 <div class="flex flex-col">
 <span class="font-label-sm text-label-sm text-on-surface-variant leading-tight">Chủ đầu tư</span>
-<span class="font-label-md text-label-md text-on-surface leading-snug">Công ty CP Phát triển Nhà ở xã hội</span>
+<span data-detail-field="investor" class="font-label-md text-label-md text-on-surface leading-snug">Đang cập nhật</span>
 </div>
 </div>
 <div class="bg-surface-container-lowest border border-outline-variant rounded-xl py-2 px-3 flex items-center gap-sm shadow-sm hover:shadow-md transition-shadow">
@@ -172,7 +180,7 @@
 </div>
 <div class="flex flex-col">
 <span class="font-label-sm text-label-sm text-on-surface-variant leading-tight">Diện tích</span>
-<span class="font-label-md text-label-md text-on-surface leading-snug">51m² - 76m²</span>
+<span data-detail-field="area" class="font-label-md text-label-md text-on-surface leading-snug">Đang cập nhật</span>
 </div>
 </div>
 <div class="bg-surface-container-lowest border border-outline-variant rounded-xl py-2 px-3 flex items-center gap-sm shadow-sm hover:shadow-md transition-shadow">
@@ -181,16 +189,7 @@
 </div>
 <div class="flex flex-col">
 <span class="font-label-sm text-label-sm text-on-surface-variant leading-tight">Quy mô</span>
-<span class="font-label-md text-label-md text-on-surface leading-snug">1,504 căn hộ</span>
-</div>
-</div>
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl py-2 px-3 flex items-center gap-sm shadow-sm hover:shadow-md transition-shadow">
-<div class="w-10 h-10 rounded-full bg-primary-fixed/30 flex-shrink-0 flex items-center justify-center text-primary">
-<span class="material-symbols-outlined">gavel</span>
-</div>
-<div class="flex flex-col">
-<span class="font-label-sm text-label-sm text-on-surface-variant leading-tight">Pháp lý</span>
-<span class="font-label-md text-label-md text-on-surface leading-snug">Sổ hồng lâu dài</span>
+<span data-detail-field="scale" class="font-label-md text-label-md text-on-surface leading-snug">Đang cập nhật</span>
 </div>
 </div>
 <div class="bg-surface-container-lowest border border-outline-variant rounded-xl py-2 px-3 flex items-center gap-sm shadow-sm hover:shadow-md transition-shadow">
@@ -199,15 +198,21 @@
 </div>
 <div class="flex flex-col">
 <span class="font-label-sm text-label-sm text-on-surface-variant leading-tight">Bàn giao</span>
-<span class="font-label-md text-label-md text-on-surface leading-snug">Quý IV/2024</span>
+<span data-detail-field="handover" class="font-label-md text-label-md text-on-surface leading-snug">Đang cập nhật</span>
 </div>
 </div>
 </div>
 <!-- Registration Card -->
 
 <!-- Progress Tracker Card -->
-<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant p-md">
-<h3 class="font-title-lg text-title-lg font-bold text-on-surface mb-md">Tiến độ Dự án</h3>
+<div id="detail-progress-card" class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant p-md">
+<h3 class="font-title-lg text-title-lg font-bold text-on-surface mb-md flex justify-between items-center">
+        <span>Tiến độ Dự án</span>
+        <span id="detail-progress" class="text-primary font-semibold text-label-lg">85%</span>
+    </h3>
+    <div class="w-full bg-surface-container rounded-full h-2 overflow-hidden mb-6">
+        <div id="detail-progress-bar" class="bg-primary h-full rounded-full transition-all duration-500" style="width: 85%"></div>
+    </div>
 <div class="flex flex-col gap-0">
 <!-- Step 1 (Completed) -->
 <div class="flex gap-md">
@@ -266,76 +271,21 @@
 </button>
 </div><div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant p-md">
 <h3 class="font-title-lg text-title-lg font-bold text-on-surface mb-md">Lập hồ sơ đăng ký</h3>
-<button class="w-full bg-primary text-on-primary font-label-md text-label-md py-3 px-6 rounded-lg flex items-center justify-center gap-sm hover:shadow-md transition-shadow active:scale-95 transition-transform">
+<a id="detail-register-btn" href="documents.html" class="w-full bg-primary text-on-primary font-label-md text-label-md py-3 px-6 rounded-lg flex items-center justify-center gap-sm hover:shadow-md transition-shadow active:scale-95 transition-transform">
 <span class="material-symbols-outlined">description</span>
 Mẫu hồ sơ đăng ký
-</button>
+</a>
 </div>
 </div>
 </div>
 </div>
 <!-- Similar Projects -->
 <section class="pt-lg border-t border-outline-variant mt-lg">
-<h2 class="font-headline-lg text-headline-lg text-on-surface mb-md">Dự án tương tự</h2>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
-<!-- Project Card 1 -->
-<div class="bg-surface-container-lowest rounded-xl shadow-sm hover:shadow-md border border-outline-variant/50 overflow-hidden group flex flex-col transition-all cursor-pointer">
-<div class="h-48 overflow-hidden relative">
-<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Exterior shot of a contemporary mid-rise apartment building featuring a mix of white and soft grey facade panels. Greenery adorns the podium level. The image is captured during golden hour, projecting warmth and community focus. Modern corporate real estate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAohrCuGz_WMhbQcqKgIRA3V6xa5cwmB48U0tykepVWzZ4EwGKdm3mSF5nitRVkQAONpJN88cAvh3dfZ20b8NvInLD_hz8sPwSAi9A6hqDJ6BGGA6vofOVH8xUGijYO1lrT7dscaEToArKMXk2FVHMuZRjRPdZUgv9G9bMip68t4oImjDoAyyReFDBfVkyqhP3uZss8aHaSVfP-qTUblVECI0Dh-MdJHZGWYuZsclcV1NZfLtPJLbwce-vX7IXtocF0F8tPlDx9Q_oX">
-<div class="absolute top-sm right-sm status-pill status-dangthuhoso">Đang thu hồ sơ</div>
-</div>
-<div class="p-md flex flex-col flex-1">
-<h3 class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors line-clamp-1 mb-xs">EcoHome 3</h3>
-<p class="font-body-md text-body-md text-on-surface-variant flex items-center gap-xs mb-md">
-<span class="material-symbols-outlined text-[16px]">location_on</span>
-                            Bắc Từ Liêm, Hà Nội
-                        </p>
-<div class="mt-auto pt-sm border-t border-outline-variant flex items-center justify-between">
-<span class="font-label-md text-label-md text-secondary">Từ 16.5tr/m²</span>
-<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">arrow_forward</span>
-</div>
-</div>
-</div>
-<!-- Project Card 2 -->
-<div class="bg-surface-container-lowest rounded-xl shadow-sm hover:shadow-md border border-outline-variant/50 overflow-hidden group flex flex-col transition-all cursor-pointer">
-<div class="h-48 overflow-hidden relative">
-<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A modern urban housing estate showing uniform, well-designed residential blocks separated by wide, clean streets. The scene is brightly lit, emphasizing order, cleanliness, and a high standard of living for affordable housing. Bright sky, clear day." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_ILF353gz1iZAvPoNdkQLs6-gt2f-LygDGS3DWEoNFDZd-55zzHRnQnmR3aAZHpb_I1UZ_Wc30z8cyaCTPxqGSsXcZZrt-llMZ0lBx7Pv-bqkpQNtnILVqxhUxIKM7wHFhPlzI_xABXOuv4PS4kEYu_Srjl0rkFGMXdMzn_mw6zSkPUNdQ8K52voHYTDNAw5H2RtL1GTTqDjWX9NwlNIu_SR-o16crOyZHCaUVov5D-AwikJilAbE4di-i5jb4GzVlA9OldDsdu6c">
-</div>
-<div class="p-md flex flex-col flex-1">
-<h3 class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors line-clamp-1 mb-xs">Rice City Long Biên</h3>
-<p class="font-body-md text-body-md text-on-surface-variant flex items-center gap-xs mb-md">
-<span class="material-symbols-outlined text-[16px]">location_on</span>
-                            Long Biên, Hà Nội
-                        </p>
-<div class="mt-auto pt-sm border-t border-outline-variant flex items-center justify-between">
-<span class="font-label-md text-label-md text-secondary">Từ 15.8tr/m²</span>
-<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">arrow_forward</span>
-</div>
-</div>
-</div>
-<!-- Project Card 3 -->
-<div class="bg-surface-container-lowest rounded-xl shadow-sm hover:shadow-md border border-outline-variant/50 overflow-hidden group flex flex-col transition-all cursor-pointer">
-<div class="h-48 overflow-hidden relative">
-<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A perspective shot focusing on the entrance gate and lower levels of a community housing project. The architecture is modern and welcoming, with clear signage and landscaped planters. The mood is secure and inviting, set against a clear blue sky. Professional architectural photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBN0uxcZ8klQjNZKtoCXXAjxXUbP-dMm8arc5MDnF0azFLumbi7MW4CTnB6JgG7G6uFCiKrswVi-AJmE3Xk0roR96uvctE7BVDoMaC4lMF3A5qPvRPPH6Ui8-lH2b3YXl-h3Te_m79wJ66tnVOdK6bgT0QBelZe6SIuOb2bItRj_JWlyWcamZWvau2DzZZe8bonc6t966oVMYAwaLp0Cnb3Kc7lZ7w6zPqVdpg_LDfHRCSRyzWarPK7NZ15jdy-bRU7npib1oJ-1RY-">
-<div class="absolute top-sm right-sm bg-surface-container-lowest/90 backdrop-blur-sm px-2 py-1 rounded text-outline font-label-sm text-label-sm flex items-center gap-1 shadow-sm">
-                            Đã bàn giao
-                        </div>
-</div>
-<div class="p-md flex flex-col flex-1">
-<h3 class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors line-clamp-1 mb-xs">Đặng Xá 2</h3>
-<p class="font-body-md text-body-md text-on-surface-variant flex items-center gap-xs mb-md">
-<span class="material-symbols-outlined text-[16px]">location_on</span>
-                            Gia Lâm, Hà Nội
-                        </p>
-<div class="mt-auto pt-sm border-t border-outline-variant flex items-center justify-between">
-<span class="font-label-md text-label-md text-secondary">Liên hệ</span>
-<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">arrow_forward</span>
-</div>
-</div>
-</div>
-</div>
+    <h2 class="font-headline-lg text-headline-lg text-on-surface mb-md">Dự án tương tự</h2>
+    <div id="similar-projects-grid" class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+        <!-- Dynamic Cards will be rendered here by main.js -->
+    </div>
 </section>
-</main>
 <!-- Footer -->
 <div id="footer-placeholder"></div>
 
@@ -357,8 +307,8 @@ Mẫu hồ sơ đăng ký
 
 
 <script src="assets/js/supabase-config.js"></script>
-<script src="assets/js/supabase-service.js"></script>
-<script src="assets/js/main.js"></script>
+<script src="assets/js/supabase-service.js?v=5"></script>
+<script src="assets/js/main.js?v=39"></script>
 </body></html>
 
 

@@ -115,13 +115,81 @@ body {
 
 /* 1. Chờ xây dựng: Nền đỏ nhạt, chữ trắng */
 .status-cho-xay-dung, .status-choxaydung {
-    background-color: #ef4444 !important;
+    background-color: #8b5cf6 !important;
     color: #ffffff !important;
 }
 
 /* 2. Đang xây dựng: Nền cam biển, chữ trắng */
 .status-dang-xay-dung, .status-dangxaydung {
-    background-color: #f97316 !important;
+    background-color: #ef4444 !important;
+    color: #ffffff !important;
+}
+
+/* Larger status pill used only on project cards. */
+.document-pack-button {
+    transition: background-color 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+@media (min-width: 1024px) {
+    .document-pack-content {
+        padding-top: 12px !important;
+    }
+
+    .document-pack-list {
+        margin-top: 0 !important;
+    }
+
+    .document-pack-button:hover {
+        background-color: #2563eb !important;
+        border-color: #2563eb !important;
+        color: #ffffff !important;
+    }
+
+    .document-pack-button:hover .document-pack-label,
+    .document-pack-button:hover .document-pack-icon {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+    }
+
+    .document-pack-button:hover .document-pack-label {
+        font-size: 1.02em;
+    }
+
+    .document-pack-button:hover .document-pack-icon {
+        font-size: 1.2rem !important;
+    }
+}
+
+.project-card-status-pill {
+    padding: 6px 13px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    line-height: 1.1 !important;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.24);
+}
+
+.project-card-info-divider {
+    border-color: #cbd5e1 !important;
+}
+
+@media (min-width: 1024px) {
+    .project-card-status-pill {
+        padding: 7px 14px !important;
+        font-size: 14px !important;
+        line-height: 1.1 !important;
+        align-items: center !important;
+        vertical-align: middle;
+    }
+
+    .project-card-project-info {
+        font-size: 12px;
+        line-height: 1.25rem;
+    }
+}
+
+/* Sắp nhận hồ sơ: nền tím, chưa dùng bởi các trạng thái khác. */
+.status-sap-nhan-ho-so, .status-sapnhanhoso {
+    background-color: #eab308 !important;
     color: #ffffff !important;
 }
 
@@ -313,13 +381,18 @@ html {
 
 /* 1. Chờ xây dựng: Nền đỏ nhạt, chữ trắng */
 .status-cho-xay-dung, .status-choxaydung {
-    background-color: #ef4444 !important;
+    background-color: #8b5cf6 !important;
     color: #ffffff !important;
 }
 
 /* 2. Đang xây dựng: Nền cam biển, chữ trắng */
 .status-dang-xay-dung, .status-dangxaydung {
-    background-color: #f97316 !important;
+    background-color: #ef4444 !important;
+    color: #ffffff !important;
+}
+
+.status-sap-nhan-ho-so, .status-sapnhanhoso {
+    background-color: #eab308 !important;
     color: #ffffff !important;
 }
 
@@ -431,4 +504,94 @@ body:not(:has(.homepage-hero-section)) [class*="mt-[80px]"] {
 .no-scrollbar {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
+}
+
+/* Dropdown slide-down animation */
+.user-dropdown-menu, #dropdown-functions {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transform: translateY(-10px) !important;
+    transition: opacity 0.25s ease-out, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), visibility 0.25s !important;
+    display: flex !important;
+    pointer-events: none !important;
+}
+
+#dropdown-functions {
+    transform: translate(-50%, -10px) !important;
+}
+
+.user-dropdown-menu.show-dropdown {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
+    pointer-events: auto !important;
+}
+
+/* Keep every profile-menu row on the same icon/text grid, including logout. */
+.user-dropdown-link {
+    display: flex;
+    align-items: center;
+    min-height: 3rem;
+    line-height: 1.5rem;
+}
+
+.user-dropdown-icon {
+    display: inline-flex;
+    flex: 0 0 1.5rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    align-self: center;
+    vertical-align: middle;
+}
+
+/* Regular menu icons use the same ink color as their labels on every device. */
+.user-dropdown-menu .user-dropdown-link:not(.text-error) .user-dropdown-icon {
+    color: #0f172a !important;
+}
+
+.user-dropdown-label {
+    display: block;
+    line-height: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+    /* Desktop: denser rows with stronger, more legible labels and icons. */
+    .user-dropdown-link {
+        min-height: 2.5rem;
+        padding-top: 0.375rem !important;
+        padding-bottom: 0.375rem !important;
+        font-size: 0.9375rem !important;
+        font-weight: 500 !important;
+        line-height: 1.375rem;
+    }
+
+    .user-dropdown-icon {
+        flex-basis: 1.5rem;
+        width: 1.5rem;
+        height: 1.5rem;
+        font-size: 1.25rem !important;
+        font-variation-settings: 'wght' 450;
+        transform: translateY(1px);
+    }
+
+    .user-dropdown-name {
+        font-size: 0.9375rem !important;
+        font-weight: 500 !important;
+        line-height: 1.375rem;
+    }
+
+    .user-dropdown-contact {
+        font-size: 0.8125rem !important;
+        font-weight: 400 !important;
+    }
+}
+
+#dropdown-functions.show-dropdown {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translate(-50%, 0) !important;
+    pointer-events: auto !important;
 }

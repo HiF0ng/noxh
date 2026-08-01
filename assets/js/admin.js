@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:3000/api/v1';
+﻿const API_BASE_URL = 'http://localhost:3000/api/v1';
 
 function checkAdminSessionExpiration() {
     var expiresAt = localStorage.getItem('adminSessionExpiresAt');
@@ -34,6 +34,8 @@ window.handleAdminLogout = function() {
 (function() {
     'use strict';
 
+    var isDataLoaded = false;
+
     // ---- SPA Router ---- //
     const PAGES = {
         'dashboard':     { title: 'Tổng quan',           parent: null },
@@ -41,6 +43,7 @@ window.handleAdminLogout = function() {
         'projects':      { title: 'Danh sách dự án',     parent: 'projects' },
         'projects-new':  { title: 'Thêm dự án mới',      parent: 'projects' },
         'docs':          { title: 'Danh sách tài liệu',  parent: 'docs' },
+        'docs-packages': { title: 'Bộ tài liệu',          parent: 'docs' },
         'docs-new':      { title: 'Tải lên tài liệu',    parent: 'docs' },
         'docs-guide':    { title: 'Hướng dẫn điền',      parent: 'docs' },
         'faq':           { title: 'FAQ',                  parent: null },
@@ -84,7 +87,9 @@ window.handleAdminLogout = function() {
 
         // Initialize page-specific features
         if (page === 'dashboard') {
-            initDashboardChart();
+            if (isDataLoaded) {
+                initDashboardChart();
+            }
         }
         if (page === 'users') {
             initUserModule();
@@ -96,6 +101,8 @@ window.handleAdminLogout = function() {
             if (!isEditingProjectSession) {
                 resetProjectNewForm();
             }
+            // Bind form actions here as well so direct links to #projects-new work.
+            initProjectsModule();
             // Consume edit session so any subsequent route change resets form
             isEditingProjectSession = false;
         } else {
@@ -103,6 +110,9 @@ window.handleAdminLogout = function() {
         }
         if (page === 'docs') {
             initDocsFilter();
+        }
+        if (page === 'docs-packages') {
+            initDocumentPackageUploads();
         }
         if (page === 'docs-new') {
             initDropzones();
@@ -562,7 +572,41 @@ window.handleAdminLogout = function() {
 
         var totalStat = document.getElementById('user-stat-total');
         if (totalStat) {
-            // totalStat.textContent = usersList.length.toLocaleString('vi-VN');
+            totalStat.textContent = usersList.length.toLocaleString('vi-VN');
+        }
+
+        var activeStat = document.getElementById('user-stat-active');
+        if (activeStat) {
+            const now = new Date();
+            const activeThresholdMs = 2 * 60 * 1000; // 2 minutes
+            let activeCount = 0;
+            usersList.forEach(u => {
+                if (u.last_active_at) {
+                    const lastActive = new Date(u.last_active_at);
+                    if (now - lastActive < activeThresholdMs) {
+                        activeCount++;
+                    }
+                }
+            });
+            activeStat.textContent = activeCount.toLocaleString('vi-VN');
+        }
+
+        var new30Stat = document.getElementById('user-stat-new30');
+        if (new30Stat) {
+            const now = new Date();
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(now.getDate() - 30);
+            let newUsersCount = 0;
+            usersList.forEach(u => {
+                const parts = u.date.split('/');
+                if (parts.length === 3) {
+                    const uDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+                    if (uDate >= thirtyDaysAgo) {
+                        newUsersCount++;
+                    }
+                }
+            });
+            new30Stat.textContent = newUsersCount.toLocaleString('vi-VN');
         }
 
         var pagInfo = document.getElementById('user-pagination-info');
@@ -849,12 +893,31 @@ window.handleAdminLogout = function() {
         var ownerInp = document.getElementById('prj-input-owner');
         var statusSel = document.getElementById('prj-select-status');
         var descTxt = document.getElementById('prj-textarea-desc');
+        var addressInp = document.getElementById('prj-input-address');
+        var mapsInp = document.getElementById('prj-input-maps-url');
+        var mainImagePreview = document.getElementById('prj-main-image-preview');
+        var locationMapPreview = document.getElementById('location-map-img-preview');
+        var locationMapPlaceholder = document.getElementById('location-map-placeholder');
+        var quickInputIds = ['prj-input-area', 'prj-input-scale', 'prj-input-handover', 'prj-input-estimated-price'];
 
         if (titleEl) titleEl.textContent = 'Thông tin chi tiết Dự án';
         if (nameInp) nameInp.value = '';
         if (ownerInp) ownerInp.value = '';
         if (statusSel) statusSel.value = 'Chờ xây dựng';
         if (descTxt) descTxt.value = '';
+        if (addressInp) addressInp.value = '';
+        if (mapsInp) mapsInp.value = '';
+        quickInputIds.forEach(function(id) { var input = document.getElementById(id); if (input) input.value = ''; });
+        if (mainImagePreview) mainImagePreview.src = 'https://placehold.co/600x400/e5eeff/004ac6?text=Ảnh+đại+diện';
+        if (locationMapPreview) {
+            locationMapPreview.src = '';
+            locationMapPreview.classList.add('hidden');
+        }
+        if (locationMapPlaceholder) locationMapPlaceholder.classList.remove('hidden');
+        document.querySelectorAll('#page-projects-new input[placeholder="Thêm tiện ích..."]').forEach(function(input) { input.value = ''; if (input.previousElementSibling) input.previousElementSibling.checked = false; });
+        document.querySelectorAll('#project-status-notes > div').forEach(function(item) { var checkbox = item.querySelector('input[type="checkbox"]'); var note = item.querySelector('input[type="text"]'); if (checkbox) checkbox.checked = false; if (note) note.value = ''; });
+        document.querySelectorAll('#gallery-container .gallery-item').forEach(function(item) { item.remove(); });
+        var floorplansContainer = document.getElementById('floorplans-container'); if (floorplansContainer) { floorplansContainer.innerHTML = ''; floorplansContainer.appendChild(createRestoredFloorplanItem({ url: '', note: '' })); }
 
         isEditingProjectSession = false;
         currentEditingProjectIndex = null;
@@ -863,9 +926,49 @@ window.handleAdminLogout = function() {
     function getStatusPillClass(status) {
         if (status === 'Chờ xây dựng') return 'status-cho-xay-dung';
         if (status === 'Đang xây dựng') return 'status-dang-xay-dung';
+        if (status === 'Sắp nhận hồ sơ') return 'status-sap-nhan-ho-so';
         if (status === 'Đang nhận đơn') return 'status-dang-nhan-don';
         if (status === 'Chờ bàn giao') return 'status-cho-ban-giao';
         return 'status-dang-xay-dung';
+    }
+
+    function isDraftProject(project) {
+        return !!(project && project.details && project.details.isDraft);
+    }
+
+    function getProjectDisplayId(project) {
+        var regularProjects = projectsList.filter(function(item) { return !isDraftProject(item); });
+        var normalizedTitle = (project.name || '').trim().toLocaleLowerCase('vi-VN');
+        var matchingRegular = regularProjects.find(function(item) { return (item.name || '').trim().toLocaleLowerCase('vi-VN') === normalizedTitle; });
+        var baseIndex = matchingRegular ? regularProjects.indexOf(matchingRegular) + 1 : projectsList.indexOf(project) + 1;
+        return 'PRJ' + baseIndex + (isDraftProject(project) ? '-DEMO' : '');
+    }
+
+    function createRestoredGalleryItem(url) {
+        var item = document.createElement('div');
+        item.className = 'gallery-item aspect-square bg-surface-container rounded-xl overflow-hidden relative group cursor-pointer border border-outline-variant hover:border-primary transition-all';
+        item.dataset.existingUrl = url;
+        item.setAttribute('onclick', 'triggerGalleryUpload(this, event)');
+        item.innerHTML = '<input type="file" accept="image/*" class="hidden gallery-file-input" onchange="previewGalleryImage(this)"><img src="' + url + '" class="gallery-img-preview w-full h-full object-cover group-hover:opacity-75 transition-opacity"><div class="gallery-upload-overlay absolute inset-0 bg-inverse-surface/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-white text-2xl">photo_camera</span><span class="text-[11px] text-white font-medium mt-1">Đổi ảnh</span></div><button type="button" onclick="removeGalleryItem(this, event)" class="btn-remove-gallery absolute top-2 right-2 w-7 h-7 bg-error text-white rounded-full flex items-center justify-center z-20" title="Xóa ảnh"><span class="material-symbols-outlined text-sm font-bold">close</span></button>';
+        return item;
+    }
+
+    function createRestoredFloorplanItem(plan) {
+        var item = document.createElement('div');
+        item.className = 'floorplan-item p-4 border border-outline-variant rounded-xl bg-surface-container-low relative space-y-3';
+        item.dataset.existingUrl = plan.url;
+        var hasImage = !!plan.url;
+        item.innerHTML = '<button type="button" class="btn-remove-floorplan absolute top-3 right-3 w-7 h-7 bg-error/10 hover:bg-error text-error hover:text-white rounded-full flex items-center justify-center z-10" title="Xóa mặt bằng"><span class="material-symbols-outlined text-sm font-bold">close</span></button><input type="file" accept="image/*" class="hidden floorplan-file-input"><div class="floorplan-upload-box border-2 border-dashed border-outline-variant rounded-xl p-6 text-center bg-surface-container-lowest cursor-pointer"><img src="' + (plan.url || '') + '" class="floorplan-img-preview w-full h-40 object-cover rounded-lg ' + (hasImage ? '' : 'hidden') + '"><div class="floorplan-placeholder-content ' + (hasImage ? 'hidden' : '') + '"><span class="material-symbols-outlined text-4xl text-primary">map</span><p class="text-xs text-on-surface font-semibold">Kéo thả hoặc click để tải ảnh mặt bằng</p></div></div><input type="text" value="' + (plan.note || '').replace(/"/g, '&quot;') + '" placeholder="Ghi chú thông tin mặt bằng..." class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-xs text-on-surface focus:outline-none focus:border-primary">';
+        return item;
+    }
+
+    function restoreProjectFormCollections(details) {
+        var galleryContainer = document.getElementById('gallery-container'); var galleryAdd = document.getElementById('btn-add-gallery-box');
+        if (galleryContainer && galleryAdd) { galleryContainer.querySelectorAll('.gallery-item').forEach(function(item) { item.remove(); }); (details.gallery || []).forEach(function(url) { galleryContainer.insertBefore(createRestoredGalleryItem(url), galleryAdd); }); }
+        var floorplansContainer = document.getElementById('floorplans-container');
+        if (floorplansContainer) { floorplansContainer.innerHTML = ''; (details.floorplans || []).forEach(function(plan) { floorplansContainer.appendChild(createRestoredFloorplanItem(plan)); }); }
+        var amenities = details.amenities || [];
+        document.querySelectorAll('#page-projects-new input[placeholder="Thêm tiện ích..."]').forEach(function(input, index) { if (amenities[index]) { input.value = amenities[index]; if (input.previousElementSibling) input.previousElementSibling.checked = true; } });
     }
 
     function openProjectEdit(idOrName) {
@@ -881,16 +984,9 @@ window.handleAdminLogout = function() {
         }
 
         if (!prj) {
-            prj = {
-                id: "#PJ-00" + (projectsList.length + 1),
-                name: idOrName,
-                location: "Hà Nội",
-                owner: "Chủ đầu tư",
-                status: "Đang xây dựng",
-                desc: "Dự án " + idOrName
-            };
-            projectsList.push(prj);
-            idx = projectsList.length - 1;
+            alert('Không tìm thấy dự án. Danh sách sẽ được tải lại.');
+            window.location.hash = '#projects';
+            return;
         }
 
         isEditingProjectSession = true;
@@ -901,12 +997,43 @@ window.handleAdminLogout = function() {
         var ownerInp = document.getElementById('prj-input-owner');
         var statusSel = document.getElementById('prj-select-status');
         var descTxt = document.getElementById('prj-textarea-desc');
+        var addressInp = document.getElementById('prj-input-address');
+        var mapsInp = document.getElementById('prj-input-maps-url');
+        var mainImagePreview = document.getElementById('prj-main-image-preview');
+        var locationMapPreview = document.getElementById('location-map-img-preview');
+        var locationMapPlaceholder = document.getElementById('location-map-placeholder');
+        var areaInp = document.getElementById('prj-input-area');
+        var scaleInp = document.getElementById('prj-input-scale');
+        var handoverInp = document.getElementById('prj-input-handover');
+        var estimatedPriceInp = document.getElementById('prj-input-estimated-price');
 
         if (titleEl) titleEl.textContent = 'Chỉnh sửa Dự án: ' + prj.name;
         if (nameInp) nameInp.value = prj.name;
         if (ownerInp) ownerInp.value = prj.owner;
         if (statusSel) statusSel.value = prj.status;
         if (descTxt) descTxt.value = prj.desc || '';
+        if (addressInp) addressInp.value = (prj.details && prj.details.address) || prj.location || '';
+        if (mapsInp) mapsInp.value = (prj.details && prj.details.mapsUrl) || '';
+        if (areaInp) areaInp.value = (prj.details && prj.details.area) || '';
+        if (scaleInp) scaleInp.value = (prj.details && prj.details.scale) || '';
+        if (handoverInp) handoverInp.value = (prj.details && prj.details.handover) || '';
+        if (estimatedPriceInp) estimatedPriceInp.value = (prj.details && prj.details.estimatedPrice) || '';
+        if (prj.details && Array.isArray(prj.details.statusTimeline)) {
+            document.querySelectorAll('#project-status-notes > div').forEach(function(item, index) {
+                var statusItem = prj.details.statusTimeline[index];
+                if (!statusItem) return;
+                var checkbox = item.querySelector('input[type="checkbox"]'); var note = item.querySelector('input[type="text"]');
+                if (checkbox) checkbox.checked = !!statusItem.checked;
+                if (note) note.value = statusItem.note || '';
+            });
+        }
+        if (mainImagePreview && prj.imageUrl) mainImagePreview.src = prj.imageUrl;
+        if (locationMapPreview && prj.details && prj.details.locationMapUrl) {
+            locationMapPreview.src = prj.details.locationMapUrl;
+            locationMapPreview.classList.remove('hidden');
+            if (locationMapPlaceholder) locationMapPlaceholder.classList.add('hidden');
+        }
+        restoreProjectFormCollections(prj.details || {});
 
         navigateTo('projects-new');
     }
@@ -925,25 +1052,28 @@ window.handleAdminLogout = function() {
         var html = '';
         items.forEach(function(prj) {
             var realIdx = projectsList.indexOf(prj);
-            var pillClass = getStatusPillClass(prj.status);
+            var shortId = getProjectDisplayId(prj);
+            var isDraft = isDraftProject(prj);
+            var displayStatus = isDraft ? 'Bản nháp' : prj.status;
+            var pillClass = isDraft ? 'status-draft' : getStatusPillClass(prj.status);
 
             html += '<tr class="hover:bg-surface-container-low transition-colors group">' +
-                '<td class="p-4 border-b border-outline-variant text-sm font-semibold text-on-surface whitespace-nowrap">' + prj.id + '</td>' +
-                '<td class="p-4 border-b border-outline-variant">' +
+                '<td class="p-4 border-b border-outline-variant text-sm font-semibold text-on-surface whitespace-nowrap">' + shortId + '</td>' +
+                '<td class="p-4 border-b border-outline-variant min-w-[360px]">' +
                     '<div class="flex items-center gap-3">' +
-                        '<img src="' + prj.img + '" alt="' + prj.name + '" class="w-12 h-10 rounded object-cover flex-shrink-0">' +
-                        '<span class="text-sm font-semibold text-on-surface line-clamp-1 cursor-pointer hover:text-primary hover:underline transition-colors btn-edit-title" data-index="' + realIdx + '">' + prj.name + '</span>' +
+                        '<img src="' + (prj.imageUrl || 'https://placehold.co/300x200/e5eeff/004ac6?text=Ảnh+dự+án') + '" alt="' + prj.name + '" class="w-12 h-10 rounded object-cover flex-shrink-0">' +
+                        '<span class="text-sm font-semibold text-on-surface line-clamp-1 cursor-pointer hover:text-primary hover:underline transition-colors btn-edit-title" data-project-id="' + prj.id + '">' + prj.name + '</span>' +
                     '</div>' +
                 '</td>' +
                 '<td class="p-4 border-b border-outline-variant text-sm text-on-surface-variant whitespace-nowrap">' + prj.location + '</td>' +
                 '<td class="p-4 border-b border-outline-variant text-sm text-on-surface-variant whitespace-nowrap">' + prj.owner + '</td>' +
                 '<td class="p-4 border-b border-outline-variant whitespace-nowrap min-w-[150px]">' +
-                    '<span class="status-pill ' + pillClass + ' whitespace-nowrap">' + prj.status + '</span>' +
+                    '<span class="status-pill ' + pillClass + ' whitespace-nowrap">' + displayStatus + '</span>' +
                 '</td>' +
                 '<td class="p-4 border-b border-outline-variant text-right align-middle whitespace-nowrap">' +
                     '<div class="flex items-center justify-end gap-1">' +
-                        '<button class="p-2 text-on-surface-variant hover:text-primary transition-colors btn-edit-project cursor-pointer" data-index="' + realIdx + '" title="Chỉnh sửa"><span class="material-symbols-outlined text-[20px]">edit</span></button>' +
-                        '<button class="p-2 text-on-surface-variant hover:text-error transition-colors btn-delete-project cursor-pointer" data-index="' + realIdx + '" title="Xóa dự án"><span class="material-symbols-outlined text-[20px]">delete</span></button>' +
+                        '<button class="p-2 text-on-surface-variant hover:text-primary transition-colors btn-edit-project cursor-pointer" data-project-id="' + prj.id + '" title="Chỉnh sửa"><span class="material-symbols-outlined text-[20px]">edit</span></button>' +
+                        '<button class="p-2 text-on-surface-variant hover:text-error transition-colors btn-delete-project cursor-pointer" data-project-id="' + prj.id + '" title="Xóa dự án"><span class="material-symbols-outlined text-[20px]">delete</span></button>' +
                     '</div>' +
                 '</td>' +
             '</tr>';
@@ -955,11 +1085,11 @@ window.handleAdminLogout = function() {
         tbody.querySelectorAll('.btn-edit-project, .btn-edit-title').forEach(function(btn) {
             btn.addEventListener('click', function(e) {
                 e.stopPropagation();
-                var idx = parseInt(this.getAttribute('data-index'), 10);
-                var prj = projectsList[idx];
+                var prj = projectsList.find(function(item) { return item.id === this.getAttribute('data-project-id'); }, this);
                 if (!prj) return;
 
-                openProjectEdit(prj.name);
+                // Use the immutable Supabase ID, not the display name. Names may be duplicated.
+                openProjectEdit(prj.id);
             });
         });
 
@@ -967,11 +1097,10 @@ window.handleAdminLogout = function() {
         tbody.querySelectorAll('.btn-delete-project').forEach(function(btn) {
             btn.addEventListener('click', function(e) {
                 e.stopPropagation();
-                var idx = parseInt(this.getAttribute('data-index'), 10);
-                var prj = projectsList[idx];
+                var prj = projectsList.find(function(item) { return item.id === this.getAttribute('data-project-id'); }, this);
                 if (!prj) return;
 
-                pendingDeleteProjectIndex = idx;
+                pendingDeleteProjectIndex = projectsList.indexOf(prj);
 
                 var modal = document.getElementById('delete-project-modal');
                 var prjNameSpan = document.getElementById('delete-project-name');
@@ -997,10 +1126,12 @@ window.handleAdminLogout = function() {
             var matchSearch = true;
             if (query) {
                 var normID = removeAccents(prj.id.toLowerCase());
+                var normShortID = removeAccents(getProjectDisplayId(prj).toLowerCase());
                 var normName = removeAccents(prj.name.toLowerCase());
                 var normLoc = removeAccents(prj.location.toLowerCase());
                 var normOwner = removeAccents(prj.owner.toLowerCase());
                 matchSearch = normID.indexOf(query) !== -1 ||
+                              normShortID.indexOf(query) !== -1 ||
                               normName.indexOf(query) !== -1 ||
                               normLoc.indexOf(query) !== -1 ||
                               normOwner.indexOf(query) !== -1;
@@ -1109,6 +1240,7 @@ window.handleAdminLogout = function() {
         var statusSelect = document.getElementById('admin-project-filter-status');
         var cancelBtn = document.getElementById('btn-cancel-project-form');
         var saveBtn = document.getElementById('btn-save-project-form');
+        var draftBtn = document.getElementById('btn-save-project-draft');
 
         if (searchInput) searchInput.oninput = handleProjectsFilterSearch;
         if (locSelect) locSelect.onchange = handleProjectsFilterSearch;
@@ -1122,13 +1254,19 @@ window.handleAdminLogout = function() {
             };
         }
 
-        if (saveBtn) {
-            saveBtn.onclick = async function(e) {
-                e.preventDefault();
+        async function saveProject(isDraft) {
+                var activeButton = isDraft ? draftBtn : saveBtn;
+                if (!activeButton) return;
                 var nameInp = document.getElementById('prj-input-name');
                 var ownerInp = document.getElementById('prj-input-owner');
                 var statusSel = document.getElementById('prj-select-status');
                 var descTxt = document.getElementById('prj-textarea-desc');
+                var addressInp = document.getElementById('prj-input-address');
+                var mapsInp = document.getElementById('prj-input-maps-url');
+                var areaInp = document.getElementById('prj-input-area');
+                var scaleInp = document.getElementById('prj-input-scale');
+                var handoverInp = document.getElementById('prj-input-handover');
+                var estimatedPriceInp = document.getElementById('prj-input-estimated-price');
 
                 var nameVal = nameInp ? nameInp.value.trim() : '';
                 if (!nameVal) {
@@ -1136,27 +1274,53 @@ window.handleAdminLogout = function() {
                     return;
                 }
 
+                var oversizedFile = Array.from(document.querySelectorAll('#page-projects-new input[type="file"]'))
+                    .map(function(input) { return input.files && input.files[0]; })
+                    .find(function(file) { return file && file.size > 50 * 1024 * 1024; });
+                if (oversizedFile) {
+                    alert('Ảnh "' + oversizedFile.name + '" vượt quá giới hạn 50 MB.');
+                    return;
+                }
+
                 // Show loading state on button
-                var originalText = saveBtn.innerHTML;
-                saveBtn.innerHTML = '<span class="material-symbols-outlined animate-spin mr-2">progress_activity</span> Đang lưu...';
-                saveBtn.disabled = true;
+                var originalText = activeButton.innerHTML;
+                activeButton.innerHTML = '<span class="material-symbols-outlined animate-spin mr-2">progress_activity</span> Đang lưu...';
+                activeButton.disabled = true;
 
                 try {
+                    var existingDetails = (currentEditingProjectIndex !== null && projectsList[currentEditingProjectIndex] && projectsList[currentEditingProjectIndex].details) || {};
+                    var isPublishingDemo = !isDraft && !!existingDetails.isDraft;
                     var projectData = {
                         name: nameVal,
                         owner: ownerInp ? ownerInp.value.trim() : 'Chủ đầu tư mới',
                         status: statusSel ? statusSel.value : 'Chờ xây dựng',
-                        desc: descTxt ? descTxt.value : ''
+                        location: addressInp && addressInp.value.trim() ? addressInp.value.trim() : 'Hà Nội',
+                        desc: descTxt ? descTxt.value : '',
+                        details: Object.assign({}, existingDetails, { desc: descTxt ? descTxt.value : '', address: addressInp ? addressInp.value.trim() : '', mapsUrl: mapsInp ? mapsInp.value.trim() : '', area: areaInp ? areaInp.value.trim() : '', scale: scaleInp ? scaleInp.value.trim() : '', handover: handoverInp ? handoverInp.value.trim() : '', estimatedPrice: estimatedPriceInp ? estimatedPriceInp.value.trim() : '', amenities: Array.from(document.querySelectorAll('#page-projects-new input[placeholder="Thêm tiện ích..."]')).filter(input => input.previousElementSibling && input.previousElementSibling.checked && input.value.trim()).map(input => input.value.trim()), statusTimeline: Array.from(document.querySelectorAll('#project-status-notes > div')).map(function(item) { return { label: item.querySelector('label span').textContent.trim(), checked: item.querySelector('input[type="checkbox"]').checked, note: item.querySelector('input[type="text"]').value.trim() }; }), isDraft: !!isDraft })
                     };
 
+                    var savedProject;
                     if (currentEditingProjectIndex !== null && projectsList[currentEditingProjectIndex]) {
                         // Update
                         var pId = projectsList[currentEditingProjectIndex].id;
-                        await window.SupabaseService.updateProject(pId, projectData);
+                        savedProject = await window.SupabaseService.updateProject(pId, projectData);
                     } else {
                         // Create
-                        await window.SupabaseService.addProject(projectData);
+                        savedProject = await window.SupabaseService.addProject(projectData);
                     }
+
+                    var projectId = (savedProject && savedProject.id) || (currentEditingProjectIndex !== null && projectsList[currentEditingProjectIndex] && projectsList[currentEditingProjectIndex].id);
+                    if (!projectId) throw new Error('Không nhận được mã dự án sau khi lưu');
+                    var mainFile = document.getElementById('prj-main-image-input').files[0];
+                    var galleryItems = Array.from(document.querySelectorAll('#gallery-container .gallery-item'));
+                    var floorplanItems = Array.from(document.querySelectorAll('#floorplans-container .floorplan-item'));
+                    var mainImageUrl = mainFile ? await window.SupabaseService.uploadProjectImage(projectId, mainFile, 'main') : (existingDetails.mainImageUrl || '');
+                    var gallery = (await Promise.all(galleryItems.map(async function(item) { var file = item.querySelector('.gallery-file-input').files[0]; return file ? await window.SupabaseService.uploadProjectImage(projectId, file, 'gallery') : (item.dataset.existingUrl || null); }))).filter(Boolean);
+                    var floorplans = (await Promise.all(floorplanItems.map(async item => { var file = item.querySelector('.floorplan-file-input').files[0]; var url = file ? await window.SupabaseService.uploadProjectImage(projectId, file, 'floorplans') : item.dataset.existingUrl; return url ? { url: url, note: item.querySelector('input[type="text"]').value.trim() } : null; }))).filter(Boolean);
+                    var mapFile = document.getElementById('location-map-file-input').files[0];
+                    var locationMapUrl = mapFile ? await window.SupabaseService.uploadProjectImage(projectId, mapFile, 'location') : (existingDetails.locationMapUrl || '');
+                    projectData.details = Object.assign(projectData.details, { mainImageUrl: mainImageUrl, gallery: gallery, floorplans: floorplans, locationMapUrl: locationMapUrl });
+                    await window.SupabaseService.updateProject(projectId, projectData);
 
                     // Reload from Supabase
                     projectsList = await window.SupabaseService.getProjects() || [];
@@ -1164,13 +1328,27 @@ window.handleAdminLogout = function() {
                     resetProjectNewForm();
                     navigateTo('projects');
                     renderProjectsTable(projectsList);
+                    alert(isDraft ? 'Đã lưu dự án dưới dạng bản nháp.' : (isPublishingDemo ? 'Đã xuất bản dự án DEMO. Hậu tố -DEMO đã được gỡ.' : 'Đã lưu dự án thành công.'));
                 } catch (err) {
                     console.error('Error saving project:', err);
                     alert('Có lỗi xảy ra khi lưu dự án!');
                 } finally {
-                    saveBtn.innerHTML = originalText;
-                    saveBtn.disabled = false;
+                    activeButton.innerHTML = originalText;
+                    activeButton.disabled = false;
                 }
+        }
+
+        if (saveBtn) {
+            saveBtn.onclick = function(e) {
+                e.preventDefault();
+                saveProject(false);
+            };
+        }
+
+        if (draftBtn) {
+            draftBtn.onclick = function(e) {
+                e.preventDefault();
+                saveProject(true);
             };
         }
 
@@ -1348,7 +1526,7 @@ window.handleAdminLogout = function() {
                     '<div class="floorplan-placeholder-content">' +
                         '<span class="material-symbols-outlined text-4xl text-primary mb-1">map</span>' +
                         '<p class="text-xs text-on-surface font-semibold">Kéo thả hoặc click để tải ảnh mặt bằng</p>' +
-                        '<p class="text-[11px] text-on-surface-variant mt-0.5">PNG, JPG, tối đa 5MB</p>' +
+                        '<p class="text-[11px] text-on-surface-variant mt-0.5">PNG, JPG, tối đa 50MB</p>' +
                     '</div>' +
                 '</div>' +
                 '<input type="text" placeholder="Ghi chú thông tin mặt bằng (vd: Mặt bằng tổng thể Tòa A, căn hộ 2 phòng ngủ)..." class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-xs text-on-surface focus:outline-none focus:border-primary">';
@@ -1360,6 +1538,20 @@ window.handleAdminLogout = function() {
                 if (newFileInput) newFileInput.click();
             };
         }
+    }
+
+    function initDocumentPackageUploads() {
+        document.querySelectorAll('.package-upload-input').forEach(function(input) {
+            input.onchange = function() {
+                var label = document.getElementById(this.getAttribute('data-label'));
+                if (!label) return;
+
+                var file = this.files && this.files[0];
+                label.textContent = file ? 'Đã chọn: ' + file.name : 'Chưa chọn tệp';
+                label.classList.toggle('text-primary', !!file);
+                label.classList.toggle('font-medium', !!file);
+            };
+        });
     }
 
     function initDocsFilter() {
@@ -1447,337 +1639,7 @@ window.handleAdminLogout = function() {
         }
     }
 
-                    var faqData = {
-        'doi-tuong': [
-            {
-                q: 'Ai được quyền mua NOXH?',
-                a: 'Căn cứ theo Điều 76 Luật Nhà ở 2023, có 10 nhóm đối tượng chính được hưởng chính sách hỗ trợ về nhà ở xã hội. Đặc biệt, từ ngày 01/7/2026, pháp luật bổ sung thêm 1 nhóm căn cứ theo Luật Dân số 2025. Cụ thể bao gồm 11 nhóm:\n\nNhóm 1: Người có công với cách mạng, thân nhân liệt sĩ thuộc diện được hỗ trợ theo quy định của pháp luật về ưu đãi người có công.\nNhóm 2: Hộ gia đình nghèo và cận nghèo tại khu vực nông thôn.\nNhóm 3: Hộ gia đình tại khu vực nông thôn thuộc vùng thường xuyên bị ảnh hưởng bởi thiên tai, biến đổi khí hậu.\nNhóm 4: Người thu nhập thấp, hộ nghèo, cận nghèo tại khu vực đô thị.\nNhóm 5: Công nhân, người lao động đang làm việc tại các doanh nghiệp trong và ngoài khu công nghiệp.\nNhóm 6: Sĩ quan, quân nhân chuyên nghiệp, hạ sĩ quan, công nhân và viên chức quốc phòng, công an.\nNhóm 7: Cán bộ, công chức, viên chức theo quy định của pháp luật.\nNhóm 8: Các đối tượng đã trả lại nhà ở công vụ theo quy định của pháp luật.\nNhóm 9: Hộ gia đình, cá nhân bị thu hồi đất và phải giải tỏa, phá dỡ nhà ở mà chưa được Nhà nước bồi thường bằng nhà ở, đất ở.\nNhóm 10: Doanh nghiệp, hợp tác xã, liên hiệp hợp tác xã trong khu công nghiệp đầu tư xây dựng nhà lưu trú hoặc thuê nhà lưu trú cho công nhân.\nNhóm 11 (Bổ sung từ 01/7/2026): Hộ gia đình sinh từ 3 con trở lên đáp ứng các tiêu chuẩn về diện tích chỗ ở và thu nhập quy định tại Luật Dân số 2025.'
-            },
-            {
-                q: 'Người độc thân có được mua NOXH không?',
-                a: 'Có. Pháp luật không phân biệt tình trạng hôn nhân khi xét duyệt đối tượng mua NOXH. Người độc thân hoàn toàn được quyền đăng ký mua nếu chứng minh được bản thân thuộc một trong các nhóm đối tượng quy định (ví dụ: người thu nhập thấp tại đô thị) và đáp ứng đủ các điều kiện về nhà ở, thu nhập.'
-            },
-            {
-                q: 'Lao động tự do, không có hợp đồng lao động có được mua không?',
-                a: 'Được phép mua. Lao động tự do sẽ được xếp vào nhóm "Người thu nhập thấp tại khu vực đô thị". Để chứng minh thu nhập, người lao động tự do không cần hợp đồng lao động mà thực hiện việc tự kê khai mức thu nhập hàng tháng và tự chịu trách nhiệm trước pháp luật về tính chính xác của thông tin kê khai.'
-            },
-            {
-                q: 'Không có hộ khẩu hoặc sổ tạm trú tại tỉnh/thành phố có dự án thì mua được không?',
-                a: 'Được mua. Kể từ khi Luật Nhà ở 2023 có hiệu lực, điều kiện về cư trú (yêu cầu phải có đăng ký thường trú hoặc tạm trú tại tỉnh/thành phố trực thuộc trung ương nơi có dự án NOXH) đã được bãi bỏ hoàn toàn, giúp người dân dễ dàng tiếp cận nhà ở hơn.'
-            },
-            {
-                q: 'Người nước ngoài hoặc người Việt Nam định cư ở nước ngoài (Việt kiều) được mua NOXH không?',
-                a: 'Không. Theo quy định hiện hành, chính sách Nhà ở xã hội là chính sách an sinh xã hội đặc thù chỉ dành riêng cho công dân Việt Nam sinh sống trong nước và thuộc các nhóm đối tượng đã được pháp luật quy định.'
-            },
-            {
-                q: 'Đã sở hữu nhà ở nhưng diện tích quá nhỏ có được mua NOXH không?',
-                a: 'Được mua. Căn cứ theo Điều 78 Luật Nhà ở 2023, nếu hộ gia đình đã có nhà ở thuộc sở hữu của mình nhưng diện tích nhà ở bình quân đầu người của các thành viên trong hộ gia đình dưới 15m² sàn/người thì vẫn được coi là đáp ứng điều kiện về nhà ở để đăng ký mua NOXH.'
-            },
-            {
-                q: 'Lực lượng vũ trang (quân đội, công an) có chính sách NOXH riêng biệt không?',
-                a: 'Có. Lực lượng vũ trang nhân dân không chỉ thuộc nhóm đối tượng được mua NOXH thông thường (khoản 6 Điều 76) mà còn được hưởng một cơ chế riêng là "Nhà ở cho lực lượng vũ trang nhân dân", với các tiêu chuẩn và khu nhà ở được phát triển chuyên biệt phù hợp với đặc thù công tác.'
-            },
-            {
-                q: 'Người đang hưởng lương hưu có đủ điều kiện mua NOXH không?',
-                a: 'Có. Người nghỉ hưu nếu đáp ứng điều kiện chưa có nhà ở (hoặc diện tích dưới 15m²/người) và tổng mức lương hưu thực nhận hàng tháng nằm trong giới hạn quy định thì sẽ được xét duyệt dưới tư cách là nhóm "Người thu nhập thấp tại khu vực đô thị".'
-            },
-            {
-                q: 'Đã từng được Nhà nước giao đất, cấp đất có được xét duyệt mua NOXH không?',
-                a: 'Không. Một trong những điều kiện tiên quyết là người đăng ký và các thành viên trong hộ gia đình chưa từng được Nhà nước hỗ trợ về nhà ở, đất đai dưới bất kỳ hình thức nào. Nếu đã từng được cấp đất, hồ sơ sẽ bị loại để nhường cơ hội cho người khác.'
-            },
-            {
-                q: 'Sinh viên mới ra trường có thuộc đối tượng được mua NOXH không?',
-                a: 'Sinh viên mới ra trường nếu đã chính thức ký hợp đồng lao động thì sẽ được xét vào nhóm "Công nhân, người lao động". Nếu làm việc tự do, sẽ xét vào nhóm "Người thu nhập thấp". Trong cả hai trường hợp, chỉ cần chứng minh đủ điều kiện về thu nhập và nhà ở thì đều được quyền đăng ký mua.'
-            },
-            {
-                q: 'Vợ và chồng có được làm hai bộ hồ sơ độc lập để tăng cơ hội trúng bốc thăm không?',
-                a: 'Tuyệt đối không. Theo nguyên tắc của Luật Nhà ở, chính sách hỗ trợ NOXH được xét duyệt theo đơn vị "hộ gia đình". Mỗi hộ gia đình (bao gồm vợ, chồng và các con chưa thành niên) chỉ được hưởng chính sách hỗ trợ này duy nhất một lần.'
-            },
-            {
-                q: 'Nếu vợ/chồng đã đứng tên sở hữu một bất động sản khác, người còn lại có được mua NOXH không?',
-                a: 'Không được. Cơ quan nhà nước sẽ kiểm tra thực trạng nhà ở của toàn bộ thành viên trong hộ gia đình (theo Giấy chứng nhận kết hôn và sổ hộ khẩu/thông tin cư trú). Chỉ cần một người trong hộ gia đình đã có nhà, toàn bộ hộ gia đình đó sẽ không đủ điều kiện mua.'
-            },
-            {
-                q: 'Bố mẹ ruột có nhà, nhưng con cái đã tách hộ khẩu ra riêng thì có được tính là "chưa có nhà ở" không?',
-                a: 'Có. Nếu người con đã tách khẩu, trở thành chủ hộ của một sổ hộ khẩu riêng độc lập (hoặc có thông tin cư trú độc lập trên cơ sở dữ liệu quốc gia) và bản thân người con chưa từng đứng tên bất động sản nào, thì người con đó hoàn toàn đủ điều kiện làm hồ sơ mua NOXH.'
-            },
-            {
-                q: 'Doanh nghiệp có được phép mua đứt NOXH để làm chỗ ở cho nhân viên không?',
-                a: 'Doanh nghiệp trong khu công nghiệp không được phép mua đứt để sở hữu riêng, nhưng được quyền thuê hoặc mua "nhà lưu trú công nhân" (một loại hình NOXH đặc thù) để bố trí cho công nhân, người lao động của mình thuê lại trong thời gian làm việc.'
-            },
-            {
-                q: 'Đã từng mua một căn NOXH, sau đó bán đi hợp pháp, nay có được làm hồ sơ mua căn thứ hai không?',
-                a: 'Không. Căn cứ theo quy định của pháp luật, chính sách hỗ trợ mua, thuê mua nhà ở xã hội chỉ được áp dụng giải quyết một lần duy nhất cho mỗi cá nhân/hộ gia đình. Việc đã bán đi không làm phát sinh lại quyền được mua lần hai.'
-            },
-            {
-                q: 'Hộ nghèo, hộ cận nghèo tại khu vực nông thôn có cần chứng minh thu nhập để mua NOXH không?',
-                a: 'Không. Nhóm đối tượng này (Nhóm 2 và Nhóm 3 theo Điều 76) đã được cơ quan có thẩm quyền cấp Giấy chứng nhận hộ nghèo/cận nghèo nên được miễn tiêu chí chứng minh thu nhập, chỉ cần đáp ứng điều kiện về thực trạng nhà ở.'
-            },
-            {
-                q: 'Người khuyết tật có được đặc cách xét duyệt hồ sơ mua NOXH không?',
-                a: 'Người khuyết tật không được miễn hoàn toàn quy trình xét duyệt, nhưng hồ sơ của họ (hoặc hộ gia đình có thành viên là người khuyết tật) sẽ được cộng điểm ưu tiên trong thang điểm đánh giá, giúp họ có lợi thế trúng tuyển cao hơn khi số lượng hồ sơ vượt quá số lượng căn hộ.'
-            },
-            {
-                q: 'Người có công với cách mạng được hưởng mức ưu tiên như thế nào?',
-                a: 'Người có công với cách mạng thuộc nhóm đối tượng số 1. Trong quy trình chấm điểm hồ sơ (thang điểm 100), đối tượng này được cộng số điểm ưu tiên cao nhất so với các nhóm khác, do đó gần như chắc chắn sẽ được quyền mua nếu hồ sơ hợp lệ.'
-            },
-            {
-                q: 'Có bắt buộc phải tham gia Bảo hiểm xã hội (BHXH) đủ 1 năm mới được mua NOXH không?',
-                a: 'Không. Nhằm tháo gỡ khó khăn cho người dân, Luật Nhà ở 2023 và các Nghị định hướng dẫn mới nhất đã bãi bỏ hoàn toàn điều kiện bắt buộc phải có thời gian tham gia BHXH tại tỉnh, thành phố nơi có dự án.'
-            },
-            {
-                q: 'Học sinh, sinh viên đang đi học tại các trường đại học có được mua NOXH không?',
-                a: 'Không được mua. Căn cứ khoản 10 Điều 76 Luật Nhà ở 2023, học sinh, sinh viên, học viên tại các trường đại học, học viện, cao đẳng, dạy nghề chỉ thuộc đối tượng được thuê nhà ở xã hội trong thời gian học tập, không thuộc đối tượng được mua hoặc thuê mua.'
-            }
-        ],
-        'dieu-kien': [
-            {
-                q: 'Mức trần thu nhập tối đa để đủ điều kiện mua NOXH được quy định như thế nào?',
-                a: 'Theo Nghị định 136/2026/NĐ-CP (áp dụng từ tháng 4/2026), đối với người độc thân, thu nhập bình quân không vượt quá 20 triệu đồng/tháng. Đối với người đã kết hôn, tổng thu nhập của hai vợ chồng không vượt quá 50 triệu đồng/tháng. Đối với người độc thân đang trực tiếp nuôi con nhỏ, mức trần là 35 triệu đồng/tháng.'
-            },
-            {
-                q: 'Quy trình đăng ký và xét duyệt hồ sơ mua NOXH gồm những bước nào?',
-                a: 'Quy trình chuẩn gồm 05 bước: (1) Khách hàng nộp hồ sơ trực tiếp tại văn phòng Chủ đầu tư; (2) Chủ đầu tư tiếp nhận và chấm điểm, xét duyệt hồ sơ; (3) Chủ đầu tư gửi danh sách dự kiến trúng lên Sở Xây dựng để kiểm tra chéo; (4) Sở Xây dựng trả kết quả thẩm định; (5) Chủ đầu tư thông báo khách hàng lên ký Hợp đồng mua bán.'
-            },
-            {
-                q: 'Người dân phải nộp hồ sơ đăng ký mua NOXH trực tiếp tại đâu?',
-                a: 'Hồ sơ đăng ký phải được nộp trực tiếp tại Ban quản lý dự án hoặc văn phòng tiếp nhận hồ sơ chính thức của Chủ đầu tư dự án đó. Sở Xây dựng chỉ là cơ quan quản lý nhà nước, không có chức năng tiếp nhận hồ sơ trực tiếp từ người dân.'
-            },
-            {
-                q: 'Có thể ủy quyền cho người thân, bạn bè đi nộp hồ sơ đăng ký thay được không?',
-                a: 'Không. Theo quy định để tránh tình trạng "cò mồi", trục lợi chính sách, người đứng đơn đăng ký mua NOXH (hoặc vợ/chồng của người đứng đơn) phải mang theo CCCD bản gốc để trực tiếp nộp hồ sơ và ký sổ tiếp nhận tại văn phòng Chủ đầu tư.'
-            },
-            {
-                q: 'Một bộ hồ sơ pháp lý hoàn chỉnh để mua NOXH bao gồm những loại giấy tờ nào?',
-                a: 'Một bộ hồ sơ chuẩn bao gồm: Đơn đăng ký mua NOXH (theo mẫu); Bản sao công chứng CCCD/Giấy khai sinh của các thành viên; Giấy xác nhận tình trạng hôn nhân (hoặc Giấy đăng ký kết hôn); Giấy xác nhận thực trạng nhà ở (xin tại phường/xã); và Giấy xác nhận thu nhập (xin tại công ty hoặc tự kê khai).'
-            },
-            {
-                q: 'Thủ tục xin Giấy xác nhận chưa có nhà ở (thực trạng nhà ở) được thực hiện ở cơ quan nào?',
-                a: 'Người làm hồ sơ mang theo giấy tờ tùy thân đến Ủy ban nhân dân cấp xã/phường/thị trấn nơi mình đang cư trú (thường trú hoặc tạm trú) để xin xác nhận vào mẫu biểu quy định. Cơ quan này có trách nhiệm kiểm tra và xác nhận trong vòng 3-5 ngày làm việc.'
-            },
-            {
-                q: 'Xin Giấy xác nhận điều kiện về thu nhập ở đâu là hợp lệ?',
-                a: 'Nếu bạn đang đi làm tại doanh nghiệp/cơ quan nhà nước, bạn nộp mẫu đơn cho bộ phận Kế toán hoặc Nhân sự để công ty ký và đóng dấu giáp lai xác nhận. Nếu bạn là lao động tự do, bạn tự điền thông tin thu nhập vào mẫu tự kê khai và tự chịu trách nhiệm trước pháp luật.'
-            },
-            {
-                q: 'Đang có mã số thuế cá nhân và phải đóng thuế TNCN thì hồ sơ có bị loại không?',
-                a: 'Không bị loại, miễn là sau khi trừ đi các khoản giảm trừ gia cảnh, thu nhập thực nhận bình quân hàng tháng của bạn không vượt quá mức trần quy định (như 20 triệu với người độc thân hoặc 50 triệu/tháng với hai vợ chồng).'
-            },
-            {
-                q: 'Thời gian từ khi nộp hồ sơ đến khi biết kết quả xét duyệt mất bao lâu?',
-                a: 'Thông thường, Chủ đầu tư sẽ có thời gian từ 15 đến 30 ngày làm việc (không tính thứ Bảy, Chủ nhật) kể từ ngày hết hạn nhận hồ sơ để tiến hành rà soát, chấm điểm và công bố danh sách khách hàng dự kiến đủ điều kiện mua.'
-            },
-            {
-                q: 'Phải nộp bao nhiêu bộ hồ sơ cho Chủ đầu tư và có cần công chứng tất cả không?',
-                a: 'Người đăng ký chỉ cần nộp 01 bộ hồ sơ duy nhất. Trong đó, các loại Đơn từ, Giấy xác nhận nhà ở, Giấy xác nhận thu nhập phải nộp Bản gốc. Các giấy tờ tùy thân (CCCD, Đăng ký kết hôn, Giấy khai sinh) nộp bản sao y có công chứng hợp lệ.'
-            },
-            {
-                q: 'Người dân có phải đóng bất kỳ khoản phí nào khi nộp hồ sơ mua NOXH không?',
-                a: 'Tuyệt đối không. Việc phát hành biểu mẫu, tư vấn và tiếp nhận hồ sơ đăng ký mua NOXH phải được Chủ đầu tư thực hiện hoàn toàn miễn phí. Mọi hành vi thu phí "giữ chỗ", "xét duyệt", "bôi trơn" từ môi giới hay CĐT đều là vi phạm pháp luật.'
-            },
-            {
-                q: 'Hệ thống chấm điểm ưu tiên khi số hồ sơ nộp vào lớn hơn số căn hộ hoạt động ra sao?',
-                a: 'Hồ sơ được chấm theo thang điểm 100. Điểm số được cộng dồn dựa trên các tiêu chí: Thuộc nhóm đối tượng ưu tiên (VD: Người có công được điểm cao nhất), tình trạng khó khăn về nhà ở (chưa có nhà được điểm cao hơn có nhà chật hẹp), và các yếu tố nhân khẩu học khác (khuyết tật, hộ nghèo).'
-            },
-            {
-                q: 'Quy trình bốc thăm giành quyền mua diễn ra trong trường hợp nào?',
-                a: 'Nếu số lượng hồ sơ đạt yêu cầu (hồ sơ hợp lệ) có cùng mức điểm bằng nhau và tổng số lượng hồ sơ này lớn hơn số lượng căn hộ mở bán của dự án, Chủ đầu tư bắt buộc phải tổ chức bốc thăm công khai, minh bạch dưới sự giám sát của đại diện Sở Xây dựng để chọn ra người trúng quyền mua.'
-            },
-            {
-                q: 'Nếu không trúng bốc thăm, tôi có được nhận lại hồ sơ gốc đã nộp không?',
-                a: 'Có. Pháp luật quy định Chủ đầu tư có trách nhiệm phải hoàn trả lại nguyên vẹn bộ hồ sơ gốc cho những khách hàng không trúng bốc thăm, để người dân có thể sử dụng hồ sơ đó tiếp tục nộp tại các dự án NOXH khác.'
-            },
-            {
-                q: 'Khách hàng có quyền được tự lựa chọn số căn, số tầng, hoặc hướng nhà khi mua NOXH không?',
-                a: 'Trường hợp số hồ sơ ít hơn số căn hộ, khách hàng được quyền tự thỏa thuận chọn căn với CĐT. Trường hợp phải bốc thăm do thiếu cung, khách hàng sẽ bốc thăm 2 lần: Lần 1 bốc thăm quyền mua, Lần 2 bốc thăm ngẫu nhiên để xác định vị trí căn hộ, tầng, tòa cụ thể (không được tự chọn).'
-            },
-            {
-                q: 'Thời điểm nào người mua sẽ chính thức ký Hợp đồng mua bán với Chủ đầu tư?',
-                a: 'Người mua sẽ được ký Hợp đồng mua bán sau khi danh sách dự kiến trúng thưởng đã được Sở Xây dựng địa phương rà soát, thẩm định (kiểm tra chéo) trong thời gian khoảng 15 ngày làm việc và xác nhận không có trường hợp nào vi phạm quy định sở hữu nhà ở.'
-            },
-            {
-                q: 'Khi nào thì bắt đầu phải đóng tiền và đóng đợt 1 bao nhiêu phần trăm?',
-                a: 'Tiến độ đóng tiền phụ thuộc vào thỏa thuận trong Hợp đồng mua bán và tiến độ xây dựng thực tế. Thông thường, khách hàng phải thanh toán Đợt 1 tối đa 30% giá trị căn hộ ngay sau khi hai bên ký kết Hợp đồng mua bán.'
-            },
-            {
-                q: 'Các biểu mẫu đơn từ xin xác nhận nhà ở và thu nhập phải lấy từ đâu để đảm bảo hợp lệ?',
-                a: 'Khách hàng không được tự soạn đơn mà bắt buộc phải sử dụng các biểu mẫu chuẩn ban hành kèm theo Phụ lục của Nghị định số 136/2026/NĐ-CP (hoặc các nghị định mới nhất có hiệu lực tại thời điểm nộp hồ sơ).'
-            },
-            {
-                q: 'Quy trình "kiểm tra chéo" của Sở Xây dựng nhằm mục đích gì?',
-                a: 'Sở Xây dựng sử dụng hệ thống cơ sở dữ liệu quốc gia về đất đai và nhà ở để rà soát chéo các thành viên trong hộ gia đình đăng ký. Mục đích nhằm loại bỏ ngay lập tức những cá nhân đang đứng tên bất động sản trên địa bàn, hoặc những người đã từng mua NOXH tại một dự án khác.'
-            },
-            {
-                q: 'Nếu khi nộp vào, Chủ đầu tư báo hồ sơ bị thiếu sót giấy tờ thì tôi có được bổ sung không?',
-                a: 'Được phép bổ sung. Khi tiếp nhận, nếu hồ sơ chưa hợp lệ, bộ phận tiếp nhận phải ghi rõ các giấy tờ còn thiếu vào Phiếu hướng dẫn và khách hàng sẽ có một khoảng thời gian (thường từ 3 đến 7 ngày) để hoàn thiện và nộp bổ sung trước khi chốt danh sách chấm điểm.'
-            }
-        ],
-        'vay-von': [
-            {
-                q: 'Có những gói vay ưu đãi hỗ trợ tài chính nào dành riêng cho người mua NOXH?',
-                a: 'Hiện tại có 2 kênh vay vốn chính: (1) Kênh từ Ngân hàng Chính sách xã hội (NHCSXH) với nguồn vốn từ ngân sách nhà nước, lãi suất cực kỳ ưu đãi; và (2) Các gói tín dụng thương mại được Nhà nước cấp bù lãi suất (như gói 120.000 tỷ đồng) triển khai qua các ngân hàng thương mại do Ngân hàng Nhà nước chỉ định.'
-            },
-            {
-                q: 'Hạn mức vay vốn tối đa để mua NOXH là bao nhiêu phần trăm giá trị căn hộ?',
-                a: 'Căn cứ theo quy định của pháp luật về tín dụng chính sách, người mua NOXH có thể được vay vốn với hạn mức tối đa lên tới 80% giá trị hợp đồng mua bán hoặc hợp đồng thuê mua nhà ở xã hội.'
-            },
-            {
-                q: 'Thời hạn vay vốn tối đa để người mua có thể trả góp là bao nhiêu năm?',
-                a: 'Để giảm áp lực tài chính hàng tháng cho người thu nhập thấp, thời hạn vay vốn tối đa được Ngân hàng Chính sách xã hội và các ngân hàng thương mại quy định có thể kéo dài lên tới 25 năm (300 tháng).'
-            },
-            {
-                q: 'Điều kiện cốt lõi để được duyệt vay vốn qua Ngân hàng Chính sách xã hội là gì?',
-                a: 'Khách hàng phải đáp ứng 3 điều kiện tiên quyết: Phải có Hợp đồng mua bán hợp pháp với Chủ đầu tư; Phải chứng minh có vốn tự có tối thiểu 20% giá trị căn hộ; và toàn bộ thành viên trong hộ gia đình không có nợ xấu tại hệ thống Trung tâm Thông tin Tín dụng Quốc gia (CIC).'
-            },
-            {
-                q: 'Tiến độ thanh toán tiền mua nhà đối với dự án NOXH đang xây dựng được chia ra sao?',
-                a: 'Đối với NOXH hình thành trong tương lai, việc thanh toán phải chia thành nhiều đợt theo tiến độ xây dựng thực tế. Đợt thanh toán đầu tiên không vượt quá 30% giá trị HĐMB, và trước khi bàn giao nhà, tổng số tiền khách hàng đã thanh toán không được vượt quá 70% giá trị căn hộ (trừ khi khách hàng tự nguyện đóng nhiều hơn).'
-            },
-            {
-                q: 'Lãi suất vay ưu đãi có được giữ cố định trong suốt 25 năm trả góp không?',
-                a: 'Không cố định hoàn toàn. Lãi suất tại NHCSXH sẽ được điều chỉnh theo quyết định của Thủ tướng Chính phủ trong từng thời kỳ (thường rất ổn định). Đối với gói vay thương mại, lãi suất sẽ được ưu đãi cố định trong một thời gian đầu (ví dụ 3-5 năm), sau đó sẽ được thả nổi theo biên độ thị trường.'
-            },
-            {
-                q: 'Đã từng bị nợ xấu (thuộc nhóm 3, 4, 5) trên CIC có được ngân hàng duyệt vay mua NOXH không?',
-                a: 'Tuyệt đối không. Theo quy định quản trị rủi ro của Ngân hàng Nhà nước, tất cả các tổ chức tín dụng (kể cả NHCSXH) sẽ từ chối giải ngân đối với khách hàng đang có nợ xấu hoặc có lịch sử nợ xấu trong vòng 3-5 năm gần nhất.'
-            },
-            {
-                q: 'Nếu tôi có tiền mặt và muốn tất toán (trả nợ trước hạn), tôi có bị ngân hàng tính phí phạt không?',
-                a: 'Nếu vay vốn qua Ngân hàng Chính sách xã hội, bạn thường được miễn hoàn toàn phí phạt trả nợ trước hạn. Tuy nhiên, nếu vay qua các ngân hàng thương mại, bạn sẽ phải chịu mức phí phạt tất toán dao động từ 1% đến 3% tính trên số dư nợ gốc thực tế còn lại, tùy thuộc vào quy định của từng ngân hàng.'
-            },
-            {
-                q: 'Tôi có thể dùng chính căn hộ NOXH đang dự định mua làm tài sản thế chấp để vay vốn không?',
-                a: 'Hoàn toàn có thể. Pháp luật cho phép người mua sử dụng chính hợp đồng mua bán và căn hộ hình thành trong tương lai đó làm "tài sản bảo đảm" (thế chấp) cho khoản vay, khách hàng không cần phải có bất động sản thế chấp độc lập bên ngoài.'
-            },
-            {
-                q: 'Hiện nay, những ngân hàng thương mại nào đang được phép giải ngân các gói vay NOXH?',
-                a: 'Các ngân hàng thương mại nhà nước đóng vai trò chủ lực bao gồm: Agribank (Ngân hàng NN&PTNT), BIDV (Ngân hàng Đầu tư và Phát triển), Vietcombank (Ngân hàng Ngoại thương), Vietinbank (Ngân hàng Công thương) và một số Ngân hàng TMCP khác khi được Ngân hàng Nhà nước phân bổ chỉ tiêu tín dụng riêng.'
-            },
-            {
-                q: 'Người lớn tuổi (trên 50 tuổi) có bị giới hạn thời gian vay vốn mua nhà không?',
-                a: 'Có. Các ngân hàng đều có quy định nghiêm ngặt về độ tuổi tất toán khoản vay. Thông thường, độ tuổi thực tế của người vay cộng với thời hạn vay vốn không được vượt quá 65 hoặc 70 tuổi (tùy chính sách từng ngân hàng). Người 50 tuổi chỉ có thể vay tối đa 15-20 năm thay vì 25 năm.'
-            },
-            {
-                q: 'Chi phí bảo trì căn hộ NOXH là bao nhiêu và phải đóng tại thời điểm nào?',
-                a: 'Theo quy định của Luật Nhà ở, người mua phải đóng Kinh phí bảo trì phần sở hữu chung nhà chung cư bằng 2% giá trị hợp đồng (tính trên giá chưa bao gồm thuế VAT). Khoản tiền này phải thanh toán một lần ngay trước thời điểm Chủ đầu tư ký biên bản bàn giao căn hộ.'
-            },
-            {
-                q: 'Nếu tôi có sẵn đủ tiền mặt, tôi có bắt buộc phải vay qua ngân hàng chính sách không?',
-                a: 'Không bắt buộc. Nếu bạn có đủ tiềm lực tài chính, bạn hoàn toàn có thể sử dụng 100% vốn tự có (tiền mặt) để thanh toán theo tiến độ hợp đồng trực tiếp cho Chủ đầu tư mà không cần thông qua bất kỳ tổ chức tín dụng nào.'
-            },
-            {
-                q: 'Nếu vợ bị nợ xấu, chồng đứng tên hồ sơ vay độc lập với ngân hàng có được chấp nhận không?',
-                a: 'Không được chấp nhận. Trong quan hệ hôn nhân, ngân hàng sẽ đánh giá rủi ro tín dụng của cả hai vợ chồng trên hệ thống CIC. Chỉ cần một người (vợ hoặc chồng) có lịch sử nợ xấu, ngân hàng sẽ từ chối cấp tín dụng cho người còn lại.'
-            },
-            {
-                q: 'Ngân hàng đánh giá tỷ lệ "thu nhập/khoản trả nợ" hàng tháng như thế nào để quyết định giải ngân?',
-                a: 'Ngân hàng sử dụng chỉ số DTI (Debt-to-Income). Để được duyệt vay, khách hàng phải chứng minh được dòng tiền ổn định sao cho tổng số tiền trả nợ (cả gốc và lãi) hàng tháng chỉ chiếm tối đa từ 50% đến 70% tổng thu nhập thực nhận của gia đình, phần còn lại đảm bảo chi phí sinh hoạt thiết yếu.'
-            },
-            {
-                q: 'Người vay mua NOXH có được hưởng chính sách ân hạn nợ gốc không?',
-                a: 'Có. Nhiều tổ chức tín dụng có chính sách hỗ trợ ân hạn nợ gốc (chỉ trả tiền lãi, không trả tiền gốc) trong khoảng thời gian từ 12 đến 24 tháng đầu tiên, đặc biệt là trong giai đoạn dự án đang thi công và khách hàng chưa nhận được bàn giao nhà.'
-            },
-            {
-                q: 'Hình thức "giải ngân song song" giữa ngân hàng và người mua hoạt động như thế nào?',
-                a: 'Giải ngân song song là thỏa thuận mà trong đó, ở mỗi đợt thanh toán cho Chủ đầu tư, người mua và ngân hàng sẽ cùng chia nhau đóng tiền theo tỷ lệ cơ cấu vốn (ví dụ: khách hàng đóng 20%, ngân hàng giải ngân 80% ngay từ đợt đầu), giúp khách hàng không phải lo huy động một số tiền mặt lớn cùng lúc.'
-            },
-            {
-                q: 'Chi phí thẩm định giá tài sản và công chứng thế chấp ngân hàng do bên nào chi trả?',
-                a: 'Theo quy định hiện hành, người đi vay (khách hàng mua nhà) có nghĩa vụ phải thanh toán mọi chi phí liên quan đến việc định giá tài sản bảo đảm, phí công chứng hợp đồng thế chấp và lệ phí đăng ký giao dịch bảo đảm tại cơ quan nhà nước (tổng chi phí này thường rơi vào khoảng vài triệu đồng).'
-            },
-            {
-                q: 'Phí quản lý vận hành chung cư NOXH có đắt đỏ như chung cư thương mại không?',
-                a: 'Không. Nhằm bảo vệ người thu nhập thấp, mức phí quản lý vận hành NOXH bị khống chế trần. Ủy ban nhân dân cấp tỉnh/thành phố sẽ ban hành khung giá dịch vụ quản lý vận hành nhà chung cư, đảm bảo mức phí này luôn thấp hơn và hợp lý hơn nhiều so với nhà ở thương mại cùng phân khúc.'
-            },
-            {
-                q: 'Lãi suất cho vay của Ngân hàng Chính sách xã hội đối với NOXH trong những năm gần đây dao động ở mức nào?',
-                a: 'Lãi suất này do Thủ tướng Chính phủ quyết định theo từng thời kỳ để cân đối vĩ mô. Giai đoạn trước năm 2024, lãi suất duy trì ổn định ở mức 4.8%/năm; đến giai đoạn 2024-2025 điều chỉnh lên khoảng 6.6%/năm. Đây vẫn là mức lãi suất ưu đãi thấp nhất trên thị trường tín dụng bất động sản.'
-            }
-        ],
-        'quyen-so-huu': [
-            {
-                q: 'Nhà ở xã hội sau khi bàn giao sẽ được cấp sổ hồng với thời hạn sở hữu là bao nhiêu năm?',
-                a: 'Giống hệt như nhà ở thương mại, đối với dự án NOXH được xây dựng trên đất được giao có thu tiền hoặc giao đất ổn định lâu dài để xây dựng nhà ở, người mua sẽ được cấp Giấy chứng nhận (Sổ hồng) với thời hạn "Sở hữu lâu dài" (không có thời hạn).'
-            },
-            {
-                q: 'Sau khi nhận nhà, người mua phải chờ bao lâu mới được phép chuyển nhượng, bán lại NOXH?',
-                a: 'Căn cứ Điều 39 Nghị định 100/2024/NĐ-CP và các quy định của Luật Nhà ở, người mua chỉ được phép chuyển nhượng, bán lại nhà ở xã hội sau thời gian tối thiểu là 05 năm, tính từ ngày bên mua đã thanh toán đủ 100% tiền mua nhà cho Chủ đầu tư.'
-            },
-            {
-                q: 'Nếu chưa đủ 5 năm mà gia đình gặp biến cố cần tiền, tôi có thể bán nhà cho ai không?',
-                a: 'Trong thời gian chưa đủ 5 năm, pháp luật nghiêm cấm giao dịch thương mại tự do. Người mua chỉ có hai lựa chọn duy nhất: Bán lại cho chính Chủ đầu tư dự án đó, hoặc chuyển nhượng lại cho một cá nhân khác cũng đáp ứng đầy đủ các điều kiện được mua NOXH theo quy định.'
-            },
-            {
-                q: 'Trong thời gian chờ đủ 5 năm, tôi có được phép cho thuê căn hộ NOXH của mình không?',
-                a: 'Không. Luật Nhà ở 2023 quy định rất rõ ràng: Người mua NOXH không được phép cho thuê lại trong thời gian 05 năm đầu. Căn nhà phải được sử dụng đúng mục đích là giải quyết nhu cầu ở thực của chính hộ gia đình đã đăng ký mua.'
-            },
-            {
-                q: 'Sau khi đã đáp ứng đủ điều kiện 5 năm, việc bán lại NOXH có bị khống chế giá trần không?',
-                a: 'Không bị khống chế giá. Khi đã đủ 5 năm và đã được cấp Sổ hồng, căn NOXH đó được phép tham gia giao dịch trên thị trường bất động sản như một căn nhà ở thương mại bình thường. Chủ nhà có quyền tự định giá bán theo nguyên tắc thuận mua vừa bán.'
-            },
-            {
-                q: 'Khi bán lại NOXH sau 5 năm, tôi có phải nộp bổ sung Tiền sử dụng đất cho Nhà nước không?',
-                a: 'Có. Do khi mua NOXH bạn đã được miễn tiền sử dụng đất, nên khi bán lại, bạn phải nộp nghĩa vụ tài chính này. Cụ thể: Nộp 50% tiền sử dụng đất đối với nhà liền kề/thấp tầng, hoặc nộp theo hệ số phân bổ diện tích đối với căn hộ chung cư, tính theo bảng giá đất do UBND tỉnh ban hành.'
-            },
-            {
-                q: 'Mua bán trái phép NOXH (chưa đủ 5 năm) qua hình thức Lập vi bằng có giá trị pháp lý không?',
-                a: 'Tuyệt đối không có giá trị pháp lý. Vi bằng chỉ là văn bản ghi nhận sự kiện giao nhận tiền, không phải là Hợp đồng chuyển nhượng quyền sở hữu. Giao dịch này vô hiệu trước pháp luật, người mua qua vi bằng đối mặt với rủi ro mất trắng tài sản nếu có tranh chấp hoặc bị nhà nước thanh tra.'
-            },
-            {
-                q: 'Nếu cơ quan chức năng phát hiện hành vi mua bán NOXH sai quy định, hậu quả xử lý ra sao?',
-                a: 'Căn cứ Điều 125 Luật Nhà ở 2023, các giao dịch mua bán, cho thuê trái quy định pháp luật sẽ bị tuyên vô hiệu. Cơ quan quản lý nhà nước (UBND cấp tỉnh hoặc Sở Xây dựng) có quyền ra quyết định cưỡng chế thu hồi lại căn hộ NOXH đó để giao cho đối tượng khác có nhu cầu.'
-            },
-            {
-                q: 'Tôi có được phép đăng ký kinh doanh, dùng NOXH để làm văn phòng, trụ sở công ty không?',
-                a: 'Không. Luật Nhà ở nghiêm cấm hành vi sử dụng căn hộ chung cư (bao gồm cả chung cư thương mại và NOXH) vào mục đích không phải để ở, như mở văn phòng, cơ sở sản xuất, kinh doanh thương mại.'
-            },
-            {
-                q: 'Nhà ở xã hội có được để lại thừa kế cho con cái hoặc người thân không?',
-                a: 'Hoàn toàn được. Quyền sở hữu nhà ở hợp pháp được pháp luật bảo vệ. Khi chủ sở hữu qua đời, căn NOXH đó trở thành di sản và được phân chia thừa kế theo quy định của pháp luật Dân sự (theo di chúc hoặc theo pháp luật) mà không bị ràng buộc bởi thời hạn 5 năm.'
-            },
-            {
-                q: 'Trong trường hợp vợ chồng ly hôn, căn hộ NOXH đang trong thời hạn 5 năm sẽ được phân chia như thế nào?',
-                a: 'Căn hộ vẫn là tài sản chung của vợ chồng. Việc phân chia sẽ được thực hiện dựa trên thỏa thuận tự nguyện của hai bên hoặc theo phán quyết của Tòa án nhân dân. Việc đổi tên chủ sở hữu trên Hợp đồng hoặc Sổ hồng trong trường hợp ly hôn được pháp luật chấp thuận.'
-            },
-            {
-                q: 'Quy trình sang tên Sổ hồng NOXH sau 5 năm yêu cầu người bán phải nộp những loại thuế phí gì?',
-                a: 'Khi giao dịch hợp lệ sau 5 năm, hai bên phải nộp: Thuế thu nhập cá nhân (thường là 2% tính trên giá trị chuyển nhượng), Lệ phí trước bạ (0.5% do bên mua nộp), Phí thẩm định hồ sơ, và đặc biệt là Khoản tiền sử dụng đất phải nộp bổ sung cho Nhà nước (như đã nêu ở câu 6).'
-            },
-            {
-                q: 'Chủ nhà có được phép tự ý đập thông hai căn NOXH hoặc cơi nới diện tích ban công không?',
-                a: 'Tuyệt đối không. Bất kỳ hành vi thay đổi kết cấu chịu lực, kiến trúc mặt ngoài, đập thông căn hộ mà chưa có bản vẽ xin phép và chưa được sự phê duyệt bằng văn bản của Cơ quan quản lý trật tự xây dựng đều là vi phạm pháp luật và sẽ bị phạt nặng, yêu cầu hoàn trả hiện trạng.'
-            },
-            {
-                q: 'Kể từ lúc nhận bàn giao nhà, người mua phải chờ tối đa bao lâu để được cấp Sổ hồng?',
-                a: 'Theo quy định của Luật Kinh doanh Bất động sản và Luật Đất đai, trong thời hạn 50 ngày kể từ ngày bàn giao nhà cho người mua, Chủ đầu tư phải có trách nhiệm nộp hồ sơ lên cơ quan tài nguyên môi trường để làm thủ tục cấp Giấy chứng nhận (Sổ hồng) cho khách hàng, trừ khi khách hàng muốn tự làm.'
-            },
-            {
-                q: 'Nếu Chủ đầu tư cố tình chây ì, chậm làm Sổ hồng cho cư dân NOXH thì bị xử lý thế nào?',
-                a: 'Chủ đầu tư sẽ bị xử phạt vi phạm hành chính trong lĩnh vực đất đai. Tùy thuộc vào thời gian chậm trễ và số lượng căn hộ bị chậm cấp sổ, mức phạt bằng tiền có thể lên tới 1 tỷ đồng đối với tổ chức vi phạm, đồng thời bị buộc phải khẩn trương hoàn thành thủ tục pháp lý.'
-            },
-            {
-                q: 'Người mua NOXH có được phép làm thủ tục đăng ký thường trú (làm Sổ hộ khẩu mới) tại địa chỉ căn hộ không?',
-                a: 'Có. Căn hộ NOXH là chỗ ở hợp pháp, có Hợp đồng mua bán rõ ràng. Người mua hoàn toàn đủ điều kiện mang Hợp đồng và Biên bản bàn giao ra cơ quan Công an phường/xã để làm thủ tục đăng ký thường trú theo đúng Luật Cư trú hiện hành.'
-            },
-            {
-                q: 'Trong trường hợp tòa nhà NOXH quá cũ nát, bị giải tỏa trong tương lai, chủ nhà có được bồi thường không?',
-                a: 'Có. Chủ sở hữu NOXH được bảo vệ quyền lợi hợp pháp. Khi có quyết định thu hồi đất và giải tỏa để xây dựng lại hoặc phục vụ lợi ích công cộng, chủ nhà sẽ được bồi thường, hỗ trợ tái định cư theo các nguyên tắc bồi thường chung của pháp luật về Đất đai tại thời điểm thu hồi.'
-            },
-            {
-                q: 'Nếu mua NOXH nhưng không ở, cứ khóa cửa để trống trong nhiều năm thì có bị thu hồi không?',
-                a: 'Có rủi ro bị thu hồi. Bản chất của chính sách là giải quyết nhu cầu "có chỗ ở thực". Việc để nhà hoang hóa, không sử dụng có thể bị xếp vào nhóm hành vi mua nhằm mục đích đầu cơ, trục lợi chính sách. Khi cơ quan nhà nước thanh tra phát hiện sử dụng không đúng mục đích, nhà ở có thể bị thu hồi.'
-            },
-            {
-                q: 'Nếu một căn NOXH đã đủ điều kiện 5 năm và được bán ra thị trường tự do, người nước ngoài có được mua lại căn đó không?',
-                a: 'Không. Dù đã hết hạn 5 năm khống chế, nhưng bản chất nguồn gốc dự án vẫn là đất xây dựng nhà ở xã hội. Pháp luật Việt Nam chưa cho phép tổ chức, cá nhân nước ngoài được sở hữu nhà ở tại các dự án thuộc diện đầu tư xây dựng nhà ở xã hội.'
-            },
-            {
-                q: 'Để lách luật bán nhà trước 5 năm, tôi có thể làm Hợp đồng ủy quyền quản lý sử dụng vô thời hạn cho người khác không?',
-                a: 'Không. Việc ký Hợp đồng ủy quyền toàn quyền định đoạt, sử dụng vô thời hạn bản chất là một hình thức lách luật, che giấu giao dịch chuyển nhượng trái phép. Nếu xảy ra tranh chấp pháp lý hoặc cơ quan chức năng phát hiện, hợp đồng này sẽ bị Tòa án tuyên vô hiệu do giả tạo, và tài sản đối diện nguy cơ bị thu hồi.'
-            }
-        ]
-    };
-
+                    var faqData = {};
 
     var currentFaqCategory = 'doi-tuong';
     var pendingDeleteFaqIndex = null;
@@ -2418,14 +2280,17 @@ window.handleAdminLogout = function() {
                     if (!faqData[cat]) faqData[cat] = [];
                     faqData[cat].push({ id: f.id, q: f.question, a: f.answer });
                 });
+                if (getCurrentPage() === 'faq') renderFaqList();
                 
                 // Sort by categories maybe, or just let UI handle it.
                 
                 // Cập nhật bảng và thống kê
                 renderUserTable();
-                renderProjectTable();
-                renderDocsTable();
+                renderProjectsTable(projectsList);
+                renderGuideList();
                 
+                isDataLoaded = true;
+
                 var totalUsersStat = document.getElementById('user-stat-total');
                 if (totalUsersStat) {
                     totalUsersStat.textContent = usersList.length.toLocaleString('vi-VN');
@@ -2454,6 +2319,9 @@ window.handleAdminLogout = function() {
         initFaqModule();
         loadAllAdminData();
         window.addEventListener('hashchange', onRouteChange);
+        
+        // Auto-refresh admin data every 10 seconds to keep live active users count fresh
+        setInterval(loadAllAdminData, 10000);
     });
 
 })();

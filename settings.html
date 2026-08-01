@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html><html class="light" lang="vi" style=""><head>
+<!DOCTYPE html><html class="light" lang="vi" style=""><head>
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>Cài đặt tài khoản - Hệ thống Hỗ trợ Nhà ở xã hội</title>
@@ -13,57 +13,57 @@
 
 
 </head>
-<body class="antialiased min-h-screen flex flex-col md:flex-row">
-<!-- SideNavBar (Hidden on Mobile, Visible on Desktop) -->
-<nav class="sidebar-menu hidden md:flex flex-col p-md gap-xs bg-surface-container-low dark:bg-inverse-surface shadow-sm dark:shadow-none h-screen w-64 fixed left-0 top-0 z-20 pt-[100px]">
-<!-- Removed overlapping logo -->
-<a class="flex items-center gap-sm px-4 py-3 bg-primary-container text-on-primary-container rounded-lg font-bold transition-all duration-200 scale-95 active:scale-90 font-label-md text-label-md truncate whitespace-nowrap" href="settings.html">
-<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
-                Tài khoản
-            </a>
 
-<a class="flex items-center gap-sm px-4 py-3 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high transition-all duration-200 scale-95 active:scale-90 font-label-md text-label-md truncate whitespace-nowrap" href="saved.html"><span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 0;">favorite</span>
-                Dự án đã lưu</a><a class="flex items-center gap-sm px-4 py-3 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high transition-all duration-200 scale-95 active:scale-90 font-label-md text-label-md truncate whitespace-nowrap" href="working.html">
-<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">edit_document</span>
-                Dự án đang đăng ký
-            </a>
-
-
-
-</div>
-<div class="mt-auto flex flex-col gap-xs pt-4 border-t border-outline-variant">
-
-<a class="flex items-center gap-sm px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 font-label-sm text-label-sm" href="#"><span class="material-symbols-outlined text-sm">help</span> Gửi phản hồi</a>
-<a class="flex items-center gap-sm px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 font-label-sm text-label-sm" href="#"><span class="material-symbols-outlined text-sm">logout</span> ĐĐĐăng xuất</a>
-</div>
-</nav>
-<!-- Main Content Wrapper -->
-<div class="flex-1 flex flex-col md:ml-64 min-w-0">
-<!-- TopNavBar -->
-<div id="navbar-placeholder"></div>
-<!-- Page Content -->
-<main class="flex-1 px-6 md:px-12 w-full max-w-5xl mx-auto pt-[100px] pb-8">
-<!-- Breadcrumb -->
-<nav aria-label="Breadcrumb" class="flex text-on-surface-variant font-label-md text-label-md mb-6">
-<ol class="inline-flex items-center">
-<li class="inline-flex items-center">
-<a class="inline-flex items-center hover:text-primary transition-colors" href="homepage.html">
-                        Trang chủ
+<body class="antialiased bg-background text-on-surface min-h-screen flex flex-col">
+    <div id="navbar-placeholder"></div>
+    
+    <!-- Main Center Balanced Wrapper -->
+    <main class="flex-grow w-full">
+        <div class="max-w-5xl mx-auto px-6 md:px-12 pt-[120px] md:pt-[160px] pb-lg flex flex-col md:flex-row gap-lg">
+            <!-- Left Sidebar aligned inside container -->
+            
+            <aside class="sidebar-menu w-72 shrink-0 hidden md:flex flex-col gap-xs bg-surface-container-lowest rounded-2xl p-5 border border-outline-variant/50 shadow-[0_4px_20px_rgba(0,0,0,0.06)] h-fit">
+                <a class="flex items-center px-4 py-3 bg-primary-container text-on-primary-container font-bold rounded-lg transition-all duration-200 scale-95 active:scale-90 text-[17px] truncate whitespace-nowrap" href="settings.html">
+                    <div class="w-10 flex justify-center items-center shrink-0 mr-3">
+                        <span class="material-symbols-outlined" style="font-size: 32px; font-variation-settings: 'FILL' 1, 'wght' 500;">settings</span>
+                    </div>
+                    <span>Tài khoản</span>
+                </a>
+                <a class="flex items-center px-4 py-3 text-on-surface-variant hover:bg-surface-container-high font-bold rounded-lg transition-all duration-200 scale-95 active:scale-90 text-[17px] truncate whitespace-nowrap" href="saved.html">
+                    <div class="w-10 flex justify-center items-center shrink-0 mr-3">
+                        <span class="material-symbols-outlined" style="font-size: 32px; font-variation-settings: 'FILL' 0, 'wght' 500;">favorite</span>
+                    </div>
+                    <span>Dự án đã lưu</span>
+                </a>
+                <a class="flex items-center px-4 py-3 text-on-surface-variant hover:bg-surface-container-high font-bold rounded-lg transition-all duration-200 scale-95 active:scale-90 text-[17px] truncate whitespace-nowrap" href="working.html">
+                    <div class="w-10 flex justify-center items-center shrink-0 mr-3">
+                        <span class="material-symbols-outlined" style="font-size: 32px; font-variation-settings: 'FILL' 0, 'wght' 500;">edit_document</span>
+                    </div>
+                    <span>Dự án đang đăng ký</span>
+                </a>
+                <div class="mt-8 flex flex-col gap-xs pt-4 border-t border-outline-variant">
+                    <a class="flex items-center px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 text-[17px] font-bold" href="#">
+                        <div class="w-10 flex justify-center items-center shrink-0 mr-3">
+                            <span class="material-symbols-outlined" style="font-size: 32px; font-variation-settings: 'wght' 500;">help</span>
+                        </div>
+                        <span>Gửi phản hồi</span>
                     </a>
-</li>
-<li class="inline-flex items-center">
-<span class="material-symbols-outlined text-sm mx-2" data-icon="chevron_right">chevron_right</span>
-<a class="hover:text-primary transition-colors" href="settings.html">Tài khoản</a>
-</li>
-</ol>
-</nav>
-<div class="mb-6">
-<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">Cài đặt tài khoản</h2>
-<p class="font-body-md text-body-md text-on-surface-variant mt-1">Quản lý thông tin cá nhân và tùy chọn hệ thống của bạn.</p>
-</div>
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-lg">
-<!-- Left Column: Main Settings (Sections 1 & 2) -->
-<div class="lg:col-span-2 space-y-md">
+                    <a class="flex items-center px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 text-[17px] font-bold" href="#">
+                        <div class="w-10 flex justify-center items-center shrink-0 mr-3">
+                            <span class="material-symbols-outlined" style="font-size: 32px; font-variation-settings: 'wght' 500;">logout</span>
+                        </div>
+                        <span>Đăng xuất</span>
+                    </a>
+                </div>
+            </aside>
+    
+            
+            <!-- Right Main Content Canvas -->
+            <div class="flex-grow min-w-0">
+                <!-- Breadcrumb -->
+
+
+<div class="flex flex-col gap-md max-w-3xl w-full mx-auto">
 <!-- Section 1: Thông tin cá nhân -->
 <section class="bg-surface-container-lowest rounded-xl p-md shadow-sm border border-surface-container-highest relative overflow-hidden group">
 <div class="absolute inset-0 bg-gradient-to-br from-transparent to-surface-container-low opacity-50 pointer-events-none"></div>
@@ -73,8 +73,8 @@
                         </h3>
 <div class="flex flex-col md:flex-row gap-lg mb-8 items-center md:items-start">
 <div class="relative group/avatar cursor-pointer">
-<div class="w-24 h-24 rounded-full overflow-hidden border-2 border-surface-container ring-4 ring-white shadow-sm">
-<img alt="Current avatar" class="w-full h-full object-cover" data-alt="A close-up, highly detailed portrait of a person used as a profile picture. The lighting is studio quality, bright and soft, casting gentle highlights on the face. The background is a clean, abstract soft blue, matching the brand's primary color palette. The image conveys professionalism, trust, and a welcoming demeanor." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCdSZR0vn34ScI67a4EPvGxmfBpBc6VIafg0MLBhDu62BF2BImMi0zGx3BrddmILS_nO1AUFK9g8rwKsipvkhnVXPfKVOZ0o932H1ERm5_jUP752lwEXMTJ1D80R2xgF9fUSR5jMX-EgPtepcr9-s_-NHzdbMMET1xTYLSZZzZ8GN8QMBCgPRx2GEPzYFztz0CtVGnDWSq-1NVf5ChNsu4g7zAZqsGipgvyQ0MtHQaW_-PxPQ5nKTK56WXNmedla04DX6aeiFuJrCO">
+<div class="w-24 h-24 rounded-full border-2 border-surface-container ring-4 ring-white shadow-sm bg-primary/5 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[48px]">person</span>
 </div>
 <div class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-200">
 <span class="material-symbols-outlined text-white">photo_camera</span>
@@ -89,15 +89,15 @@
 <form class="grid grid-cols-1 md:grid-cols-2 gap-sm">
 <div class="flex flex-col gap-1">
 <label class="font-label-sm text-label-sm text-on-surface-variant ml-1" for="fullname">Họ và tên</label>
-<input class="px-4 py-3 rounded-lg border border-outline-variant bg-surface-bright focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-body-md text-body-md text-on-surface outline-none" id="fullname" type="text" value="Nguyễn Văn A">
+<input class="px-4 py-3 rounded-lg border border-outline-variant bg-surface-bright focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-body-md text-body-md text-on-surface outline-none" id="fullname" type="text" placeholder="Họ và tên">
 </div>
 <div class="flex flex-col gap-1">
 <label class="font-label-sm text-label-sm text-on-surface-variant ml-1" for="email">Email</label>
-<input class="px-4 py-3 rounded-lg border border-outline-variant bg-surface-bright focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-body-md text-body-md text-on-surface outline-none" id="email" type="email" value="nguyenvana@example.com">
+<input class="px-4 py-3 rounded-lg border border-outline-variant bg-surface-bright focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-body-md text-body-md text-on-surface outline-none" id="email" type="email" placeholder="Email">
 </div>
 <div class="flex flex-col gap-1 md:col-span-2">
 <label class="font-label-sm text-label-sm text-on-surface-variant ml-1" for="phone">Số điện thoại</label>
-<input class="px-4 py-3 rounded-lg border border-outline-variant bg-surface-bright focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-body-md text-body-md text-on-surface outline-none" id="phone" type="tel" value="+84 90 123 4567">
+<input class="px-4 py-3 rounded-lg border border-outline-variant bg-surface-bright focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-body-md text-body-md text-on-surface outline-none" id="phone" type="tel" placeholder="Số điện thoại">
 </div>
 
 </form>
@@ -142,9 +142,7 @@
 </div>
 </div>
 </section>
-</div>
-<!-- Right Column: Security & Actions -->
-<div class="space-y-md">
+
 <!-- Section 3: Bảo mật -->
 <section class="bg-surface-container-lowest rounded-xl p-md shadow-sm border border-surface-container-highest">
 <h3 class="font-headline-md text-headline-md text-on-surface mb-6 border-b border-surface-container-high pb-4 flex items-center gap-2">
@@ -155,15 +153,33 @@
 <div>
 <h4 class="font-label-md text-label-md text-on-surface mb-2">Mật khẩu</h4>
 <p class="font-body-md text-body-md text-on-surface-variant text-sm mb-4">Bạn nên thay đổi mật khẩu định kỳ để đảm bảo an toàn cho tài khoản.</p>
-<button class="w-full px-4 py-3 bg-surface-container hover:bg-surface-container-high text-primary rounded-lg font-label-md text-label-md transition-colors flex items-center justify-center gap-2 border border-surface-container-highest">
+<button id="change-pwd-trigger-btn" class="w-full px-4 py-3 bg-surface-container hover:bg-surface-container-high text-primary rounded-lg font-label-md text-label-md transition-colors flex items-center justify-center gap-2 border border-surface-container-highest">
 <span class="material-symbols-outlined text-sm">key</span>
                                     Đổi mật khẩu
                                 </button>
 </div>
+
+<!-- Password Change Form (Hidden by default) -->
+<div id="change-pwd-form" class="hidden flex flex-col gap-sm pt-4 border-t border-outline-variant">
+    <div class="flex flex-col gap-1">
+        <label class="font-label-sm text-label-sm text-on-surface-variant ml-1" for="old-password">Mật khẩu cũ</label>
+        <input class="px-4 py-3 rounded-lg border border-outline-variant bg-surface-bright focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-body-md text-body-md outline-none" id="old-password" type="password">
+        <span id="old-password-error" class="hidden text-red-500 font-body-md text-xs mt-1 ml-1">sai mật khẩu</span>
+    </div>
+    <div class="flex flex-col gap-1">
+        <label class="font-label-sm text-label-sm text-on-surface-variant ml-1" for="new-password">Mật khẩu mới</label>
+        <input class="px-4 py-3 rounded-lg border border-outline-variant bg-surface-bright focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-body-md text-body-md outline-none" id="new-password" type="password">
+    </div>
+    <div class="flex flex-col gap-1">
+        <label class="font-label-sm text-label-sm text-on-surface-variant ml-1" for="confirm-new-password">Xác nhận mật khẩu mới</label>
+        <input class="px-4 py-3 rounded-lg border border-outline-variant bg-surface-bright focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-body-md text-body-md outline-none" id="confirm-new-password" type="password">
+    </div>
+    <button id="save-new-pwd-btn" class="w-full mt-2 px-4 py-2.5 bg-primary hover:bg-primary/90 text-white rounded-lg font-label-md text-label-md transition-colors">Cập nhật mật khẩu mới</button>
+</div>
 </div>
 </section>
 <!-- Save Actions Card -->
-<div class="bg-primary/5 rounded-xl p-md border border-primary/20 flex flex-col gap-4 sticky top-24">
+<div class="bg-primary/5 rounded-xl p-md border border-primary/20 flex flex-col gap-4 ">
 <p class="font-body-md text-body-md text-on-surface text-center">Lưu các thay đổi</p>
 <button id="save-settings-btn" class="w-full px-6 py-4 bg-primary hover:bg-surface-tint text-on-primary rounded-full font-label-md text-label-md transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 flex items-center justify-center gap-2">
 <span class="material-symbols-outlined text-sm">save</span>
@@ -171,16 +187,13 @@
                         </button>
 </div>
 </div>
-</div>
-</main>
-</div>
-
-
-
-
-
-
-<script src="assets/js/main.js"></script>
+            </div>
+        </div>
+    </main>
+    <div id="footer-placeholder"></div>
+<script src="assets/js/supabase-config.js"></script>
+<script src="assets/js/supabase-service.js"></script>
+<script src="assets/js/main.js?v=17"></script>
 </body></html>
 
 

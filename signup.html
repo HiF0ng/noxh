@@ -24,13 +24,14 @@
 <h1 class="font-headline-sm text-[22px] text-on-surface mb-1 font-bold">Tạo tài khoản</h1>
 <p class="font-body-sm text-[13px] text-on-surface-variant">Tạo tài khoản riêng của bạn hoàn toàn Miễn phí</p>
 </div>
-<form class="p-5 flex flex-col gap-3" id="signup-form">
+<form class="p-5 flex flex-col gap-3" id="signup-form" novalidate>
 <div class="flex flex-col gap-1">
 <label class="font-label-md text-[12px] text-on-surface font-bold" for="fullname">Họ và tên</label>
 <div class="relative">
 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline">person</span>
 <input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-1.5 pl-9 pr-3 font-body-sm text-[13px] text-on-surface-variant placeholder:text-outline-variant focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" id="fullname" name="fullname" placeholder="Nhập Họ và tên của bạn" type="text">
 </div>
+<span class="hidden text-error text-[11px] mt-1 error-text" id="fullname-error">Bạn cần điền thông tin</span>
 </div>
 <!-- Input: Email -->
 <div class="flex flex-col gap-1">
@@ -39,6 +40,7 @@
 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline">mail</span>
 <input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-1.5 pl-9 pr-3 font-body-sm text-[13px] text-on-surface-variant placeholder:text-outline-variant focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" id="email" name="email" placeholder="ví dụ: ten@email.com" type="email">
 </div>
+<span class="hidden text-error text-[11px] mt-1 error-text" id="email-error">Bạn cần điền thông tin</span>
 </div>
 <div class="flex flex-col gap-1">
 <label class="font-label-md text-[12px] text-on-surface font-bold" for="phone">Số điện thoại</label>
@@ -46,6 +48,7 @@
 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline">call</span>
 <input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-1.5 pl-9 pr-3 font-body-sm text-[13px] text-on-surface-variant placeholder:text-outline-variant focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" id="phone" name="phone" placeholder="Nhập số điện thoại" type="tel">
 </div>
+<span class="hidden text-error text-[11px] mt-1 error-text" id="phone-error">Bạn cần điền thông tin</span>
 </div>
 <div class="flex flex-col gap-1">
 <label class="font-label-md text-[12px] text-on-surface font-bold" for="password">Mật khẩu</label>
@@ -56,6 +59,7 @@
 <span class="material-symbols-outlined text-[18px] leading-none">visibility_off</span>
 </button>
 </div>
+<span class="hidden text-error text-[11px] mt-1 error-text" id="password-error">Bạn cần điền thông tin</span>
 </div>
 <div class="flex flex-col gap-1">
 <label class="font-label-md text-[12px] text-on-surface font-bold" for="confirm_password">Xác nhận mật khẩu</label>
@@ -66,6 +70,7 @@
 <span class="material-symbols-outlined text-[18px] leading-none">visibility_off</span>
 </button>
 </div>
+<span class="hidden text-error text-[11px] mt-1 error-text" id="confirm_password-error">Bạn cần điền thông tin</span>
 </div>
 <div class="flex items-start gap-2 mt-1">
 <input class="mt-0.5 rounded-[2px] border-outline-variant text-primary focus:ring-primary h-3.5 w-3.5" id="terms" type="checkbox">
@@ -73,6 +78,15 @@
     Bằng việc đăng ký, bạn đồng ý với <a class="text-primary hover:underline" href="#">Điều khoản</a> và <a class="text-primary hover:underline" href="#">Chính sách bảo mật</a>.
 </label>
 </div>
+<span class="hidden text-error text-[11px] mt-0.5 error-text" id="terms-error">Bạn cần đồng ý với Điều khoản</span>
+
+<div class="flex items-start gap-2 mt-2">
+<input class="mt-0.5 rounded-[2px] border-outline-variant text-primary focus:ring-primary h-3.5 w-3.5" id="marketing_consent" type="checkbox" checked>
+<label class="font-label-sm text-[11px] text-on-surface-variant font-normal leading-relaxed" for="marketing_consent">
+    Tôi đồng ý sử dụng thông tin của tôi cho mục đích tư vấn và hướng dẫn đăng ký Nhà ở xã hội
+</label>
+</div>
+
 <button class="w-full flex items-center justify-center mt-2 font-label-md text-label-sm bg-primary hover:bg-[#1c55cc] text-on-primary py-2 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-200 active:scale-[0.98] relative min-h-[40px]" type="submit">
     <span class="btn-text">Đăng ký</span>
 </button>
@@ -90,7 +104,9 @@
 
 
 
-<script src="assets/js/main.js"></script>
+<script src="assets/js/supabase-config.js"></script>
+    <script src="assets/js/supabase-service.js"></script>
+    <script src="assets/js/main.js?v=17"></script>
 </body></html>
 
 

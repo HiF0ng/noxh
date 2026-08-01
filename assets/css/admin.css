@@ -661,13 +661,24 @@ body.admin-body {
 
 /* 1. Chờ xây dựng: Nền đỏ nhạt, chữ trắng */
 .status-cho-xay-dung, .status-choxaydung, .bg-status-cho-xay-dung {
-    background-color: #ef4444 !important;
+    background-color: #8b5cf6 !important;
     color: #ffffff !important;
 }
 
 /* 2. Đang xây dựng: Nền cam biển, chữ trắng */
 .status-dang-xay-dung, .status-dangxaydung, .bg-status-dang-xay-dung {
-    background-color: #f97316 !important;
+    background-color: #ef4444 !important;
+    color: #ffffff !important;
+}
+
+.status-pill.status-draft {
+    background-color: #64748b !important;
+    color: #ffffff !important;
+}
+
+/* Sắp nhận hồ sơ: tím, riêng biệt với các pill hiện có. */
+.status-sap-nhan-ho-so, .status-sapnhanhoso, .bg-status-sap-nhan-ho-so {
+    background-color: #eab308 !important;
     color: #ffffff !important;
 }
 
