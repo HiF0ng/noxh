@@ -81,68 +81,100 @@ async function loadNavbar() {
             // Initialize dropdown logic
             const btnFunctions = document.getElementById('btn-functions');
             const dropdownFunctions = document.getElementById('dropdown-functions');
-            
             if (btnFunctions && dropdownFunctions) {
-                btnFunctions.addEventListener('click', (e) => {
+                // Remove old listeners to avoid duplicates if loadNavbar is somehow called twice
+                const newBtn = btnFunctions.cloneNode(true);
+                btnFunctions.parentNode.replaceChild(newBtn, btnFunctions);
+
+                const closeFunctionsDropdown = (restoreActiveItem = true) => {
+                    if (!newBtn.classList.contains('dropdown-open') &&
+                        !dropdownFunctions.classList.contains('show-dropdown')) return;
+
+                    dropdownFunctions.classList.remove('show-dropdown', 'opacity-100', 'visible');
+                    dropdownFunctions.classList.add('opacity-0', 'invisible');
+                    newBtn.classList.remove('dropdown-open');
+
+                    if (restoreActiveItem && window.realActiveItem && window.slideNavIndicator) {
+                        window.slideNavIndicator(window.realActiveItem, 'is-active');
+                    }
+                };
+
+                const functionPages = {
+                    'faq.html': 'Câu hỏi thường gặp',
+                    'compare.html': 'So sánh',
+                    'loan.html': 'Tính khoản vay'
+                };
+
+                const activateFunctionImmediately = (link) => {
+                    const page = (link.getAttribute('href') || '').split('/').pop();
+                    const label = functionPages[page];
+                    if (!label) return;
+
+                    const iconEl = newBtn.querySelector('.nav-icon');
+                    const textEl = newBtn.querySelector('.nav-text');
+                    newBtn.classList.add('no-transitions', 'no-icon');
+                    if (iconEl) iconEl.style.display = 'none';
+                    if (textEl) textEl.textContent = label;
+                    void newBtn.offsetHeight;
+                    newBtn.classList.remove('no-transitions');
+
+                    window.realActiveItem = newBtn;
+                    if (window.slideNavIndicator) {
+                        window.slideNavIndicator(newBtn, 'is-active', false);
+                    }
+                };
+                
+                newBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const isOpen = btnFunctions.classList.contains('dropdown-open');
+                    const isOpen = newBtn.classList.contains('dropdown-open');
+
+                    if (isOpen) {
+                        closeFunctionsDropdown();
+                        return;
+                    }
                     
                     // Close other menus if any
                     document.querySelectorAll('.dropdown-open').forEach(el => el.classList.remove('dropdown-open'));
-                    document.querySelectorAll('#dropdown-functions.opacity-100').forEach(el => {
-                        el.classList.remove('opacity-100', 'visible');
+                    document.querySelectorAll('#dropdown-functions.show-dropdown').forEach(el => {
+                        el.classList.remove('show-dropdown', 'opacity-100', 'visible');
                         el.classList.add('opacity-0', 'invisible');
                     });
+                    
+                    // Also close user dropdowns
+                    document.querySelectorAll('.user-dropdown-menu').forEach(d => {
+                        d.classList.remove('show-dropdown');
+                        d.classList.add('hidden');
+                        d.classList.remove('flex');
+                    });
 
-                    if (!isOpen) {
-                        btnFunctions.classList.add('dropdown-open');
-                        dropdownFunctions.classList.remove('opacity-0', 'invisible');
-                        dropdownFunctions.classList.add('opacity-100', 'visible');
-                        
-                        if (window.slideNavIndicator) window.slideNavIndicator(btnFunctions, 'dropdown-open');
-                    } else {
-                        btnFunctions.classList.remove('dropdown-open');
-                        dropdownFunctions.classList.remove('opacity-100', 'visible');
-                        dropdownFunctions.classList.add('opacity-0', 'invisible');
-                        
-                        if (window.realActiveItem && window.slideNavIndicator) {
-                            window.slideNavIndicator(window.realActiveItem, 'is-active');
-                        }
-                    }
+                    newBtn.classList.add('dropdown-open');
+                    dropdownFunctions.classList.add('show-dropdown');
+                    dropdownFunctions.classList.remove('opacity-0', 'invisible');
+                    dropdownFunctions.classList.add('opacity-100', 'visible');
+                    
+                    if (window.slideNavIndicator) window.slideNavIndicator(newBtn, 'dropdown-open');
+                });
+
+                // A selected function always closes the menu before SPA navigation begins.
+                dropdownFunctions.addEventListener('click', (e) => {
+                    const link = e.target.closest('a');
+                    if (!link) return;
+
+                    // Keep the indicator at its destination instead of animating back
+                    // to the previous navbar item before SPA navigation completes.
+                    closeFunctionsDropdown(false);
+                    activateFunctionImmediately(link);
+                });
+
+                // Switching to another mobile/tablet navigation item also closes it.
+                newBtn.closest('.top-navbar').querySelectorAll('a.nav-link').forEach(link => {
+                    link.addEventListener('click', closeFunctionsDropdown);
                 });
 
                 document.addEventListener('click', (e) => {
-                    if (btnFunctions.classList.contains('dropdown-open')) {
-                        // Close dropdown visually
-                        dropdownFunctions.classList.remove('opacity-100', 'visible');
-                        dropdownFunctions.classList.add('opacity-0', 'invisible');
-                        
-                        const clickedLink = e.target.closest('a');
-                        let willNavigate = false;
-                        
-                        if (clickedLink) {
-                            const href = clickedLink.getAttribute('href');
-                            const currentPath = window.location.pathname.split('/').pop() || 'homepage.html';
-                            
-                            if (href && !href.startsWith('http') && !href.startsWith('#') && !href.startsWith('javascript:') && clickedLink.getAttribute('target') !== '_blank') {
-                                const targetPath = href.split('/').pop() || 'homepage.html';
-                                if (targetPath !== currentPath) {
-                                    willNavigate = true;
-                                }
-                            }
-                        }
-                        
-                        if (!willNavigate) {
-                            // Slide back smoothly. slideNavIndicator will automatically handle removing dropdown-open
-                            // from currentActive (btnFunctions) during the animation setup.
-                            if (window.realActiveItem && window.slideNavIndicator) {
-                                window.slideNavIndicator(window.realActiveItem, 'is-active');
-                            }
-                        } else {
-                            // They clicked a valid SPA link. The SPA router will handle navigation.
-                            // We just clean up the dropdown-open class so highlightActiveLink sees it as clean.
-                            btnFunctions.classList.remove('dropdown-open');
-                        }
+                    if (newBtn.classList.contains('dropdown-open') &&
+                        !newBtn.contains(e.target) && !dropdownFunctions.contains(e.target)) {
+                        closeFunctionsDropdown();
                     }
                 });
             }
@@ -160,11 +192,51 @@ async function loadFooter() {
         if (response.ok) {
             const html = await response.text();
             placeholder.innerHTML = html;
+            // Double rAF: first frame schedules layout, second frame layout is ready
+            requestAnimationFrame(() => requestAnimationFrame(() => fitFooterDesc()));
         }
     } catch (err) {
         console.error('Failed to load footer component', err);
     }
 }
+
+function fitFooterDesc() {
+    const p = document.getElementById('footer-desc');
+    if (!p) return;
+
+    const logo = p.closest('.footer-logo-col')?.querySelector('img');
+
+    const doFit = () => {
+        // Reset inline styles
+        p.style.fontSize = '';
+        p.style.width = '';
+
+        // Pin paragraph width to logo's rendered clientWidth
+        if (logo && logo.clientWidth > 0) {
+            p.style.width = logo.clientWidth + 'px';
+        }
+
+        const style = window.getComputedStyle(p);
+        let lh = parseFloat(style.lineHeight);
+        if (isNaN(lh) || lh === 0) lh = parseFloat(style.fontSize) * 1.5;
+        const maxH = lh * 2;
+        let fs = parseFloat(style.fontSize);
+
+        // Shrink 0.5px at a time until text fits in 2 lines
+        while (p.scrollHeight > Math.ceil(maxH) + 2 && fs > 9) {
+            fs -= 0.5;
+            p.style.fontSize = fs + 'px';
+        }
+    };
+
+    if (logo && !logo.complete) {
+        logo.addEventListener('load', () => requestAnimationFrame(doFit), { once: true });
+    } else {
+        requestAnimationFrame(doFit);
+    }
+}
+window.addEventListener('resize', fitFooterDesc);
+
 
 function initPageScripts() {
     highlightActiveLink();
@@ -174,20 +246,59 @@ function initPageScripts() {
     setupAccordions();
     setupFAQTabs();
     setupFAQSearch();
+    loadFaqsFromSupabase();
     setupPasswordToggles();
     setupAuthForms();
     initSettingsForm();
     initLoanCalculator();
     setupProjectFilterSort();
+    // Required when returning to the Projects page through the SPA router.
+    loadLiveProjects();
+    loadProjectDetails();
+    setupFloorplanZoom(document.querySelector('[data-floorplan-zoom]'));
+    loadSavedProjects();
+    restoreCompareProjects();
     setupScrollDownBtn();
 }
 
-function initSettingsForm() {
+async function initSettingsForm() {
     const saveBtn = document.getElementById('save-settings-btn');
     if (saveBtn) {
         // Clone to avoid multiple listeners
         const newSaveBtn = saveBtn.cloneNode(true);
         saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+        
+        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true' || sessionStorage.getItem('isLoggedIn') === 'true';
+        const currentUserStr = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
+        let sessionUser = null;
+        
+        if (currentUserStr) {
+            try {
+                const parsed = JSON.parse(currentUserStr);
+                sessionUser = parsed.user || parsed;
+            } catch (e) {}
+        }
+        
+        const fullNameInput = document.getElementById('fullname');
+        const emailInput = document.getElementById('email');
+        const phoneInput = document.getElementById('phone');
+        
+        let dbUser = null;
+        if (isLoggedIn && sessionUser && window.SupabaseService) {
+            // Fetch fresh details from Supabase database
+            const identifier = sessionUser.email || sessionUser.id;
+            if (identifier) {
+                dbUser = await window.SupabaseService.getUser(identifier);
+            }
+        }
+        
+        // Populate inputs with fresh database user or session user as fallback
+        const activeUser = dbUser || sessionUser;
+        if (activeUser) {
+            if (fullNameInput) fullNameInput.value = activeUser.full_name || activeUser.fullName || '';
+            if (emailInput) emailInput.value = activeUser.email || '';
+            if (phoneInput) phoneInput.value = activeUser.phone || '';
+        }
         
         const inputs = document.querySelectorAll('input, select');
         inputs.forEach(input => {
@@ -199,9 +310,43 @@ function initSettingsForm() {
             });
         });
 
-        newSaveBtn.addEventListener('click', () => {
+        newSaveBtn.addEventListener('click', async () => {
             window.hasUnsavedChanges = false;
-            showToast('Các thay đổi đã được lưu', 'success');
+            
+            const updatedName = fullNameInput ? fullNameInput.value.trim() : '';
+            const updatedEmail = emailInput ? emailInput.value.trim() : '';
+            const updatedPhone = phoneInput ? phoneInput.value.trim() : '';
+            
+            if (isLoggedIn && activeUser && window.SupabaseService) {
+                const userId = activeUser.id;
+                if (userId) {
+                    const updatePayload = {
+                        name: updatedName,
+                        email: updatedEmail,
+                        phone: updatedPhone
+                    };
+                    const updated = await window.SupabaseService.updateUser(userId, updatePayload);
+                    if (updated) {
+                        // Store the updated user back to localStorage/sessionStorage
+                        const storageKey = localStorage.getItem('currentUser') ? 'localStorage' : 'sessionStorage';
+                        if (storageKey === 'localStorage') {
+                            localStorage.setItem('currentUser', JSON.stringify(updated));
+                        } else {
+                            sessionStorage.setItem('currentUser', JSON.stringify(updated));
+                        }
+                        
+                        // Update dropdown dynamically
+                        setupUserDropdown();
+                        showToast('Các thay đổi đã được lưu', 'success');
+                    } else {
+                        showToast('Lỗi cập nhật thông tin', 'error');
+                    }
+                } else {
+                    showToast('Không tìm thấy ID người dùng', 'error');
+                }
+            } else {
+                showToast('Không thể kết nối cơ sở dữ liệu', 'error');
+            }
         });
     }
 }
@@ -254,9 +399,9 @@ function setupAuthForms() {
                     user = await window.SupabaseService.loginUser(emailOrPhone, password);
                 }
                 
-                if (user) {
+                if (user && user.success) {
                     localStorage.setItem('isLoggedIn', 'true');
-                    localStorage.setItem('currentUser', JSON.stringify(user));
+                    localStorage.setItem('currentUser', JSON.stringify(user.user));
                     showToast('Đăng nhập thành công!', 'success');
                     setTimeout(() => { window.location.href = 'homepage.html'; }, 800);
                     return;
@@ -579,6 +724,26 @@ function adjustFeatureSubtext() {
 
 function setupUserDropdown() {
     const elements = [];
+
+    const resetFunctionButtonForUserMenu = () => {
+        const button = document.getElementById('btn-functions');
+        if (!button) return;
+
+        button.classList.remove('is-active', 'dropdown-open', 'no-icon');
+        const iconEl = button.querySelector('.nav-icon');
+        const textEl = button.querySelector('.nav-text');
+        if (iconEl) {
+            iconEl.style.display = '';
+            iconEl.textContent = 'widgets';
+        }
+        if (textEl) textEl.textContent = 'Chức năng';
+    };
+
+    const restoreMobileNavigationSelection = () => {
+        if (typeof highlightActiveLink === 'function') {
+            highlightActiveLink();
+        }
+    };
     
     // 1. Spans with "person" or "account_circle"
     document.querySelectorAll('.material-symbols-outlined').forEach(span => {
@@ -609,18 +774,75 @@ function setupUserDropdown() {
             menuContainer = avatarWrapper.parentElement;
         }
         
-        // Prevent duplicate dropdown setup
-        if (menuContainer.querySelector('.user-dropdown-menu')) return;
+        // Remove existing dropdown if any (useful for re-initialization)
+        const existingDropdown = menuContainer.querySelector('.user-dropdown-menu');
+        if (existingDropdown) {
+            existingDropdown.remove();
+        }
         
         menuContainer.style.position = 'relative';
         avatarWrapper.classList.add('cursor-pointer');
         
         // Create dropdown menu
         const dropdown = document.createElement('div');
-        dropdown.className = 'absolute right-0 top-full mt-6 w-56 bg-surface-container-lowest rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-outline-variant py-2 hidden flex-col z-50 user-dropdown-menu';
+        dropdown.className = 'absolute right-0 top-full mt-6 w-64 bg-surface-container-lowest rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-outline-variant pt-2 pb-1 hidden flex-col z-50 user-dropdown-menu';
         
-        // Use localStorage for login state persistence
-        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+        // Support both persistent and per-tab login sessions.
+        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true' ||
+            sessionStorage.getItem('isLoggedIn') === 'true';
+        let currentUser = null;
+        let currentUserStorage = null;
+        try {
+            const localUser = localStorage.getItem('currentUser');
+            const sessionUser = sessionStorage.getItem('currentUser');
+            const userStr = localUser || sessionUser;
+            currentUserStorage = localUser ? localStorage : (sessionUser ? sessionStorage : null);
+            if (userStr) {
+                const parsedUser = JSON.parse(userStr);
+                currentUser = parsedUser.user || parsedUser;
+            }
+        } catch (e) {}
+
+        const getUserName = (user) => user && (
+            user.full_name || user.fullName || user.name || user.display_name ||
+            (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name))
+        );
+        const getUserContact = (user) => user && (
+            user.email || user.phone || (user.user_metadata && user.user_metadata.email)
+        );
+        
+        // --- Add Profile Banner if logged in ---
+        if (isLoggedIn && currentUser) {
+            const banner = document.createElement('div');
+            banner.className = 'px-4 py-3 mb-1 border-b border-outline-variant/50 flex flex-col gap-0.5 bg-surface-container-lowest';
+            
+            const nameEl = document.createElement('div');
+            nameEl.className = 'user-dropdown-name font-bold text-[15px] text-on-surface truncate';
+            nameEl.textContent = getUserName(currentUser) || 'Người dùng';
+            
+            const contactEl = document.createElement('div');
+            contactEl.className = 'user-dropdown-contact font-label-md text-[13px] text-on-surface-variant truncate';
+            contactEl.textContent = getUserContact(currentUser) || 'Thành viên';
+            
+            // Sync with Supabase
+            if (window.SupabaseService) {
+                const identifier = currentUser.email || currentUser.phone || currentUser.id;
+                if (identifier) {
+                    window.SupabaseService.getUser(identifier).then(dbUser => {
+                        if (dbUser) {
+                            currentUser = dbUser;
+                            nameEl.textContent = getUserName(dbUser) || 'Người dùng';
+                            contactEl.textContent = getUserContact(dbUser) || 'Thành viên';
+                            (currentUserStorage || localStorage).setItem('currentUser', JSON.stringify(dbUser));
+                        }
+                    }).catch(err => console.error("Error syncing user data from Supabase:", err));
+                }
+            }
+            
+            banner.appendChild(nameEl);
+            banner.appendChild(contactEl);
+            dropdown.appendChild(banner);
+        }
         
         let links = [];
         if (!isLoggedIn) {
@@ -632,9 +854,14 @@ function setupUserDropdown() {
             links = [
                 { label: 'Dự án đã lưu', url: 'saved.html', icon: 'favorite' },
                 { label: 'Đang đăng ký', url: 'working.html', icon: 'edit_document' },
-                { label: 'Cài đặt', url: 'settings.html', icon: 'settings' },
-                { label: 'Đăng xuất', url: '#', icon: 'logout', danger: true }
+                { label: 'Cài đặt', url: 'settings.html', icon: 'settings' }
             ];
+            
+            if (currentUser && currentUser.role === 'admin') {
+                links.push({ label: 'Quản trị Admin', url: '#', icon: 'admin_panel_settings', admin: true });
+            }
+            
+            links.push({ label: 'Đăng xuất', url: '#', icon: 'logout', danger: true });
         }
         
         links.forEach(link => {
@@ -645,11 +872,22 @@ function setupUserDropdown() {
             }
             const a = document.createElement('a');
             a.href = link.url;
+
+            // A selected profile-menu action should always dismiss the menu
+            // before navigation or logout continues.
+            a.addEventListener('click', () => {
+                dropdown.classList.remove('show-dropdown');
+                dropdown.classList.add('hidden');
+                dropdown.classList.remove('flex');
+            });
             
             if (link.label === 'Đăng xuất') {
                 a.addEventListener('click', (e) => {
                     e.preventDefault();
                     localStorage.removeItem('isLoggedIn');
+                    localStorage.removeItem('currentUser');
+                    sessionStorage.removeItem('isLoggedIn');
+                    sessionStorage.removeItem('currentUser');
                     window.location.reload();
                 });
             }
@@ -657,53 +895,97 @@ function setupUserDropdown() {
             const currentPage = window.location.pathname.split('/').pop() || 'homepage.html';
             const isActive = link.url === currentPage;
             
-            let classes = 'px-2 md:px-4 py-2 flex items-center gap-2 transition-colors ';
+            let classes = 'user-dropdown-link px-4 py-2.5 min-h-12 flex items-center gap-3 transition-colors ';
             
             if (isActive) {
-                classes += 'text-primary font-bold text-[15px] hover:bg-surface-container-low';
+                classes += 'text-primary font-bold text-[15px] bg-primary/5 hover:bg-primary/10';
             } else if (link.danger) {
                 classes += 'text-error hover:bg-error-container hover:text-error font-label-md text-label-md';
+            } else if (link.admin) {
+                classes += 'text-tertiary hover:bg-tertiary-container hover:text-tertiary font-bold text-label-md';
             } else if (link.highlight) {
-                classes += 'text-primary hover:bg-surface-container-low font-label-md text-label-md';
+                classes += 'text-primary hover:bg-surface-container-low font-bold text-label-md';
             } else {
-                classes += 'text-on-surface hover:bg-surface-container-low font-label-md text-label-md font-medium';
+                classes += 'text-on-surface hover:bg-surface-container font-medium text-label-md';
             }
             a.className = classes;
             
             let html = '';
             if (link.icon) {
-                html += `<span class="material-symbols-outlined text-[18px]">${link.icon}</span>`;
+                let iconColor = 'text-on-surface-variant';
+                if (isActive) iconColor = '';
+                else if (link.danger) iconColor = 'text-error';
+                else if (link.admin) iconColor = 'text-tertiary';
+                html += `<span class="user-dropdown-icon material-symbols-outlined text-[20px] ${iconColor}">${link.icon}</span>`;
             }
-            html += link.label;
+            html += `<span class="user-dropdown-label truncate">${link.label}</span>`;
             a.innerHTML = html;
             dropdown.appendChild(a);
         });
         
         menuContainer.appendChild(dropdown);
         
+        // Remove old listener if any by cloning
+        const newAvatarWrapper = avatarWrapper.cloneNode(true);
+        avatarWrapper.parentNode.replaceChild(newAvatarWrapper, avatarWrapper);
+        
         // Toggle dropdown
-        avatarWrapper.addEventListener('click', (e) => {
+        newAvatarWrapper.addEventListener('click', (e) => {
             e.stopPropagation();
-            const isHidden = dropdown.classList.contains('hidden');
+            const isHidden = !dropdown.classList.contains('show-dropdown');
             
-            // Hide all other dropdowns
+            // Hide all other dropdowns (including btn-functions)
             document.querySelectorAll('.user-dropdown-menu').forEach(d => {
+                d.classList.remove('show-dropdown');
                 d.classList.add('hidden');
                 d.classList.remove('flex');
             });
+            const btnFunctions = document.getElementById('btn-functions');
+            if (btnFunctions) {
+                const wasOpen = btnFunctions.classList.contains('dropdown-open');
+                btnFunctions.classList.remove('dropdown-open');
+                if (wasOpen && window.realActiveItem && window.slideNavIndicator) {
+                    window.slideNavIndicator(window.realActiveItem, 'is-active');
+                }
+            }
+            document.querySelectorAll('#dropdown-functions.show-dropdown').forEach(el => {
+                el.classList.remove('show-dropdown', 'opacity-100', 'visible');
+                el.classList.add('opacity-0', 'invisible');
+            });
             
+            const indicator = document.getElementById('nav-indicator');
             if (isHidden) {
+                dropdown.classList.add('show-dropdown');
                 dropdown.classList.remove('hidden');
                 dropdown.classList.add('flex');
+                
+                // Hide the active state while the profile menu is open. Function
+                // pages need their regular dark widgets icon, not white text.
+                if (indicator) indicator.style.opacity = '0';
+                document.querySelectorAll('#nav-links-container .nav-item').forEach(item => {
+                    item.classList.remove('is-active', 'dropdown-open');
+                });
+                resetFunctionButtonForUserMenu();
+            } else {
+                restoreMobileNavigationSelection();
             }
         });
     });
     
     // Close dropdown on click outside
-    document.addEventListener('click', () => {
+    document.addEventListener('click', (e) => {
         document.querySelectorAll('.user-dropdown-menu').forEach(d => {
-            d.classList.add('hidden');
-            d.classList.remove('flex');
+            // Check if clicking inside dropdown
+            if (!d.contains(e.target)) {
+                if (d.classList.contains('show-dropdown')) {
+                    d.classList.remove('show-dropdown');
+                    d.classList.add('hidden');
+                    d.classList.remove('flex');
+                    
+                    // Restore active item and indicator
+                    restoreMobileNavigationSelection();
+                }
+            }
         });
     });
 }
@@ -711,6 +993,8 @@ function setupUserDropdown() {
 function highlightActiveLink() {
     let currentPage = window.location.pathname.split('/').pop() || 'homepage.html';
     if (!currentPage || currentPage === '/' || currentPage === 'index.html') currentPage = 'homepage.html';
+    // A detail page belongs to the Projects section in the global navigation.
+    const activeNavPage = currentPage === 'details.html' ? 'all-projects.html' : currentPage;
 
     // Top Navbar Links
     const indicator = document.getElementById('nav-indicator');
@@ -731,7 +1015,7 @@ function highlightActiveLink() {
         href = href.split('/').pop();
         if (!href || href === '/' || href === 'index.html') href = 'homepage.html';
 
-        if (href === currentPage) {
+        if (href === activeNavPage) {
             targetLink = link;
         }
     });
@@ -810,20 +1094,20 @@ function highlightActiveLink() {
         if (link.textContent.includes('Gửi phản hồi') || link.textContent.includes('Đăng xuất')) return;
         
         // Base classes
-        const baseClasses = 'flex items-center gap-sm px-2 md:px-4 py-3 rounded-lg transition-all duration-200 scale-95 active:scale-90 font-label-md text-label-md truncate whitespace-nowrap';
+        const baseClasses = 'flex items-center px-4 py-3 rounded-lg transition-all duration-200 scale-95 active:scale-90 text-[17px] font-bold truncate whitespace-nowrap';
         
-        if (href === currentPage) {
+        if (href === activeNavPage) {
             link.className = `${baseClasses} bg-primary text-white font-bold shadow-md`;
             
             // Fix icon fill state for active
             const icon = link.querySelector('.material-symbols-outlined');
-            if (icon) icon.style.fontVariationSettings = "'FILL' 1";
+            if (icon) icon.style.fontVariationSettings = "'FILL' 1, 'wght' 500";
         } else {
-            link.className = `${baseClasses} text-on-surface-variant hover:bg-surface-container-high font-medium`;
+            link.className = `${baseClasses} text-on-surface-variant hover:bg-surface-container-high`;
             
             // Fix icon fill state for inactive
             const icon = link.querySelector('.material-symbols-outlined');
-            if (icon) icon.style.fontVariationSettings = "'FILL' 0";
+            if (icon) icon.style.fontVariationSettings = "'FILL' 0, 'wght' 500";
         }
     });
     
@@ -835,11 +1119,12 @@ function highlightActiveLink() {
         // Skip danger items like Logout
         if (link.textContent.includes('Đăng xuất')) return;
         
+        const baseClasses = 'user-dropdown-link px-4 py-2.5 min-h-12 flex items-center gap-3 transition-colors';
         if (href && href === currentPage) {
-            link.className = 'px-2 md:px-4 py-2 flex items-center gap-2 transition-colors text-primary font-bold text-[15px] hover:bg-surface-container-low';
+            link.className = `${baseClasses} text-primary font-bold text-[15px] bg-primary/5 hover:bg-primary/10`;
         } else {
             // Default inactive state
-            link.className = 'px-2 md:px-4 py-2 flex items-center gap-2 transition-colors text-on-surface hover:text-primary hover:bg-surface-container-low font-label-md text-label-md font-medium';
+            link.className = `${baseClasses} text-on-surface hover:text-primary hover:bg-surface-container-low font-label-md text-label-md font-medium`;
         }
     });
 
@@ -851,7 +1136,7 @@ function highlightActiveLink() {
         href = href.split('/').pop();
         if (!href || href === '/' || href === 'index.html') href = 'homepage.html';
 
-        if (href === currentPage) {
+        if (href === activeNavPage) {
             link.className = "nav-link font-label-md text-label-md text-primary border-b-2 border-primary pb-1 font-bold transition-colors active";
         } else {
             link.className = "nav-link font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors";
@@ -1107,6 +1392,145 @@ function setupSaveProjectToggle() {
     });
 }
 
+async function loadProjectDetails() {
+    if (!document.getElementById('detail-title') || !window.SupabaseService) return;
+    const id = new URLSearchParams(window.location.search).get('id');
+    if (!id) return;
+    const project = await window.SupabaseService.getProject(id);
+    if (!project) return;
+    const details = project.details || {};
+    const setText = (elementId, value, fallback = 'Đang cập nhật') => { const el = document.getElementById(elementId); if (el) el.textContent = value || fallback; };
+    const estimatedPrice = (details.estimatedPrice || '').trim().replace(/\s*\/?\s*m(?:2|²)?\s*$/i, '');
+    const displayPrice = estimatedPrice ? `Khoảng ${estimatedPrice}/m²` : project.price;
+    const setQuickField = (field, value) => document.querySelectorAll(`[data-detail-field="${field}"]`).forEach(el => { el.textContent = value || 'Đang cập nhật'; });
+    setText('detail-title', project.name); setText('detail-breadcrumb-title', project.name); setText('detail-location', details.address || project.location); setQuickField('investor', project.investor); setText('detail-price', displayPrice); setText('detail-status', project.status);
+    setQuickField('area', details.area); setQuickField('scale', details.scale); setQuickField('handover', details.handover);
+    const desc = document.getElementById('detail-desc'); if (desc) desc.textContent = project.desc || 'Đang cập nhật thông tin dự án.';
+
+    const images = [project.imageUrl, ...(details.gallery || [])].filter(Boolean);
+    const setDetailImage = (imageId, url) => { const image = document.getElementById(imageId); const skeleton = document.getElementById(imageId + '-skeleton'); if (!image || !url) return; image.onload = () => { image.classList.remove('opacity-0'); if (skeleton) skeleton.classList.add('hidden'); }; image.src = url; };
+    setDetailImage('detail-hero-image', images[0]);
+    ['detail-gallery-thumb-0', 'detail-gallery-thumb-1'].forEach((thumbId, index) => setDetailImage(thumbId, images[index + 1]));
+    setupProjectGallery(images);
+
+    const headings = Array.from(document.querySelectorAll('h2'));
+    const floorplanHeading = headings.find(heading => heading.textContent.trim() === 'Mặt bằng căn hộ');
+    const floorplanPanel = floorplanHeading && floorplanHeading.nextElementSibling;
+    if (floorplanPanel && details.floorplans && details.floorplans.length) {
+        const plans = details.floorplans;
+        floorplanPanel.innerHTML = `<div class="relative min-h-[360px] md:min-h-[560px] bg-surface-container"><div id="detail-floorplan-skeleton" class="absolute inset-0 skeleton-shimmer"></div><img id="detail-floorplan-image" data-floorplan-zoom class="w-full h-auto max-h-[620px] min-h-[360px] md:min-h-[560px] object-contain bg-white cursor-zoom-in opacity-0 transition-opacity duration-200" src="${plans[0].url}" alt="Mặt bằng căn hộ"></div><p id="detail-floorplan-note" class="mt-3 text-center font-body-md text-body-md text-on-surface-variant">${plans[0].note || ''}</p><div id="detail-floorplan-tabs" class="flex flex-wrap justify-center gap-sm mt-sm"></div>`;
+        const image = document.getElementById('detail-floorplan-image'); const note = document.getElementById('detail-floorplan-note'); const tabs = document.getElementById('detail-floorplan-tabs');
+        const floorplanSkeleton = document.getElementById('detail-floorplan-skeleton');
+        const revealFloorplan = () => { image.classList.remove('opacity-0'); if (floorplanSkeleton) floorplanSkeleton.classList.add('hidden'); };
+        image.onload = revealFloorplan;
+        if (image.complete && image.naturalWidth) revealFloorplan();
+        setupFloorplanZoom(image);
+        plans.forEach((plan, index) => { const btn = document.createElement('button'); btn.type = 'button'; btn.className = `px-4 py-2 rounded-full border font-label-md text-label-md ${index === 0 ? 'border-primary text-primary bg-primary-fixed/10' : 'border-outline text-on-surface-variant'}`; btn.textContent = plan.note || `Mặt bằng ${index + 1}`; btn.onclick = () => { image.src = plan.url; note.textContent = plan.note || ''; tabs.querySelectorAll('button').forEach(button => button.className = 'px-4 py-2 rounded-full border border-outline text-on-surface-variant font-label-md text-label-md'); btn.className = 'px-4 py-2 rounded-full border border-primary text-primary bg-primary-fixed/10 font-label-md text-label-md'; }; tabs.appendChild(btn); });
+    }
+
+    const mapContainer = document.getElementById('detail-map-container'); const address = details.address || project.location;
+    setText('detail-address', address, '');
+    if (mapContainer) { const marker = mapContainer.querySelector('.relative.z-10'); if (marker) marker.remove(); const mapImage = mapContainer.querySelector('[data-location]'); if (mapImage && details.locationMapUrl) mapImage.style.backgroundImage = `url("${details.locationMapUrl}")`; if (details.mapsUrl) mapContainer.onclick = () => window.open(details.mapsUrl, '_blank', 'noopener'); }
+
+    const escapeHtml = value => String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    const progressCard = document.getElementById('detail-progress-card');
+    if (progressCard) {
+        const milestones = ['Chờ xây dựng', 'Đang xây dựng', 'Sắp nhận hồ sơ', 'Đang nhận đơn', 'Chờ bàn giao'];
+        const stored = details.statusTimeline || []; const lastReached = stored.reduce((last, item, index) => item.checked ? index : last, -1);
+        progressCard.innerHTML = `<h3 class="font-title-lg text-title-lg font-bold text-on-surface mb-5">Tiến độ Dự án</h3><div class="flex flex-col">${milestones.map((label, index) => { const item = stored[index] || {}; const reached = index <= lastReached; const current = index === lastReached; return `<div class="relative pl-12 ${index < milestones.length - 1 ? 'pb-7' : ''}">${index < milestones.length - 1 ? `<span class="absolute left-4 -translate-x-1/2 top-8 -bottom-7 w-0.5 ${index < lastReached ? 'bg-primary' : 'border-l-2 border-dashed border-outline-variant'}"></span>` : ''}<span class="absolute left-0 top-0 w-8 h-8 rounded-full flex items-center justify-center ${reached ? 'bg-primary text-white' : 'border-2 border-outline-variant bg-surface-container-lowest text-outline'}">${reached ? '<span class="material-symbols-outlined text-[17px]">check</span>' : '<span class="w-2.5 h-2.5 rounded-full bg-outline-variant"></span>'}</span><div class="pt-0.5"><p class="font-label-md text-label-md ${current ? 'text-primary font-bold' : reached ? 'text-on-surface' : 'text-outline'}">${label}</p>${item.note ? `<p class="font-body-md text-sm text-on-surface-variant mt-0.5">${escapeHtml(item.note)}</p>` : ''}</div></div>`; }).join('')}</div>`;
+        progressCard.innerHTML += '<button id="detail-follow-btn" type="button" class="mt-5 w-full border border-primary text-primary bg-surface-container-lowest font-label-md text-label-md py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"><span class="material-symbols-outlined text-[20px]">bookmark</span><span>Theo dõi dự án</span></button>';
+    }
+    const amenitiesList = Array.from(document.querySelectorAll('ul.grid')).find(list => list.previousElementSibling && list.previousElementSibling.textContent.trim() === 'Tiện ích nổi bật');
+    if (amenitiesList && Array.isArray(details.amenities)) amenitiesList.innerHTML = details.amenities.map(item => `<li class="flex items-center gap-2 overflow-hidden"><span class="material-symbols-outlined text-secondary icon-fill flex-shrink-0">check_circle</span><span class="font-body-md text-body-md text-on-surface truncate">${escapeHtml(item)}</span></li>`).join('');
+    setupProjectSaveButton(id);
+    setupProjectFollowButton(id);
+}
+
+function setupProjectGallery(images) {
+    if (!images.length) return;
+    let index = 0; let modal = document.getElementById('project-gallery-modal');
+    if (!modal) { modal = document.createElement('div'); modal.id = 'project-gallery-modal'; modal.className = 'fixed inset-0 z-[100] hidden items-center justify-center bg-black/85 p-4'; modal.innerHTML = '<button type="button" data-close class="absolute top-5 right-5 text-white text-4xl">×</button><button type="button" data-prev class="absolute left-4 md:left-10 text-white text-5xl">‹</button><img data-image class="max-h-[88vh] max-w-[88vw] object-contain rounded-lg"><button type="button" data-next class="absolute right-4 md:right-10 text-white text-5xl">›</button>'; document.body.appendChild(modal); }
+    const render = () => { modal.querySelector('[data-image]').src = images[index]; }; const open = start => { index = start; render(); modal.classList.remove('hidden'); modal.classList.add('flex'); };
+    modal.querySelector('[data-close]').onclick = () => { modal.classList.add('hidden'); modal.classList.remove('flex'); }; modal.querySelector('[data-prev]').onclick = () => { index = (index - 1 + images.length) % images.length; render(); }; modal.querySelector('[data-next]').onclick = () => { index = (index + 1) % images.length; render(); }; modal.onclick = event => { if (event.target === modal) modal.querySelector('[data-close]').click(); };
+    const hero = document.getElementById('detail-hero-image'); if (hero) hero.onclick = () => open(0); ['detail-gallery-thumb-0', 'detail-gallery-thumb-1'].forEach((id, i) => { const thumb = document.getElementById(id); if (thumb) thumb.onclick = () => open(Math.min(i + 1, images.length - 1)); }); const viewAll = document.getElementById('detail-view-gallery'); if (viewAll) viewAll.onclick = () => open(0);
+}
+
+function setupFloorplanZoom(image) {
+    if (!image || image.dataset.zoomBound === 'true') return;
+    image.dataset.zoomBound = 'true';
+    let modal = document.getElementById('floorplan-zoom-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'floorplan-zoom-modal';
+        modal.className = 'fixed inset-0 z-[110] hidden items-center justify-center bg-black/85 p-4';
+        modal.innerHTML = '<button type="button" data-close aria-label="Đóng ảnh mặt bằng" class="absolute top-5 right-5 z-10 w-11 h-11 rounded-full bg-white/15 text-white text-3xl leading-none hover:bg-white/30 transition-colors">×</button><img data-image class="max-h-[90vh] max-w-[92vw] object-contain rounded-lg shadow-2xl cursor-zoom-out" alt="Mặt bằng căn hộ">';
+        document.body.appendChild(modal);
+        const close = () => { modal.classList.add('hidden'); modal.classList.remove('flex'); };
+        modal.querySelector('[data-close]').onclick = close;
+        modal.onclick = event => { if (event.target === modal || event.target === modal.querySelector('[data-image]')) close(); };
+        document.addEventListener('keydown', event => { if (event.key === 'Escape' && !modal.classList.contains('hidden')) close(); });
+    }
+    image.onclick = () => {
+        const modalImage = modal.querySelector('[data-image]');
+        modalImage.src = image.currentSrc || image.src;
+        modalImage.alt = image.alt || 'Mặt bằng căn hộ';
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    };
+}
+
+async function setupProjectSaveButton(projectId) {
+    const button = document.getElementById('detail-save-btn'); if (!button || !window.SupabaseService) return;
+    let user = null; try { user = JSON.parse(localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser') || 'null'); user = user && (user.user || user); } catch (_) {}
+    if (!user) { button.onclick = () => { window.location.href = 'login.html'; }; return; }
+    if (!user.id && user.email) user = await window.SupabaseService.getUser(user.email);
+    if (!user || !user.id) return;
+    const setState = saved => { button.classList.toggle('bg-primary', saved); button.classList.toggle('text-white', saved); button.classList.toggle('text-primary', !saved); const icon = button.querySelector('.material-symbols-outlined'); const label = button.querySelector('span:not(.material-symbols-outlined)'); if (icon) icon.classList.toggle('icon-fill', saved); if (label) label.textContent = saved ? 'Đã lưu' : 'Lưu Dự án'; };
+    let saved = await window.SupabaseService.isProjectSaved(user.id, projectId); setState(saved);
+    button.onclick = async () => { button.disabled = true; const next = !saved; if (await window.SupabaseService.setProjectSaved(user.id, projectId, next)) { saved = next; setState(saved); } else alert('Không thể cập nhật dự án đã lưu. Vui lòng thử lại.'); button.disabled = false; };
+}
+
+async function setupProjectFollowButton(projectId) {
+    const button = document.getElementById('detail-follow-btn'); if (!button || !window.SupabaseService) return;
+    let user = null; try { user = JSON.parse(localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser') || 'null'); user = user && (user.user || user); } catch (_) {}
+    if (!user) { button.onclick = () => { window.location.href = 'login.html'; }; return; }
+    if (!user.id && user.email) user = await window.SupabaseService.getUser(user.email);
+    if (!user || !user.id) return;
+    const setState = followed => {
+        button.classList.toggle('bg-primary', followed);
+        button.classList.toggle('text-white', followed);
+        button.classList.toggle('text-primary', !followed);
+        button.classList.toggle('bg-surface-container-lowest', !followed);
+        button.innerHTML = `<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' ${followed ? 1 : 0}">bookmark</span><span>${followed ? 'Đang theo dõi dự án' : 'Theo dõi dự án'}</span>`;
+    };
+    let followed = await window.SupabaseService.isProjectFollowed(user.id, projectId); setState(followed);
+    button.onclick = async () => { button.disabled = true; const next = !followed; if (await window.SupabaseService.setProjectFollowed(user.id, projectId, next)) { followed = next; setState(followed); } else alert('Không thể cập nhật trạng thái theo dõi. Vui lòng thử lại.'); button.disabled = false; };
+}
+
+async function loadFaqsFromSupabase() {
+    const lists = document.querySelectorAll('.faq-list');
+    if (!lists.length || !window.SupabaseService) return;
+    const categoryMap = { 'doi-tuong': 'doi-tuong', 'dieu-kien': 'dieu-kien-ho-so', 'vay-von': 'vay-von', 'quyen-so-huu': 'quyen-so-huu' };
+    const escapeHtml = (value) => String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    try {
+        const faqs = await window.SupabaseService.getFaqs();
+        lists.forEach(list => { list.innerHTML = ''; });
+        faqs.forEach(faq => {
+            const targetId = categoryMap[faq.category];
+            const list = targetId && document.querySelector(`#${targetId} .faq-list`);
+            if (!list) return;
+            const item = document.createElement('div');
+            item.className = 'bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgb(0,0,0,0.04)] border border-outline-variant overflow-hidden';
+            item.innerHTML = `<button class="accordion-header w-full px-md py-4 flex justify-between items-center text-left hover:bg-surface-container-low transition-colors"><span class="font-label-md text-label-md text-on-surface">${escapeHtml(faq.question)}</span><span class="material-symbols-outlined text-outline-variant accordion-icon">expand_more</span></button><div class="accordion-content"><div class="accordion-inner px-md pb-4 pt-2 font-body-md text-body-md text-on-surface-variant border-t border-outline-variant whitespace-pre-line">${escapeHtml(faq.answer)}</div></div>`;
+            list.appendChild(item);
+        });
+        setupAccordions();
+        setupFAQSearch();
+    } catch (error) {
+        console.error('Unable to load FAQs from Supabase:', error);
+    }
+}
+
 function setupFAQSearch() {
     const searchInput = document.getElementById('faq-search-input');
     const searchBtn = document.getElementById('faq-search-btn');
@@ -1208,7 +1632,14 @@ function setupProjectFilterSort() {
     function updateGrid() {
         let visibleCount = 0;
         const sortVal = sortSelect.value;
-        const statusVal = statusSelect ? statusSelect.value : 'all';
+        const statusFilters = {
+            'status-waiting-construction': 'Chờ xây dựng',
+            'status-under-construction': 'Đang xây dựng',
+            'status-upcoming-applications': 'Sắp nhận hồ sơ',
+            'status-accepting-applications': 'Đang nhận đơn',
+            'status-waiting-handover': 'Chờ bàn giao'
+        };
+        const statusVal = statusFilters[sortVal] || (statusSelect ? statusSelect.value : 'all');
         
         // 1. Filter
         cards.forEach(card => {
@@ -1222,7 +1653,7 @@ function setupProjectFilterSort() {
         });
         
         // 2. Sort
-        if (sortVal === 'latest') {
+        if (sortVal === 'latest' || statusFilters[sortVal]) {
             cards.sort((a, b) => (b.dataset.date || '').localeCompare(a.dataset.date || ''));
         } else if (sortVal === 'price-asc') {
             cards.sort((a, b) => {
@@ -1345,6 +1776,7 @@ async function loadLiveProjects() {
         try {
             if (window.SupabaseService) {
                 projects = await window.SupabaseService.getProjects();
+                projects = (projects || []).filter(project => !(project.details && project.details.isDraft));
             }
         } catch (e) {
             console.error(e);
@@ -1372,44 +1804,61 @@ async function loadLiveProjects() {
     }
 }
 
+async function loadSavedProjects() {
+    const grid = document.getElementById('saved-projects-grid');
+    if (!grid || !window.SupabaseService) return;
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser') || 'null'); user = user && (user.user || user); } catch (_) {}
+    if (!user) { grid.innerHTML = '<div class="col-span-full py-12 text-center text-on-surface-variant">Vui lòng <a href="login.html" class="text-primary font-semibold hover:underline">đăng nhập</a> để xem các dự án đã lưu.</div>'; return; }
+    if (!user.id && user.email) user = await window.SupabaseService.getUser(user.email);
+    if (!user || !user.id) { grid.innerHTML = '<div class="col-span-full py-12 text-center text-on-surface-variant">Không xác định được tài khoản người dùng.</div>'; return; }
+    grid.innerHTML = '<div class="col-span-full py-12 text-center text-on-surface-variant">Đang tải dự án đã lưu...</div>';
+    const projects = await window.SupabaseService.getSavedProjects(user.id);
+    if (projects === null) { grid.innerHTML = '<div class="col-span-full py-12 text-center text-error">Không thể tải dự án đã lưu. Vui lòng thử lại.</div>'; return; }
+    if (!projects.length) { grid.innerHTML = '<div class="col-span-full py-xl flex flex-col items-center justify-center text-center bg-surface-container-lowest rounded-lg border border-dashed border-outline-variant"><div class="w-24 h-24 bg-surface-container-low rounded-full flex items-center justify-center mb-4 text-primary"><span class="material-symbols-outlined text-4xl">bookmark_border</span></div><h3 class="font-headline-md text-headline-md text-on-surface mb-2">Chưa có Dự án nào được lưu</h3><p class="font-body-md text-body-md text-on-surface-variant mb-6 max-w-md">Hãy khám phá các dự án phù hợp với nhu cầu của bạn.</p><a href="all-projects.html" class="bg-primary text-on-primary font-label-md text-label-md px-6 py-3 rounded-full">Khám phá Dự án</a></div>'; return; }
+    renderProjectsList(grid, projects);
+}
+
 function renderProjectsList(container, list) {
     if (!container) return;
     let html = '';
     list.forEach(p => {
         let statusClass = 'status-cho-xay-dung';
         if (p.status && p.status.includes('xây dựng')) statusClass = 'status-dang-xay-dung';
+        if (p.status === 'Sắp nhận hồ sơ') statusClass = 'status-sap-nhan-ho-so';
         if (p.status && (p.status.includes('mở bán') || p.status.includes('nhận đơn'))) statusClass = 'status-dang-nhan-don';
         if (p.status && (p.status.includes('bàn giao') || p.status.includes('hoàn thành'))) statusClass = 'status-cho-ban-giao';
+        const estimatedPrice = (p.details && p.details.estimatedPrice) ? p.details.estimatedPrice.trim().replace(/\s*\/?\s*m(?:2|²)?\s*$/i, '') : '';
+        const compactPrice = value => value.replace(/^\s*(khoảng|từ)\s*/i, '').replace(/triệu(?:\s*đồng)?/gi, 'tr').replace(/\s+/g, ' ').trim();
+        const priceLabel = estimatedPrice ? `~${compactPrice(estimatedPrice)}/m²` : (p.price || 'Đang cập nhật');
+        const detailUrl = `details.html?id=${p.id}`;
 
         html += `
-            <div class="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/60 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+            <div class="project-card-item bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/60 shadow-sm hover:shadow-md transition-all flex flex-col justify-between" data-status="${p.status || ''}" data-date="${p.created_at || p.date || ''}" data-price="${p.price || p.price_per_sqm || ''}">
                 <div>
-                    <div class="relative aspect-[2/3] w-full rounded-lg overflow-hidden mb-4 bg-surface-container">
+                    <a href="${detailUrl}" class="relative aspect-square w-full rounded-lg overflow-hidden mb-3 bg-surface-container block">
                         <img src="${p.imageUrl || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80'}" alt="${p.name || p.title}" class="w-full h-full object-cover">
-                        <span class="absolute top-3 right-3 status-pill ${statusClass}">${p.status || 'Đang mở bán'}</span>
-                    </div>
-                    <h3 class="font-bold text-lg text-on-surface mb-1">${p.name || p.title}</h3>
-                    <p class="text-sm text-on-surface-variant flex items-center gap-1 mb-3">
+                        <span class="absolute top-3 right-3 status-pill project-card-status-pill ${statusClass}">${p.status || 'Đang mở bán'}</span>
+                    </a>
+                    <a href="${detailUrl}" class="block font-bold text-lg text-on-surface mb-1 hover:text-primary transition-colors"><h3>${p.name || p.title}</h3></a>
+                    <p class="text-sm text-on-surface-variant flex items-center gap-1 mb-2">
                         <span class="material-symbols-outlined text-base">location_on</span> ${p.location}
                     </p>
-                    <div class="space-y-1 mb-4">
-                        <div class="flex justify-between text-xs text-on-surface-variant font-medium">
-                            <span>Tiến độ xây dựng</span>
-                            <span class="font-semibold text-primary">${p.progress || 0}%</span>
-                        </div>
-                        <div class="w-full bg-surface-container rounded-full h-2 overflow-hidden">
-                            <div class="bg-primary h-full rounded-full transition-all duration-500" style="width: ${p.progress || 0}%"></div>
-                        </div>
+                    <div class="project-card-project-info project-card-info-divider space-y-1 mb-3 pt-2 border-t text-sm">
+                        <p class="text-on-surface-variant whitespace-nowrap overflow-hidden text-ellipsis">Chủ đầu tư: <strong class="text-on-surface">${p.owner || p.investor || 'Đang cập nhật'}</strong></p>
+                        <p class="text-on-surface-variant whitespace-nowrap overflow-hidden text-ellipsis">Giá dự kiến: <strong class="text-on-surface">${priceLabel}</strong></p>
                     </div>
                 </div>
-                <div class="pt-3 border-t border-outline-variant/40 flex items-center justify-between">
-                    <span class="text-xs text-on-surface-variant">Chủ đầu tư: <strong>${p.owner || p.investor || 'Đang cập nhật'}</strong></span>
-                    <a href="project-detail.html?id=${p.id}" class="px-2 md:px-4 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg text-xs font-semibold transition-colors">Chi tiết</a>
-                </div>
+                <a href="${detailUrl}" class="mt-1 w-full text-center px-4 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg text-sm font-semibold transition-colors">Xem chi tiết</a>
             </div>
         `;
     });
+
     container.innerHTML = html;
+
+    // Project cards are loaded asynchronously, so initialize the filters only
+    // after the complete list is present in the all-projects grid.
+    if (container.id === 'projects-grid') setupProjectFilterSort();
 }
 
 // 5. Fetch and Render Live Documents
@@ -1481,6 +1930,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* INTERACTIVE COMPARE MODAL & LIVE SEARCH HANDLER */
 let compareModalProjectsCache = [];
+const COMPARE_PROJECTS_STORAGE_KEY = 'noxh_compare_project_ids';
+
+function getComparedProjectIds() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(COMPARE_PROJECTS_STORAGE_KEY) || '[]');
+        return Array.isArray(saved) ? [...new Set(saved.map(String))].slice(0, 2) : [];
+    } catch (_) {
+        return [];
+    }
+}
+
+function saveComparedProjectIds(ids) {
+    localStorage.setItem(COMPARE_PROJECTS_STORAGE_KEY, JSON.stringify([...new Set(ids.map(String))].slice(0, 2)));
+}
+
+window.removeProjectFromCompare = function(button) {
+    const card = button && button.closest('.compare-project-card');
+    if (!card) return;
+    saveComparedProjectIds(getComparedProjectIds().filter(id => id !== String(card.dataset.projectId)));
+    card.remove();
+};
+
+async function restoreCompareProjects() {
+    const grid = document.getElementById('compare-grid-container');
+    const ids = getComparedProjectIds();
+    if (!grid || !ids.length || !window.SupabaseService) return;
+
+    try {
+        const projects = await window.SupabaseService.getProjects();
+        compareModalProjectsCache = (projects || []).filter(project => !(project.details && project.details.isDraft));
+        const availableIds = new Set(compareModalProjectsCache.map(project => String(project.id)));
+        const validIds = ids.filter(id => availableIds.has(id));
+        saveComparedProjectIds(validIds);
+        validIds.forEach(id => {
+            const project = compareModalProjectsCache.find(item => String(item.id) === id);
+            if (project) window.addProjectToCompareList(project.id, project.name || project.title, project.location, project.status, project.progress);
+        });
+    } catch (error) {
+        console.error('Không thể khôi phục danh sách so sánh:', error);
+    }
+}
 
 window.openAddCompareModal = async function() {
     const modal = document.getElementById('add-compare-modal');
@@ -1507,6 +1997,7 @@ window.openAddCompareModal = async function() {
         try {
             if (window.SupabaseService) {
                 projects = await window.SupabaseService.getProjects();
+                projects = (projects || []).filter(project => !(project.details && project.details.isDraft));
             }
         } catch (e) {
             console.error(e);
@@ -1579,43 +2070,64 @@ function renderCompareModalList(list) {
 window.addProjectToCompareList = function(id, title, location, status, progress) {
     const grid = document.getElementById('compare-grid-container');
     if (!grid) return;
+    if (grid.querySelector(`.compare-project-card[data-project-id="${String(id)}"]`)) {
+        closeAddCompareModal();
+        return;
+    }
 
+    // Render the same live data as the main project cards; never substitute a
+    // stock image for a project image that has not been uploaded.
+    const project = compareModalProjectsCache.find(p => String(p.id) === String(id)) || {};
+    const projectTitle = project.name || project.title || title || 'Dự án';
+    const projectLocation = project.location || location || 'Đang cập nhật';
+    const projectStatus = project.status || status || 'Đang cập nhật';
+    const investor = project.owner || project.investor || 'Đang cập nhật';
+    const projectDetails = project.details || {};
+    const projectScale = project.scale || projectDetails.scale || 'Đang cập nhật';
+    const projectArea = project.area || projectDetails.area || 'Đang cập nhật';
+    const projectHandover = project.handover || projectDetails.handover || 'Đang cập nhật';
+    const rawEstimatedPrice = project.details && project.details.estimatedPrice
+        ? String(project.details.estimatedPrice).trim().replace(/\s*\/?\s*m(?:2|²)?\s*$/i, '')
+        : '';
+    const compactPrice = value => value.replace(/^\s*(khoảng|từ)\s*/i, '').replace(/triệu(?:\s*đồng)?/gi, 'tr').replace(/\s+/g, ' ').trim();
+    const priceLabel = rawEstimatedPrice ? `~${compactPrice(rawEstimatedPrice)}/m²` : (project.price || 'Đang cập nhật');
+    const imageUrl = (project.details && (project.details.mainImageUrl || project.details.imageUrl || project.details.image_url)) || project.image_url || '';
+    const detailUrl = `details.html?id=${encodeURIComponent(id)}`;
     let statusClass = 'status-cho-xay-dung';
-    if (status.includes('xây dựng')) statusClass = 'status-dang-xay-dung';
-    if (status.includes('mở bán') || status.includes('nhận đơn')) statusClass = 'status-dang-nhan-don';
-    if (status.includes('bàn giao') || status.includes('hoàn thành')) statusClass = 'status-cho-ban-giao';
+    if (projectStatus === 'Đang xây dựng') statusClass = 'status-dang-xay-dung';
+    if (projectStatus === 'Sắp nhận hồ sơ') statusClass = 'status-sap-nhan-ho-so';
+    if (projectStatus.includes('nhận đơn')) statusClass = 'status-dang-nhan-don';
+    if (projectStatus.includes('bàn giao') || projectStatus.includes('hoàn thành')) statusClass = 'status-cho-ban-giao';
 
     const card = document.createElement('div');
-    card.className = 'bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/60 shadow-sm flex flex-col justify-between relative group';
+    card.className = 'compare-project-card project-card-item bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/60 shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative';
+    card.dataset.projectId = String(id);
     card.innerHTML = `
         <div>
-            <button onclick="this.closest('.bg-surface-container-lowest').remove()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 shadow text-slate-400 hover:text-red-600 flex items-center justify-center transition-colors">
-                <span class="material-symbols-outlined text-base">close</span>
+            <button type="button" aria-label="Xóa dự án khỏi so sánh" onclick="removeProjectFromCompare(this)" class="absolute top-2 right-2 z-20 w-8 h-8 rounded-full bg-white text-slate-700 border border-slate-200 shadow-md hover:bg-red-50 hover:text-red-600 hover:border-red-200 flex items-center justify-center transition-colors">
+                <span class="material-symbols-outlined text-lg">close</span>
             </button>
-            <div class="relative aspect-[2/3] w-full rounded-lg overflow-hidden mb-3 bg-surface-container">
-                <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" alt="${title}" class="w-full h-full object-cover">
-                <span class="absolute top-3 left-3 status-pill ${statusClass}">${status}</span>
-            </div>
-            <h3 class="font-bold text-lg text-on-surface mb-1">${title}</h3>
-            <p class="text-xs text-on-surface-variant flex items-center gap-1 mb-3">
-                <span class="material-symbols-outlined text-sm">location_on</span> ${location}
+            <a href="${detailUrl}" class="relative aspect-square w-full rounded-lg overflow-hidden mb-3 bg-surface-container block">
+                ${imageUrl ? `<img src="${imageUrl}" alt="${projectTitle}" class="w-full h-full object-cover">` : '<div class="w-full h-full bg-slate-100 flex items-center justify-center text-slate-400"><span class="material-symbols-outlined text-4xl">image</span></div>'}
+                <span class="absolute top-3 right-3 status-pill project-card-status-pill ${statusClass}">${projectStatus}</span>
+            </a>
+            <a href="${detailUrl}" class="block font-bold text-lg text-on-surface mb-1 hover:text-primary transition-colors"><h3>${projectTitle}</h3></a>
+            <p class="text-sm text-on-surface-variant flex items-center gap-1 mb-2">
+                <span class="material-symbols-outlined text-base">location_on</span> ${projectLocation}
             </p>
-            <div class="space-y-1 mb-3">
-                <div class="flex justify-between text-xs text-on-surface-variant font-medium">
-                    <span>Tiến độ xây dựng</span>
-                    <span class="font-semibold text-primary">${progress}%</span>
-                </div>
-                <div class="w-full bg-surface-container rounded-full h-2 overflow-hidden">
-                    <div class="bg-primary h-full rounded-full transition-all" style="width: ${progress}%"></div>
-                </div>
+            <div class="project-card-project-info project-card-info-divider space-y-1 mb-3 pt-2 border-t text-sm">
+                <p class="text-on-surface-variant whitespace-nowrap overflow-hidden text-ellipsis">Chủ đầu tư: <strong class="text-on-surface">${investor}</strong></p>
+                <p class="text-on-surface-variant whitespace-nowrap overflow-hidden text-ellipsis">Giá dự kiến: <strong class="text-on-surface">${priceLabel}</strong></p>
+                <p class="text-on-surface-variant whitespace-nowrap overflow-hidden text-ellipsis">Quy mô: <strong class="text-on-surface">${projectScale}</strong></p>
+                <p class="text-on-surface-variant whitespace-nowrap overflow-hidden text-ellipsis">Diện tích: <strong class="text-on-surface">${projectArea}</strong></p>
+                <p class="text-on-surface-variant whitespace-nowrap overflow-hidden text-ellipsis">Bàn giao: <strong class="text-on-surface">${projectHandover}</strong></p>
             </div>
         </div>
-        <div class="pt-3 border-t border-outline-variant/40">
-            <a href="project-detail.html?id=${id}" class="w-full py-2 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg text-xs font-semibold flex items-center justify-center transition-colors">Xem chi tiết</a>
-        </div>
+        <a href="${detailUrl}" class="mt-1 w-full text-center px-4 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg text-sm font-semibold transition-colors">Xem chi tiết</a>
     `;
 
     grid.insertBefore(card, grid.lastElementChild);
+    saveComparedProjectIds([...getComparedProjectIds(), String(id)]);
     closeAddCompareModal();
 };
 
@@ -2154,4 +2666,4 @@ function setupScrollDownBtn() {
             behavior: 'smooth'
         });
     });
-}
+}

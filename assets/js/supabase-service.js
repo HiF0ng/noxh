@@ -19,6 +19,37 @@
 
     const SupabaseService = {
         // --- Projects ---
+        async getProject(id) {
+            try {
+                const res = await fetch(`${BASE_URL}/projects?id=eq.${id}&select=*`, { headers: getHeaders() });
+                if (!res.ok) throw new Error('Failed to fetch project');
+                const data = await res.json();
+                if (data && data.length > 0) {
+                    const db = data[0];
+                    return {
+                        id: db.id,
+                        name: db.title,
+                        location: db.location,
+                        owner: db.investor,
+                        status: db.status,
+                        progress: db.progress,
+                        desc: db.details_json?.desc || '',
+                        imageUrl: db.details_json?.mainImageUrl || db.details_json?.imageUrl || db.details_json?.image_url || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80',
+                        price: db.details_json?.price || 'Từ 15tr/m²',
+                        investor: db.investor,
+                        scale: db.details_json?.scale || 'Đang cập nhật',
+                        area: db.details_json?.area || 'Đang cập nhật',
+                        handover: db.details_json?.handover || 'Đang cập nhật',
+                        details: db.details_json || {}
+                    };
+                }
+                return null;
+            } catch (err) {
+                console.error(err);
+                return null;
+            }
+        },
+
         async getProjects() {
             try {
                 const res = await fetch(`${BASE_URL}/projects?select=*`, { headers: getHeaders() });
@@ -31,7 +62,10 @@
                     owner: db.investor,
                     status: db.status,
                     progress: db.progress,
-                    desc: db.details_json?.desc || ''
+                    desc: db.details_json?.desc || '',
+                    imageUrl: db.details_json?.mainImageUrl || '',
+                    details: db.details_json || {},
+                    created_at: db.created_at
                 }));
             } catch (err) {
                 console.error(err);
@@ -59,7 +93,7 @@
                     location: projectData.location || 'Hà Nội',
                     investor: projectData.owner || '',
                     status: projectData.status || 'Chờ xây dựng',
-                    details_json: { desc: projectData.desc || '' }
+                    details_json: projectData.details || { desc: projectData.desc || '' }
                 };
                 const res = await fetch(`${BASE_URL}/projects`, {
                     method: 'POST',
@@ -82,7 +116,7 @@
                     location: projectData.location || 'Hà Nội',
                     investor: projectData.owner || '',
                     status: projectData.status || 'Chờ xây dựng',
-                    details_json: { desc: projectData.desc || '' }
+                    details_json: projectData.details || { desc: projectData.desc || '' }
                 };
                 const res = await fetch(`${BASE_URL}/projects?id=eq.${id}`, {
                     method: 'PATCH',
@@ -112,6 +146,71 @@
             }
         },
 
+        async isProjectSaved(userId, projectId) {
+            try {
+                const res = await fetch(`${BASE_URL}/user_saved_projects?user_id=eq.${encodeURIComponent(userId)}&project_id=eq.${encodeURIComponent(projectId)}&select=project_id`, { headers: getHeaders() });
+                if (!res.ok) throw new Error('Failed to check saved project');
+                return (await res.json()).length > 0;
+            } catch (err) {
+                console.error('Check saved project error:', err);
+                return false;
+            }
+        },
+
+        async setProjectSaved(userId, projectId, saved) {
+            try {
+                const url = `${BASE_URL}/user_saved_projects?user_id=eq.${encodeURIComponent(userId)}&project_id=eq.${encodeURIComponent(projectId)}`;
+                const res = saved
+                    ? await fetch(`${BASE_URL}/user_saved_projects`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ user_id: userId, project_id: projectId }) })
+                    : await fetch(url, { method: 'DELETE', headers: getHeaders() });
+                if (!res.ok) throw new Error('Failed to update saved project');
+                return true;
+            } catch (err) {
+                console.error('Update saved project error:', err);
+                return false;
+            }
+        },
+
+        async getSavedProjects(userId) {
+            try {
+                const res = await fetch(`${BASE_URL}/user_saved_projects?user_id=eq.${encodeURIComponent(userId)}&select=projects(*)&order=created_at.desc`, { headers: getHeaders() });
+                if (!res.ok) throw new Error('Failed to fetch saved projects');
+                return (await res.json()).map(row => {
+                    const db = row.projects;
+                    if (!db) return null;
+                    return { id: db.id, name: db.title, location: db.location, owner: db.investor, status: db.status, progress: db.progress, desc: db.details_json?.desc || '', imageUrl: db.details_json?.mainImageUrl || '', details: db.details_json || {}, created_at: db.created_at };
+                }).filter(Boolean);
+            } catch (err) {
+                console.error('Fetch saved projects error:', err);
+                return null;
+            }
+        },
+
+        async isProjectFollowed(userId, projectId) {
+            try {
+                const res = await fetch(`${BASE_URL}/user_followed_projects?user_id=eq.${encodeURIComponent(userId)}&project_id=eq.${encodeURIComponent(projectId)}&select=project_id`, { headers: getHeaders() });
+                if (!res.ok) throw new Error('Failed to check followed project');
+                return (await res.json()).length > 0;
+            } catch (err) {
+                console.error('Check followed project error:', err);
+                return false;
+            }
+        },
+
+        async setProjectFollowed(userId, projectId, followed) {
+            try {
+                const url = `${BASE_URL}/user_followed_projects?user_id=eq.${encodeURIComponent(userId)}&project_id=eq.${encodeURIComponent(projectId)}`;
+                const res = followed
+                    ? await fetch(`${BASE_URL}/user_followed_projects`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ user_id: userId, project_id: projectId }) })
+                    : await fetch(url, { method: 'DELETE', headers: getHeaders() });
+                if (!res.ok) throw new Error('Failed to update followed project');
+                return true;
+            } catch (err) {
+                console.error('Update followed project error:', err);
+                return false;
+            }
+        },
+
         // --- Users ---
         async getUsers() {
             try {
@@ -136,16 +235,78 @@
                         id: db.id,
                         name: name,
                         email: db.email,
-                        phone: '', // Not in DB schema
+                        phone: db.phone || '',
                         date: new Date(db.created_at).toLocaleDateString('vi-VN'),
                         role: db.role || 'user',
                         avatarText: initials,
-                        avatarBg: bgColors[index % bgColors.length]
+                        avatarBg: bgColors[index % bgColors.length],
+                        last_active_at: db.last_active_at
                     };
                 });
             } catch (err) {
                 console.error(err);
                 return [];
+            }
+        },
+
+        async getUser(emailOrId) {
+            try {
+                const isId = /^[0-9a-fA-F-]+$/.test(emailOrId) || !isNaN(emailOrId);
+                const queryParam = isId ? `id=eq.${emailOrId}` : `email=eq.${encodeURIComponent(emailOrId)}`;
+                const res = await fetch(`${BASE_URL}/users?${queryParam}&select=*`, { headers: getHeaders() });
+                if (!res.ok) throw new Error('Failed to fetch user');
+                const data = await res.json();
+                return data[0] || null;
+            } catch (err) {
+                console.error(err);
+                return null;
+            }
+        },
+
+        async uploadProjectImage(projectId, file, group = 'images') {
+            try {
+                const safeName = (file.name || 'image').replace(/[^a-zA-Z0-9._-]/g, '_');
+                const path = `${projectId}/${group}/${Date.now()}-${safeName}`;
+                const res = await fetch(`${config.url}/storage/v1/object/project-images/${path}`, {
+                    method: 'POST',
+                    headers: { apikey: config.anonKey, Authorization: `Bearer ${config.anonKey}`, 'Content-Type': file.type || 'application/octet-stream', 'x-upsert': 'true' },
+                    body: file
+                });
+                if (!res.ok) throw new Error(await res.text());
+                return `${config.url}/storage/v1/object/public/project-images/${path}`;
+            } catch (err) {
+                console.error('Project image upload error:', err);
+                return null;
+            }
+        },
+
+        async resetPasswordByEmail(email, newPassword) {
+            try {
+                const res = await fetch(`${BASE_URL}/users?email=eq.${encodeURIComponent(email)}`, {
+                    method: 'PATCH',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ password_hash: newPassword })
+                });
+                if (!res.ok) throw new Error('Failed to reset password');
+                const data = await res.json();
+                return Array.isArray(data) ? data[0] || null : data;
+            } catch (err) {
+                console.error('Reset password error:', err);
+                return null;
+            }
+        },
+
+        async updateUserActivity(id) {
+            try {
+                const res = await fetch(`${BASE_URL}/users?id=eq.${id}`, {
+                    method: 'PATCH',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ last_active_at: new Date().toISOString() })
+                });
+                return res.ok;
+            } catch (err) {
+                console.error('Update user activity error:', err);
+                return false;
             }
         },
 
@@ -190,12 +351,21 @@
                     full_name: userData.name,
                     email: userData.email
                 };
+                if (userData.phone !== undefined) {
+                    payload.phone = userData.phone;
+                }
+                if (userData.password) {
+                    payload.password_hash = userData.password;
+                }
+
                 const res = await fetch(`${BASE_URL}/users?id=eq.${id}`, {
                     method: 'PATCH',
                     headers: getHeaders(),
                     body: JSON.stringify(payload)
                 });
+
                 if (!res.ok) throw new Error('Failed to update user');
+
                 const data = await res.json();
                 return data[0] || data;
             } catch (err) {
@@ -383,7 +553,7 @@
         // --- FAQs ---
         async getFaqs() {
             try {
-                const res = await fetch(`${BASE_URL}/faqs?select=*`, { headers: getHeaders() });
+                const res = await fetch(`${BASE_URL}/faqs?select=*&order=category.asc,sort_order.asc,created_at.asc`, { headers: getHeaders() });
                 if (!res.ok) throw new Error('Failed to fetch faqs');
                 const data = await res.json();
                 return data.map(db => ({
@@ -457,31 +627,61 @@
         // --- Auth ---
         async loginUser(emailOrPhone, password) {
             try {
-                const res = await fetch(`${BASE_URL}/users?email=eq.${encodeURIComponent(emailOrPhone)}&select=*`, { headers: getHeaders() });
+                // Try querying both email and phone first
+                let res = await fetch(`${BASE_URL}/users?or=(email.eq.${encodeURIComponent(emailOrPhone)},phone.eq.${encodeURIComponent(emailOrPhone)})&select=*`, { headers: getHeaders() });
+                
+                // If it fails because of missing phone column, query by email only
+                if (!res.ok) {
+                    const errObj = await res.clone().json().catch(() => ({}));
+                    if (errObj.code === 'PGRST204' || (errObj.message && errObj.message.includes('phone'))) {
+                        res = await fetch(`${BASE_URL}/users?email=eq.${encodeURIComponent(emailOrPhone)}&select=*`, { headers: getHeaders() });
+                    }
+                }
+
                 if (res && res.ok) {
                     const users = await res.json();
                     if (users && users.length > 0) {
-                        return users[0];
+                        const user = users[0];
+                        if (user.password_hash === password) {
+                            return { success: true, user: user };
+                        } else {
+                            return { success: false, error: 'WRONG_PASSWORD' };
+                        }
                     }
+                    return { success: false, error: 'NOT_FOUND' };
                 }
-                return null;
+                return { success: false, error: 'SERVER_ERROR' };
             } catch (err) {
                 console.error('Login error:', err);
-                return null;
+                return { success: false, error: 'NETWORK_ERROR' };
             }
         },
 
         async registerUser(newUser) {
             try {
+                const payload = {
+                    full_name: newUser.full_name,
+                    email: newUser.email,
+                    password_hash: newUser.password_hash,
+                    role: newUser.role || 'user'
+                };
+                if (newUser.phone) {
+                    payload.phone = newUser.phone;
+                }
+                
                 const res = await fetch(`${BASE_URL}/users`, {
                     method: 'POST',
                     headers: getHeaders(),
-                    body: JSON.stringify(newUser)
+                    body: JSON.stringify(payload)
                 });
-                return res.ok;
+
+                if (!res.ok) return null;
+                
+                const data = await res.json();
+                return data[0] || null;
             } catch (err) {
                 console.error('Register error:', err);
-                return false;
+                return null;
             }
         }
     };
