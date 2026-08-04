@@ -54,9 +54,11 @@ ON CONFLICT (id) DO NOTHING;
 DROP POLICY IF EXISTS "Public project image read" ON storage.objects;
 DROP POLICY IF EXISTS "Anon project image upload" ON storage.objects;
 DROP POLICY IF EXISTS "Anon project image update" ON storage.objects;
+DROP POLICY IF EXISTS "Anon project image delete" ON storage.objects;
 CREATE POLICY "Public project image read" ON storage.objects FOR SELECT USING (bucket_id = 'project-images');
 CREATE POLICY "Anon project image upload" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'project-images');
 CREATE POLICY "Anon project image update" ON storage.objects FOR UPDATE USING (bucket_id = 'project-images');
+CREATE POLICY "Anon project image delete" ON storage.objects FOR DELETE USING (bucket_id = 'project-images');
 
 CREATE TABLE IF NOT EXISTS public.documents (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

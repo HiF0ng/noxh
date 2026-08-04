@@ -11,7 +11,7 @@
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <!-- Tailwind CSS -->
-<link rel="stylesheet" href="assets/css/style.css?v=13">
+<link rel="stylesheet" href="assets/css/style.css?v=17">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script src="assets/js/tailwind-config.js"></script>
 </head>
@@ -39,7 +39,7 @@
         </a>
     </header>
 
-    <div class="pb-xl px-8 md:px-12 max-w-5xl mx-auto flex flex-col gap-xl">
+    <div class="pb-xl px-8 md:px-12 max-w-5xl mx-auto flex flex-col gap-6 md:gap-8 lg:gap-xl">
 <!-- Minimap Section (Bento Grid Style) -->
 <section id="featured-projects" class="scroll-mt-28 lg:scroll-mt-32 bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] p-md md:p-lg border border-outline-variant/30 flex flex-col gap-xs">
 <h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">Dự án nổi bật</h2>
@@ -112,7 +112,7 @@
 </section>
 
 <!-- Features/Criteria Section (Glassmorphism inspired cards) -->
-<section class="grid grid-cols-2 gap-2 sm:gap-sm md:gap-md">
+<section id="homepage-features" class="grid grid-cols-2 gap-2 sm:gap-sm md:gap-md">
 <div class="bg-surface-container-lowest px-3 py-4 md:py-sm md:px-md rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-outline-variant/30 flex flex-col items-center text-center hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-shadow duration-300">
 <div class="h-10 w-10 md:h-12 md:w-12 bg-surface-container rounded-full flex items-center justify-center mb-2 md:mb-sm text-primary">
 <span class="material-symbols-outlined text-[20px] md:text-[24px]">volunteer_activism</span>
@@ -144,8 +144,8 @@
 </section>
 
 <!-- Testimonial Slideshow -->
-<section class="bg-surface-container-low rounded-xl py-lg md:py-xl overflow-hidden border border-outline-variant/30 relative">
-<h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-center text-on-surface mb-md">Cộng đồng nói gì Về chúng tôi</h2>
+<section id="homepage-testimonials" class="bg-surface-container-low rounded-xl py-lg md:py-xl overflow-hidden border border-outline-variant/30 relative">
+<h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-center text-on-surface mb-md">Cộng đồng nói gì <span class="block lg:inline">Về chúng tôi</span></h2>
 <div class="w-full relative">
 <div class="slider-track" id="testimonial-track">
 
@@ -649,7 +649,7 @@
 <script src="assets/js/location-data.js"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/supabase-service.js"></script>
-<script src="assets/js/main.js?v=29"></script>
+<script src="assets/js/main.js?v=40"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const scrollBtn = document.getElementById("scroll-down-btn");

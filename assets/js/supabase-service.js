@@ -10,14 +10,111 @@
 
     const BASE_URL = `${config.url}/rest/v1`;
 
+    const AUTH_SESSION_KEY = 'noxh_auth_session';
+    const getAuthSession = () => {
+        try { return JSON.parse(localStorage.getItem(AUTH_SESSION_KEY) || sessionStorage.getItem(AUTH_SESSION_KEY) || 'null'); }
+        catch (_) { return null; }
+    };
+    const getAccessToken = () => getAuthSession()?.access_token || config.anonKey;
     const getHeaders = () => ({
         'apikey': config.anonKey,
-        'Authorization': `Bearer ${config.anonKey}`,
+        'Authorization': `Bearer ${getAccessToken()}`,
         'Content-Type': 'application/json',
         'Prefer': 'return=representation'
     });
 
     const SupabaseService = {
+        // --- Supabase Auth ---
+        getAuthSession,
+        async signInWithPassword(email, password) {
+            try {
+                const res = await fetch(`${config.url}/auth/v1/token?grant_type=password`, {
+                    method: 'POST',
+                    headers: { apikey: config.anonKey, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (!res.ok) return { success: false, error: data?.error_description || data?.msg || 'Đăng nhập không thành công.' };
+                localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(data));
+                localStorage.setItem('isLoggedIn', 'true');
+                const profile = await this.getCurrentProfile();
+                const user = profile || { id: data.user.id, email: data.user.email, full_name: data.user.user_metadata?.full_name || '' };
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                return { success: true, user, session: data };
+            } catch (err) {
+                console.error('Supabase Auth login error:', err);
+                return { success: false, error: 'Không thể kết nối dịch vụ đăng nhập.' };
+            }
+        },
+        async signUpWithPassword({ email, password, fullName, phone }) {
+            try {
+                const res = await fetch(`${config.url}/auth/v1/signup`, {
+                    method: 'POST',
+                    headers: { apikey: config.anonKey, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, data: { full_name: fullName, phone: phone || '' } })
+                });
+                const data = await res.json();
+                if (!res.ok) return { success: false, error: data?.msg || data?.error_description || 'Không thể tạo tài khoản.' };
+                if (data.access_token) {
+                    localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(data));
+                    localStorage.setItem('isLoggedIn', 'true');
+                }
+                return { success: true, needsEmailConfirmation: !data.access_token, user: data.user };
+            } catch (err) {
+                console.error('Supabase Auth signup error:', err);
+                return { success: false, error: 'Không thể kết nối dịch vụ đăng ký.' };
+            }
+        },
+        async signOut() {
+            const session = getAuthSession();
+            try {
+                if (session?.access_token) await fetch(`${config.url}/auth/v1/logout`, { method: 'POST', headers: getHeaders() });
+            } finally {
+                [localStorage, sessionStorage].forEach(store => { store.removeItem(AUTH_SESSION_KEY); store.removeItem('isLoggedIn'); store.removeItem('currentUser'); });
+            }
+        },
+        async refreshAuthSession() {
+            const session = getAuthSession();
+            if (!session?.refresh_token) return null;
+            try {
+                const res = await fetch(`${config.url}/auth/v1/token?grant_type=refresh_token`, {
+                    method: 'POST',
+                    headers: { apikey: config.anonKey, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refresh_token: session.refresh_token })
+                });
+                if (!res.ok) return null;
+                const refreshed = await res.json();
+                localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(refreshed));
+                return refreshed;
+            } catch (_) { return null; }
+        },
+        async requestPasswordReset(email) {
+            try {
+                const res = await fetch(`${config.url}/auth/v1/recover`, {
+                    method: 'POST',
+                    headers: { apikey: config.anonKey, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, redirect_to: `${window.location.origin}${window.location.pathname.replace(/[^/]+$/, '')}recover-password.html` })
+                });
+                return res.ok;
+            } catch (_) { return false; }
+        },
+        async updateAuthPassword(password) {
+            try {
+                const res = await fetch(`${config.url}/auth/v1/user`, {
+                    method: 'PUT', headers: getHeaders(), body: JSON.stringify({ password })
+                });
+                return res.ok;
+            } catch (_) { return false; }
+        },
+        async getCurrentProfile() {
+            const authId = getAuthSession()?.user?.id;
+            if (!authId) return null;
+            try {
+                const res = await fetch(`${BASE_URL}/users?auth_user_id=eq.${encodeURIComponent(authId)}&select=*`, { headers: getHeaders() });
+                if (!res.ok) return null;
+                return (await res.json())[0] || null;
+            } catch (_) { return null; }
+        },
         // --- Projects ---
         async getProject(id) {
             try {
@@ -214,7 +311,7 @@
         // --- Users ---
         async getUsers() {
             try {
-                const res = await fetch(`${BASE_URL}/users?select=*`, { headers: getHeaders() });
+                const res = await fetch(`${BASE_URL}/users?auth_user_id=not.is.null&select=*`, { headers: getHeaders() });
                 if (!res.ok) throw new Error('Failed to fetch users');
                 const data = await res.json();
                 
@@ -269,7 +366,7 @@
                 const path = `${projectId}/${group}/${Date.now()}-${safeName}`;
                 const res = await fetch(`${config.url}/storage/v1/object/project-images/${path}`, {
                     method: 'POST',
-                    headers: { apikey: config.anonKey, Authorization: `Bearer ${config.anonKey}`, 'Content-Type': file.type || 'application/octet-stream', 'x-upsert': 'true' },
+                    headers: { ...getHeaders(), 'Content-Type': file.type || 'application/octet-stream', 'x-upsert': 'true' },
                     body: file
                 });
                 if (!res.ok) throw new Error(await res.text());
@@ -348,14 +445,10 @@
         async updateUser(id, userData) {
             try {
                 const payload = {
-                    full_name: userData.name,
-                    email: userData.email
+                    full_name: userData.name
                 };
                 if (userData.phone !== undefined) {
                     payload.phone = userData.phone;
-                }
-                if (userData.password) {
-                    payload.password_hash = userData.password;
                 }
 
                 const res = await fetch(`${BASE_URL}/users?id=eq.${id}`, {
@@ -482,7 +575,12 @@
                     name: db.title,
                     type: db.category,
                     file: db.file_url,
+                    fileUrl: db.file_url,
+                    docType: db.doc_type || 'PDF',
                     desc: db.content,
+                    isDraft: !!db.is_draft,
+                    draftKey: db.draft_key || '',
+                    createdAt: db.created_at,
                     date: new Date(db.created_at).toLocaleDateString('vi-VN'),
                     notes: [] // Notes not in schema natively, could use separate table or JSON
                 }));
@@ -497,8 +595,11 @@
                 const payload = {
                     title: docData.name,
                     category: docData.type,
+                    doc_type: docData.docType || 'PDF',
                     file_url: docData.file || '',
-                    content: docData.desc || ''
+                    content: docData.desc || '',
+                    is_draft: !!docData.isDraft,
+                    draft_key: docData.draftKey || null
                 };
                 const res = await fetch(`${BASE_URL}/documents`, {
                     method: 'POST',
@@ -514,13 +615,57 @@
             }
         },
 
+        async updateOwnProfile(userData) {
+            const profile = await this.getCurrentProfile();
+            if (!profile) return null;
+            try {
+                const authPayload = { data: { full_name: userData.name, phone: userData.phone || '' } };
+                if (userData.email && userData.email !== profile.email) authPayload.email = userData.email;
+                const authRes = await fetch(`${config.url}/auth/v1/user`, {
+                    method: 'PUT', headers: getHeaders(), body: JSON.stringify(authPayload)
+                });
+                if (!authRes.ok) throw new Error('Failed to update Supabase Auth user');
+                const payload = { full_name: userData.name, phone: userData.phone || '' };
+                const res = await fetch(`${BASE_URL}/users?id=eq.${profile.id}`, {
+                    method: 'PATCH', headers: getHeaders(), body: JSON.stringify(payload)
+                });
+                if (!res.ok) throw new Error('Failed to update profile');
+                const updated = (await res.json())[0] || null;
+                if (updated) localStorage.setItem('currentUser', JSON.stringify(updated));
+                return updated;
+            } catch (err) {
+                console.error('Update own profile error:', err);
+                return null;
+            }
+        },
+
+        async uploadDocumentFile(file, group = 'documents') {
+            try {
+                const safeName = (file.name || 'document.pdf').replace(/[^a-zA-Z0-9._-]/g, '_');
+                const path = `documents/${group}/${Date.now()}-${safeName}`;
+                const res = await fetch(`${config.url}/storage/v1/object/project-images/${path}`, {
+                    method: 'POST',
+                    headers: { ...getHeaders(), 'Content-Type': file.type || 'application/octet-stream', 'x-upsert': 'true' },
+                    body: file
+                });
+                if (!res.ok) throw new Error(await res.text());
+                return `${config.url}/storage/v1/object/public/project-images/${path}`;
+            } catch (err) {
+                console.error('Document upload error:', err);
+                return null;
+            }
+        },
+
         async updateDocument(id, docData) {
             try {
                 const payload = {
                     title: docData.name,
                     category: docData.type,
+                    doc_type: docData.docType || 'PDF',
                     file_url: docData.file || '',
-                    content: docData.desc || ''
+                    content: docData.desc || '',
+                    is_draft: !!docData.isDraft,
+                    draft_key: docData.draftKey || null
                 };
                 const res = await fetch(`${BASE_URL}/documents?id=eq.${id}`, {
                     method: 'PATCH',
@@ -536,8 +681,23 @@
             }
         },
 
-        async deleteDocument(id) {
+        async deleteDocument(id, options = {}) {
             try {
+                const lookup = await fetch(`${BASE_URL}/documents?id=eq.${id}&select=file_url`, { headers: getHeaders() });
+                if (!lookup.ok) throw new Error('Failed to read document before deletion');
+                const records = await lookup.json();
+                const fileUrl = records[0] && records[0].file_url;
+                if (fileUrl && !options.keepFile) {
+                    const marker = '/storage/v1/object/public/project-images/';
+                    const pathIndex = fileUrl.indexOf(marker);
+                    if (pathIndex !== -1) {
+                        const path = fileUrl.slice(pathIndex + marker.length);
+                        const storageRes = await fetch(`${config.url}/storage/v1/object/project-images/${path}`, {
+                            method: 'DELETE', headers: getHeaders()
+                        });
+                        if (!storageRes.ok) throw new Error('Failed to delete document file from storage');
+                    }
+                }
                 const res = await fetch(`${BASE_URL}/documents?id=eq.${id}`, {
                     method: 'DELETE',
                     headers: getHeaders()
@@ -625,64 +785,10 @@
         },
 
         // --- Auth ---
-        async loginUser(emailOrPhone, password) {
-            try {
-                // Try querying both email and phone first
-                let res = await fetch(`${BASE_URL}/users?or=(email.eq.${encodeURIComponent(emailOrPhone)},phone.eq.${encodeURIComponent(emailOrPhone)})&select=*`, { headers: getHeaders() });
-                
-                // If it fails because of missing phone column, query by email only
-                if (!res.ok) {
-                    const errObj = await res.clone().json().catch(() => ({}));
-                    if (errObj.code === 'PGRST204' || (errObj.message && errObj.message.includes('phone'))) {
-                        res = await fetch(`${BASE_URL}/users?email=eq.${encodeURIComponent(emailOrPhone)}&select=*`, { headers: getHeaders() });
-                    }
-                }
-
-                if (res && res.ok) {
-                    const users = await res.json();
-                    if (users && users.length > 0) {
-                        const user = users[0];
-                        if (user.password_hash === password) {
-                            return { success: true, user: user };
-                        } else {
-                            return { success: false, error: 'WRONG_PASSWORD' };
-                        }
-                    }
-                    return { success: false, error: 'NOT_FOUND' };
-                }
-                return { success: false, error: 'SERVER_ERROR' };
-            } catch (err) {
-                console.error('Login error:', err);
-                return { success: false, error: 'NETWORK_ERROR' };
-            }
-        },
+        async loginUser(email, password) { return this.signInWithPassword(email, password); },
 
         async registerUser(newUser) {
-            try {
-                const payload = {
-                    full_name: newUser.full_name,
-                    email: newUser.email,
-                    password_hash: newUser.password_hash,
-                    role: newUser.role || 'user'
-                };
-                if (newUser.phone) {
-                    payload.phone = newUser.phone;
-                }
-                
-                const res = await fetch(`${BASE_URL}/users`, {
-                    method: 'POST',
-                    headers: getHeaders(),
-                    body: JSON.stringify(payload)
-                });
-
-                if (!res.ok) return null;
-                
-                const data = await res.json();
-                return data[0] || null;
-            } catch (err) {
-                console.error('Register error:', err);
-                return null;
-            }
+            return this.signUpWithPassword({ email: newUser.email, password: newUser.password_hash, fullName: newUser.full_name, phone: newUser.phone });
         }
     };
 

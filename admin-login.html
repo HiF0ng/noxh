@@ -31,6 +31,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <script src="assets/js/supabase-config.js"></script>
+    <script src="assets/js/supabase-service.js?v=6"></script>
 </head>
 <body class="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-on-surface min-h-screen flex items-center justify-center p-4 font-sans antialiased">
 
@@ -41,8 +42,7 @@
             <div class="inline-flex items-center justify-center w-14 h-14 bg-primary/10 rounded-2xl text-primary mb-2 shadow-inner">
                 <span class="material-symbols-outlined text-3xl">admin_panel_settings</span>
             </div>
-            <img src="img/logo.svg" alt="noxh.help" class="h-8 md:h-9 w-auto mb-2">
-            <p class="text-sm text-slate-500">Đăng nhập hệ thống quản trị NOXH.HELP</p>
+            <img src="img/logo.svg" alt="noxh.help" class="h-8 md:h-9 w-auto mx-auto">
         </div>
 
         <!-- Notification Alert Box -->
@@ -87,15 +87,6 @@
             </button>
         </form>
 
-        <!-- Navigation Links -->
-        <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <a href="homepage.html" class="hover:text-primary transition-colors flex items-center gap-1">
-                <span class="material-symbols-outlined text-sm">arrow_back</span> Trở về Trang chủ
-            </a>
-            <a href="login.html" class="hover:text-primary transition-colors">
-                Đăng nhập User
-            </a>
-        </div>
     </div>
 
     <script>
@@ -143,36 +134,18 @@
             btnText.textContent = 'Đang xác thực...';
 
             try {
-                // First try live Cloud API or Local API Endpoint
-                var res = await fetch('http://localhost:3000/api/v1/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email, password: password })
-                }).catch(function() { return null; });
-
-                if (res && res.ok) {
-                    var data = await res.json();
-                    localStorage.setItem('adminToken', data.token);
-                    localStorage.setItem('adminUser', JSON.stringify(data.user));
-                    showAlert('Đăng nhập thành công! Đang chuyển hướng...', false);
-                    setTimeout(function() { window.location.href = 'admin.html#dashboard'; }, 800);
-                    return;
-                }
-
-                // Secured password validation for admin@noxh.help / Ch@rlie25kilo
-                if (email.toLowerCase() === 'admin@noxh.help' && password === 'Ch@rlie25kilo') {
-                    var mockUser = { id: 'user-admin-1', email: email, fullName: 'Nguyễn Văn A (Admin)', role: 'admin' };
-                    var expiresAt = Date.now() + (30 * 24 * 60 * 60 * 1000); // 30 Days Expiration
-                    localStorage.setItem('adminToken', 'admin_session_token_' + Date.now());
-                    localStorage.setItem('adminUser', JSON.stringify(mockUser));
-                    localStorage.setItem('adminSessionExpiresAt', expiresAt.toString());
-                    showAlert('Đăng nhập thành công! Đang chuyển hướng...', false);
-                    setTimeout(function() { window.location.href = 'admin.html#dashboard'; }, 800);
-                } else {
-                    showAlert('Email hoặc mật khẩu Admin không chính xác!');
+                var result = await window.SupabaseService.signInWithPassword(email, password);
+                if (!result.success || !result.user || result.user.role !== 'admin') {
+                    if (result.success) await window.SupabaseService.signOut();
+                    showAlert(result.success ? 'Tài khoản này không có quyền quản trị.' : (result.error || 'Email hoặc mật khẩu không chính xác!'));
                     btnSubmit.disabled = false;
                     btnText.textContent = 'Đăng nhập Admin';
+                    return;
                 }
+                localStorage.setItem('adminUser', JSON.stringify(result.user));
+                localStorage.setItem('adminSessionExpiresAt', String(Date.now() + (30 * 24 * 60 * 60 * 1000)));
+                showAlert('Đăng nhập thành công! Đang chuyển hướng...', false);
+                setTimeout(function() { window.location.href = 'admin.html#dashboard'; }, 800);
             } catch (err) {
                 showAlert('Có lỗi kết nối. Vui lòng thử lại!');
                 btnSubmit.disabled = false;
