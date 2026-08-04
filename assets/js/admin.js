@@ -1,27 +1,24 @@
 ﻿const API_BASE_URL = 'http://localhost:3000/api/v1';
 
 function checkAdminSessionExpiration() {
-    var expiresAt = localStorage.getItem('adminSessionExpiresAt');
-    var token = localStorage.getItem('adminToken');
-    if (token && expiresAt) {
-        if (Date.now() > parseInt(expiresAt, 10)) {
-            localStorage.removeItem('adminToken');
-            localStorage.removeItem('adminUser');
-            localStorage.removeItem('adminSessionExpiresAt');
-                        alert('Vui lòng nhập đầy đủ câu hỏi và câu trả lời!');
-            window.location.href = 'admin-login.html';
-            return false;
-        }
+    var session = window.SupabaseService && window.SupabaseService.getAuthSession();
+    var expiresAt = Number(localStorage.getItem('adminSessionExpiresAt') || 0);
+    if (!session || !session.access_token || !expiresAt || Date.now() >= expiresAt) {
+        localStorage.removeItem('adminSessionExpiresAt');
+        localStorage.removeItem('adminUser');
+        window.location.href = 'admin-login.html';
+        return false;
     }
     return true;
 }
 
 window.handleAdminLogout = function() {
     if (confirm('Bạn có chắc chắn muốn đăng xuất khỏi hệ thống Admin Central?')) {
-        localStorage.removeItem('adminToken');
         localStorage.removeItem('adminUser');
         localStorage.removeItem('adminSessionExpiresAt');
-        window.location.href = 'admin-login.html';
+        Promise.resolve(window.SupabaseService && window.SupabaseService.signOut()).finally(function() {
+            window.location.href = 'admin-login.html';
+        });
     }
 };
 
@@ -110,12 +107,14 @@ window.handleAdminLogout = function() {
         }
         if (page === 'docs') {
             initDocsFilter();
+            renderAdminDocuments();
         }
         if (page === 'docs-packages') {
             initDocumentPackageUploads();
         }
         if (page === 'docs-new') {
             initDropzones();
+            initDocumentUploadForm();
         }
         if (page === 'faq') {
             initFaqModule();
@@ -515,12 +514,135 @@ window.handleAdminLogout = function() {
         setupDropzone('docx-dropzone', 'docx-input');
     }
 
+    function initDocumentUploadForm() {
+        var category = document.getElementById('doc-upload-category');
+        var docxSection = document.getElementById('docx-upload-section');
+        var docxInput = document.getElementById('docx-input');
+        var saveButton = document.getElementById('btn-save-document');
+        var draftButton = document.getElementById('btn-save-document-draft');
+        if (!category || !saveButton) return;
+        var draftStorageKey = 'noxh_document_draft_key';
+        var draftKey = localStorage.getItem(draftStorageKey) || '';
+        var activeDrafts = [];
+
+        var syncAttachments = function() {
+            var isLegalDocument = category.value === 'Văn bản luật';
+            if (docxSection) docxSection.classList.toggle('hidden', isLegalDocument);
+            if (isLegalDocument && docxInput) docxInput.value = '';
+        };
+        category.onchange = syncAttachments;
+        syncAttachments();
+
+        var removeDrafts = async function(keepFiles) {
+            for (var i = 0; i < activeDrafts.length; i++) {
+                await window.SupabaseService.deleteDocument(activeDrafts[i].id, { keepFile: !!keepFiles });
+            }
+            activeDrafts = [];
+            localStorage.removeItem(draftStorageKey);
+        };
+
+        var loadDraft = async function() {
+            if (!draftKey || !window.SupabaseService) return;
+            var documents = await window.SupabaseService.getDocuments();
+            activeDrafts = (documents || []).filter(function(doc) { return doc.isDraft && doc.draftKey === draftKey; });
+            if (!activeDrafts.length) { localStorage.removeItem(draftStorageKey); return; }
+            var draft = activeDrafts[0];
+            document.getElementById('doc-upload-name').value = draft.name || '';
+            document.getElementById('doc-upload-content').value = draft.desc || '';
+            category.value = draft.type || 'Đơn mua';
+            syncAttachments();
+            if (draftButton) draftButton.textContent = 'Đã lưu nháp';
+        };
+        loadDraft();
+
+        var saveDocument = async function(isDraft) {
+            var name = (document.getElementById('doc-upload-name').value || '').trim();
+            var content = (document.getElementById('doc-upload-content').value || '').trim();
+            var pdfInput = document.getElementById('pdf-input');
+            var pdfFile = pdfInput && pdfInput.files[0];
+            var wordFile = docxInput && docxInput.files[0];
+            var isLegalDocument = category.value === 'Văn bản luật';
+
+            if (!isDraft && !name) { alert('Vui lòng nhập tên tài liệu.'); return; }
+            var draftFiles = activeDrafts.filter(function(doc) { return !!doc.fileUrl; });
+            if (!isDraft && isLegalDocument && !pdfFile && !draftFiles.length) { alert('Văn bản luật cần đính kèm một tệp PDF.'); return; }
+            if (pdfFile && !/\.pdf$/i.test(pdfFile.name)) { alert('Tệp PDF phải có định dạng .pdf.'); return; }
+            if ((pdfFile && pdfFile.size > 50 * 1024 * 1024) || (wordFile && wordFile.size > 50 * 1024 * 1024)) { alert('Tệp đính kèm vượt quá giới hạn 50 MB.'); return; }
+
+            var button = isDraft ? draftButton : saveButton;
+            var original = button.innerHTML;
+            if (!draftKey) draftKey = 'doc-draft-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+            button.disabled = true;
+            button.textContent = isDraft ? 'Đang lưu nháp...' : 'Đang lưu...';
+            try {
+                var files = [pdfFile, isLegalDocument ? null : wordFile].filter(Boolean);
+                if (!isDraft && !files.length && !draftFiles.length) throw new Error('Vui lòng chọn ít nhất một tệp đính kèm.');
+                if (isDraft) {
+                    await removeDrafts(false);
+                    for (var i = 0; i < Math.max(files.length, 1); i++) {
+                        var uploadFile = files[i];
+                        var fileUrl = uploadFile ? await window.SupabaseService.uploadDocumentFile(uploadFile, isLegalDocument ? 'legal' : 'forms') : '';
+                        if (uploadFile && !fileUrl) throw new Error('Không thể tải tệp đính kèm lên.');
+                        var docType = uploadFile ? (/\.pdf$/i.test(uploadFile.name) ? 'PDF' : 'DOCX') : 'DRAFT';
+                        var createdDraft = await window.SupabaseService.addDocument({ name: name || 'Bản nháp chưa đặt tên', type: category.value, desc: content, file: fileUrl, docType: docType, isDraft: true, draftKey: draftKey });
+                        if (!createdDraft) throw new Error('Không thể lưu bản nháp.');
+                    }
+                    localStorage.setItem(draftStorageKey, draftKey);
+                    var refreshed = await window.SupabaseService.getDocuments();
+                    activeDrafts = (refreshed || []).filter(function(doc) { return doc.isDraft && doc.draftKey === draftKey; });
+                    alert('Đã lưu bản nháp.');
+                    return;
+                }
+                var finalFiles = files.length ? files : draftFiles.map(function(doc) { return { existingUrl: doc.fileUrl, docType: doc.docType }; });
+                for (var j = 0; j < finalFiles.length; j++) {
+                    var item = finalFiles[j];
+                    var finalUrl = item.existingUrl || await window.SupabaseService.uploadDocumentFile(item, isLegalDocument ? 'legal' : 'forms');
+                    if (!finalUrl) throw new Error('Không thể tải tệp đính kèm lên.');
+                    var finalType = item.docType || (/\.pdf$/i.test(item.name) ? 'PDF' : 'DOCX');
+                    var created = await window.SupabaseService.addDocument({ name: finalFiles.length > 1 ? name + ' (' + finalType + ')' : name, type: category.value, desc: content, file: finalUrl, docType: finalType });
+                    if (!created) throw new Error('Không thể lưu tài liệu.');
+                }
+                await removeDrafts(!files.length);
+                alert('Đã lưu tài liệu thành công.');
+                window.location.hash = '#docs';
+            } catch (err) {
+                console.error('Document save error:', err);
+                alert(isDraft ? 'Không thể lưu bản nháp. Vui lòng thử lại.' : 'Không thể lưu tài liệu. Vui lòng thử lại.');
+            } finally {
+                button.disabled = false;
+                button.innerHTML = original;
+            }
+        };
+        saveButton.onclick = function() { saveDocument(false); };
+        if (draftButton) draftButton.onclick = function() { saveDocument(true); };
+    }
+
     function setupDropzone(zoneId, inputId) {
         var dropzone = document.getElementById(zoneId);
         var input = document.getElementById(inputId);
         if (!dropzone || !input) return;
 
-        dropzone.addEventListener('click', function() { input.click(); });
+        var selectedFileLabel = document.getElementById(inputId.replace('-input', '-selected-file'));
+        var showSelectedFile = function() {
+            var file = input.files && input.files[0];
+            if (!selectedFileLabel) return;
+            if (!file) {
+                selectedFileLabel.textContent = '';
+                selectedFileLabel.classList.add('hidden');
+                return;
+            }
+            var sizeInMb = file.size / (1024 * 1024);
+            selectedFileLabel.textContent = 'Đã chọn: ' + file.name + ' (' + (sizeInMb < 1 ? Math.ceil(file.size / 1024) + ' KB' : sizeInMb.toFixed(1) + ' MB') + ')';
+            selectedFileLabel.classList.remove('hidden');
+        };
+
+        // The transparent input already receives direct clicks. Only forward a
+        // click from the visual part of the dropzone to avoid opening the file
+        // picker twice.
+        dropzone.addEventListener('click', function(event) {
+            if (event.target !== input) input.click();
+        });
+        input.addEventListener('change', showSelectedFile);
 
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(function(eventName) {
             dropzone.addEventListener(eventName, function(e) {
@@ -545,6 +667,7 @@ window.handleAdminLogout = function() {
             var dt = e.dataTransfer;
             if (dt && dt.files) {
                 input.files = dt.files;
+                showSelectedFile();
             }
         }, false);
     }
@@ -637,8 +760,8 @@ window.handleAdminLogout = function() {
 
                     html += '<td class="p-4 border-b border-outline-variant">';
                     html += '<div class="space-y-1.5">';
-                    html += '<div><label class="text-[11px] text-on-surface-variant font-medium block">Email:</label>';
-                    html += '<input type="email" class="edit-input-email w-full px-2 py-1 border border-outline-variant rounded text-sm bg-surface-container-lowest text-on-surface focus:border-primary focus:outline-none" value="' + escapeHtml(user.email) + '" placeholder="Email"></div>';
+                    html += '<div><label class="text-[11px] text-on-surface-variant font-medium block">Email đăng nhập:</label>';
+                    html += '<input type="email" class="w-full px-2 py-1 border border-outline-variant rounded text-sm bg-surface-container-low text-on-surface-variant" value="' + escapeHtml(user.email) + '" readonly title="Email do Supabase Auth quản lý"></div>';
                     html += '<div><label class="text-[11px] text-on-surface-variant font-medium block">Số điện thoại:</label>';
                     html += '<input type="text" class="edit-input-phone w-full px-2 py-1 border border-outline-variant rounded text-sm bg-surface-container-lowest text-on-surface focus:border-primary focus:outline-none" value="' + escapeHtml(user.phone) + '" placeholder="Số điện thoại"></div>';
                     html += '</div></td>';
@@ -670,7 +793,6 @@ window.handleAdminLogout = function() {
                     html += '<td class="p-4 border-b border-outline-variant text-right">';
                     html += '<div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">';
                     html += '<button class="btn-edit-user p-1.5 text-on-surface-variant hover:text-primary hover:bg-primary-fixed rounded transition-colors" title="Chỉnh sửa" data-index="' + realIndex + '"><span class="material-symbols-outlined text-[20px]">edit</span></button>';
-                    html += '<button class="btn-delete-user p-1.5 text-on-surface-variant hover:text-error hover:bg-error-container rounded transition-colors" title="Xóa" data-index="' + realIndex + '"><span class="material-symbols-outlined text-[20px]">delete</span></button>';
                     html += '</div></td>';
                 }
                 html += '</tr>';
@@ -707,7 +829,7 @@ window.handleAdminLogout = function() {
                 var row = this.closest('tr');
 
                 var nameVal = row.querySelector('.edit-input-name').value.trim();
-                var emailVal = row.querySelector('.edit-input-email').value.trim();
+                var emailVal = usersList[idx].email;
                 var phoneVal = row.querySelector('.edit-input-phone').value.trim();
 
                 if (!nameVal || !emailVal) {
@@ -725,23 +847,6 @@ window.handleAdminLogout = function() {
             });
         });
 
-        document.querySelectorAll('.btn-delete-user').forEach(function(btn) {
-            btn.addEventListener('click', async function(e) {
-                e.stopPropagation();
-                var idx = parseInt(this.getAttribute('data-index'), 10);
-                var user = usersList[idx];
-                if (confirm('Bạn có chắc chắn muốn xóa người dùng "' + user.name + '" khỏi hệ thống không?')) {
-                    try {
-                        await window.SupabaseService.deleteUser(user.id);
-                        usersList = await window.SupabaseService.getUsers() || [];
-                        handleUserSearch();
-                    } catch (err) {
-                        console.error(err);
-                        alert('Xóa người dùng thất bại!');
-                    }
-                }
-            });
-        });
     }
 
     function initUserModalEvents() {
@@ -769,7 +874,7 @@ window.handleAdminLogout = function() {
                     try {
                         await window.SupabaseService.updateUser(u.id, {
                             name: pendingUserTempData.name,
-                            email: pendingUserTempData.email
+                            phone: pendingUserTempData.phone
                         });
                         
                         usersList = await window.SupabaseService.getUsers() || [];
@@ -1542,14 +1647,34 @@ window.handleAdminLogout = function() {
 
     function initDocumentPackageUploads() {
         document.querySelectorAll('.package-upload-input').forEach(function(input) {
-            input.onchange = function() {
+            input.onchange = async function() {
                 var label = document.getElementById(this.getAttribute('data-label'));
                 if (!label) return;
 
                 var file = this.files && this.files[0];
-                label.textContent = file ? 'Đã chọn: ' + file.name : 'Chưa chọn tệp';
-                label.classList.toggle('text-primary', !!file);
-                label.classList.toggle('font-medium', !!file);
+                if (!file) { label.textContent = 'Chưa chọn tệp'; return; }
+                if (!/\.zip$/i.test(file.name)) {
+                    alert('Bộ tài liệu chỉ nhận tệp định dạng .zip.');
+                    this.value = '';
+                    label.textContent = 'Chưa chọn tệp .zip';
+                    return;
+                }
+                if (file.size > 50 * 1024 * 1024) { alert('Tệp vượt quá giới hạn 50 MB.'); this.value = ''; return; }
+                var category = this.getAttribute('data-category');
+                label.textContent = 'Đang tải lên...';
+                label.classList.add('text-primary', 'font-medium');
+                try {
+                    var url = await window.SupabaseService.uploadDocumentFile(file, 'packages');
+                    if (!url) throw new Error('Không thể tải tệp lên.');
+                    var ext = 'ZIP';
+                    var record = await window.SupabaseService.addDocument({ name: file.name, type: category, desc: '', file: url, docType: ext });
+                    if (!record) throw new Error('Không thể lưu dữ liệu tài liệu.');
+                    label.textContent = 'Đã tải lên: ' + file.name;
+                } catch (error) {
+                    console.error('Package upload error:', error);
+                    label.textContent = 'Tải lên thất bại. Vui lòng thử lại.';
+                    label.classList.remove('text-primary');
+                }
             };
         });
     }
@@ -1561,7 +1686,6 @@ window.handleAdminLogout = function() {
         var label = document.getElementById('docs-filter-label');
         var options = document.querySelectorAll('.docs-filter-option');
         var searchInput = document.querySelector('#page-docs input[type="text"]');
-        var docRows = document.querySelectorAll('#page-docs tbody tr');
 
         if (!btn || !menu) return;
 
@@ -1614,6 +1738,7 @@ window.handleAdminLogout = function() {
         });
 
         function filterDocsTable() {
+            var docRows = document.querySelectorAll('#page-docs tbody tr[data-document-row]');
             var activeOpt = document.querySelector('.docs-filter-option.active');
             var selectedVal = activeOpt ? activeOpt.getAttribute('data-value') : 'all';
             var query = searchInput ? searchInput.value.toLowerCase().trim() : '';
@@ -1637,6 +1762,52 @@ window.handleAdminLogout = function() {
         if (searchInput) {
             searchInput.oninput = filterDocsTable;
         }
+    }
+
+    async function renderAdminDocuments() {
+        var tbody = document.querySelector('#page-docs tbody');
+        if (!tbody || !window.SupabaseService) return;
+        tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-on-surface-variant text-sm">Đang tải tài liệu...</td></tr>';
+        var documents = await window.SupabaseService.getDocuments();
+        if (!documents || !documents.length) {
+            tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-on-surface-variant text-sm">Không có tài liệu nào</td></tr>';
+            return;
+        }
+        tbody.innerHTML = documents.map(function(doc) {
+            return '<tr data-document-row class="border-b border-outline-variant/50">' +
+                '<td class="p-4 font-medium text-on-surface">' + escapeHtml(doc.name) + (doc.isDraft ? ' <span class="ml-2 inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">Bản nháp</span>' : '') + '</td>' +
+                '<td class="p-4 text-on-surface-variant">' + escapeHtml(doc.type || '') + '</td>' +
+                '<td class="p-4 text-on-surface-variant">' + escapeHtml(doc.docType || 'PDF') + '</td>' +
+                '<td class="p-4 text-on-surface-variant">' + escapeHtml(doc.date || '') + '</td>' +
+                '<td class="p-4 text-center">' + (doc.isDraft ? '<button type="button" data-draft-key="' + escapeHtml(doc.draftKey || '') + '" class="btn-open-document-draft text-primary hover:bg-primary/10 p-2 rounded-lg" title="Mở bản nháp"><span class="material-symbols-outlined">edit</span></button>' : '') + '<button type="button" data-document-id="' + doc.id + '" data-draft-key="' + escapeHtml(doc.draftKey || '') + '" class="btn-delete-document text-error hover:bg-error/10 p-2 rounded-lg" title="Xóa tài liệu"><span class="material-symbols-outlined">delete</span></button></td>' +
+            '</tr>';
+        }).join('');
+        initDocsFilter();
+        tbody.querySelectorAll('.btn-open-document-draft').forEach(function(button) {
+            button.onclick = function() {
+                localStorage.setItem('noxh_document_draft_key', button.getAttribute('data-draft-key'));
+                window.location.hash = '#docs-new';
+            };
+        });
+        tbody.querySelectorAll('.btn-delete-document').forEach(function(button) {
+            button.onclick = async function() {
+                if (!confirm('Xóa tài liệu này khỏi Supabase và Storage?')) return;
+                button.disabled = true;
+                var draftKey = button.getAttribute('data-draft-key');
+                var success = true;
+                if (draftKey) {
+                    var allDocuments = await window.SupabaseService.getDocuments();
+                    var drafts = (allDocuments || []).filter(function(doc) { return doc.isDraft && doc.draftKey === draftKey; });
+                    for (var i = 0; i < drafts.length; i++) {
+                        if (!await window.SupabaseService.deleteDocument(drafts[i].id)) success = false;
+                    }
+                } else {
+                    success = await window.SupabaseService.deleteDocument(button.getAttribute('data-document-id'));
+                }
+                if (!success) alert('Không thể xóa tài liệu. Vui lòng kiểm tra quyền Storage và thử lại.');
+                await renderAdminDocuments();
+            };
+        });
     }
 
                     var faqData = {};
@@ -1992,6 +2163,12 @@ window.handleAdminLogout = function() {
 
     // ---- Docs Guide Module ---- //
     var guidesList = [];
+    var isAutomaticGuideDocument = function(doc) {
+        return doc && !doc.isDraft && (doc.type === 'Đơn mua' || doc.type === 'Đơn thuê');
+    };
+    var isGuideDocument = function(doc) {
+        return doc && !doc.isDraft && (doc.type === 'Hướng dẫn' || isAutomaticGuideDocument(doc));
+    };
 
     window.openGuideForm = function() {
         var listEl = document.getElementById('docs-guide-list-view');
@@ -2030,7 +2207,7 @@ window.handleAdminLogout = function() {
             };
             
             await window.SupabaseService.addDocument(docData);
-            guidesList = await window.SupabaseService.getDocuments() || [];
+            guidesList = (await window.SupabaseService.getDocuments() || []).filter(isGuideDocument);
             
             // Reset form
             nameInput.value = '';
@@ -2082,7 +2259,7 @@ window.handleAdminLogout = function() {
         if (pendingDeleteGuideId !== null) {
             try {
                 await window.SupabaseService.deleteDocument(pendingDeleteGuideId);
-                guidesList = await window.SupabaseService.getDocuments() || [];
+                guidesList = (await window.SupabaseService.getDocuments() || []).filter(isGuideDocument);
                 renderGuideList();
                 window.closeDocsGuideDeleteModal();
             } catch (err) {
@@ -2104,6 +2281,7 @@ window.handleAdminLogout = function() {
 
         guidesList.forEach(function(guide) {
             var isDraft = guide.status === 'draft';
+            var isAutomatic = isAutomaticGuideDocument(guide);
             var badgeHtml = isDraft ? '<span class="px-2 py-0.5 bg-surface-variant text-on-surface-variant text-[11px] font-bold rounded-full">Nháp</span>' : '';
             var bgClass = isDraft ? 'bg-surface-container-lowest/50' : 'bg-surface-container-lowest';
             var cardHtml = 
@@ -2113,15 +2291,16 @@ window.handleAdminLogout = function() {
                     '</div>' +
                     '<div class="flex-1 min-w-0 flex flex-col">' +
                         '<h3 class="font-semibold text-[15px] text-on-surface line-clamp-3 leading-snug">' + escapeHtml(guide.name) + '</h3>' +
+                        (isAutomatic ? '<p class="mt-1 text-xs text-on-surface-variant">Hướng dẫn điền tự động · ' + escapeHtml(guide.type) + '</p>' : '') +
                         (isDraft ? '<div class="mt-2">' + badgeHtml + '</div>' : '') +
-                        '<div class="mt-3 flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">' +
+                        (isAutomatic ? '' : '<div class="mt-3 flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">' +
                             '<button onclick="editGuide(\'' + guide.id + '\')" class="text-[13px] font-semibold text-primary hover:underline cursor-pointer flex items-center gap-1">' +
                                 '<span class="material-symbols-outlined text-[16px]">edit</span> Sửa' +
                             '</button>' +
                             '<button onclick="deleteGuide(\'' + guide.id + '\')" class="text-[13px] font-semibold text-error hover:underline cursor-pointer flex items-center gap-1">' +
                                 '<span class="material-symbols-outlined text-[16px]">delete</span> Xóa' +
                             '</button>' +
-                        '</div>' +
+                        '</div>') +
                     '</div>' +
                 '</div>';
             container.insertAdjacentHTML('beforeend', cardHtml);
@@ -2135,7 +2314,10 @@ window.handleAdminLogout = function() {
         window.location.hash = '#docs-guide';
     };
 
-    function initDocsGuideModule() {
+    async function initDocsGuideModule() {
+        if (window.SupabaseService) {
+            guidesList = (await window.SupabaseService.getDocuments() || []).filter(isGuideDocument);
+        }
         renderGuideList();
         var stepsContainer = document.getElementById('guide-steps-container');
         if (stepsContainer && stepsContainer.children.length === 0) {
@@ -2270,7 +2452,7 @@ window.handleAdminLogout = function() {
                 usersList = allUsers.filter(u => u.role !== 'admin');
                 
                 projectsList = await SupabaseService.getProjects() || [];
-                guidesList = await SupabaseService.getDocuments() || [];
+                guidesList = (await SupabaseService.getDocuments() || []).filter(isGuideDocument);
                 // newsList = await SupabaseService.getNews() || [];
                 
                 var rawFaqs = await SupabaseService.getFaqs() || [];
@@ -2311,8 +2493,20 @@ window.handleAdminLogout = function() {
     }
 
     // ---- Init ---- //
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', async function() {
         if (!checkAdminSessionExpiration()) return;
+        if (!await window.SupabaseService.refreshAuthSession()) {
+            localStorage.removeItem('adminSessionExpiresAt');
+            window.location.href = 'admin-login.html';
+            return;
+        }
+        var profile = await window.SupabaseService.getCurrentProfile();
+        if (!profile || profile.role !== 'admin') {
+            await window.SupabaseService.signOut();
+            window.location.href = 'admin-login.html';
+            return;
+        }
+        localStorage.setItem('adminUser', JSON.stringify(profile));
         initSidebar();
         onRouteChange();
         initDocsFilter();

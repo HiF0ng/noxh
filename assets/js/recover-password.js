@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const message = document.getElementById('recovery-message');
     const title = document.getElementById('recovery-title');
     const description = document.getElementById('recovery-description');
-    let recoveryEmail = '';
 
     const showMessage = (text, isError = true) => {
         message.textContent = text;
@@ -18,30 +17,31 @@ document.addEventListener('DOMContentLoaded', () => {
         form.classList.remove('hidden');
     };
 
+    // Supabase sends a recovery session in the URL fragment after the user clicks the email link.
+    const params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    if (params.get('access_token') && params.get('refresh_token')) {
+        localStorage.setItem('noxh_auth_session', JSON.stringify({
+            access_token: params.get('access_token'), refresh_token: params.get('refresh_token'),
+            user: { id: params.get('user_id') || '' }
+        }));
+        window.history.replaceState({}, document.title, window.location.pathname);
+        title.textContent = 'Đặt mật khẩu mới';
+        description.textContent = 'Nhập và xác nhận mật khẩu mới của bạn.';
+        showStep(passwordForm);
+    }
+
     emailForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         clearMessage();
         const email = document.getElementById('recovery-email').value.trim().toLowerCase();
-        if (!window.SupabaseService) return showMessage('Không thể kết nối cơ sở dữ liệu.');
-        const user = await window.SupabaseService.getUser(email);
-        if (!user) return showMessage('Email này chưa được đăng ký tài khoản.');
-        recoveryEmail = email;
-        title.textContent = 'Xác thực email';
-        description.textContent = `Nhập mã xác thực gồm 6 chữ số cho ${email}.`;
-        showStep(codeForm);
-        showMessage('Chế độ tạm thời: mã xác thực là 123456.', false);
-        document.getElementById('recovery-code').focus();
+        if (!window.SupabaseService) return showMessage('Không thể kết nối dịch vụ xác thực.');
+        const sent = await window.SupabaseService.requestPasswordReset(email);
+        if (!sent) return showMessage('Không thể gửi email khôi phục. Vui lòng thử lại sau.');
+        showMessage('Nếu email đã đăng ký, chúng tôi đã gửi liên kết đặt lại mật khẩu. Hãy mở email để tiếp tục.', false);
+        emailForm.classList.add('hidden');
     });
 
-    codeForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-        clearMessage();
-        if (document.getElementById('recovery-code').value.trim() !== '123456') return showMessage('Mã xác thực không đúng.');
-        title.textContent = 'Đặt mật khẩu mới';
-        description.textContent = 'Nhập và xác nhận mật khẩu mới của bạn.';
-        showStep(passwordForm);
-        document.getElementById('recovery-new-password').focus();
-    });
+    codeForm.classList.add('hidden');
 
     passwordForm.addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const confirmation = document.getElementById('recovery-confirm-password').value;
         if (password.length < 6) return showMessage('Mật khẩu mới cần có ít nhất 6 ký tự.');
         if (password !== confirmation) return showMessage('Mật khẩu xác nhận không khớp.');
-        const updated = await window.SupabaseService.resetPasswordByEmail(recoveryEmail, password);
+        const updated = await window.SupabaseService.updateAuthPassword(password);
         if (!updated) return showMessage('Không thể đổi mật khẩu. Vui lòng thử lại.');
         passwordForm.classList.add('hidden');
         title.textContent = 'Hoàn tất';

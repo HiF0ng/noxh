@@ -45,6 +45,18 @@
 })();
 // -------------------------------------
 
+// Used by the document sections that are rendered from Supabase data.
+// Keep this helper global to this script: project/FAQ renderers have their
+// own local copy, while the document loaders run independently.
+function escapeHtml(value) {
+    return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     // Load components
     await loadNavbar();
@@ -211,6 +223,10 @@ function fitFooterDesc() {
         p.style.fontSize = '';
         p.style.width = '';
 
+        // Mobile/tablet uses a deliberately balanced two-line description.
+        // Do not shrink it back to the logo width.
+        if (window.matchMedia('(max-width: 1023px)').matches) return;
+
         // Pin paragraph width to logo's rendered clientWidth
         if (logo && logo.clientWidth > 0) {
             p.style.width = logo.clientWidth + 'px';
@@ -247,6 +263,8 @@ function initPageScripts() {
     setupFAQTabs();
     setupFAQSearch();
     loadFaqsFromSupabase();
+    loadLegalDocuments();
+    loadDocumentSections();
     setupPasswordToggles();
     setupAuthForms();
     initSettingsForm();
@@ -268,7 +286,7 @@ async function initSettingsForm() {
         const newSaveBtn = saveBtn.cloneNode(true);
         saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
         
-        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true' || sessionStorage.getItem('isLoggedIn') === 'true';
+        const isLoggedIn = !!(window.SupabaseService && window.SupabaseService.getAuthSession());
         const currentUserStr = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
         let sessionUser = null;
         
@@ -284,12 +302,8 @@ async function initSettingsForm() {
         const phoneInput = document.getElementById('phone');
         
         let dbUser = null;
-        if (isLoggedIn && sessionUser && window.SupabaseService) {
-            // Fetch fresh details from Supabase database
-            const identifier = sessionUser.email || sessionUser.id;
-            if (identifier) {
-                dbUser = await window.SupabaseService.getUser(identifier);
-            }
+        if (isLoggedIn && window.SupabaseService) {
+            dbUser = await window.SupabaseService.getCurrentProfile();
         }
         
         // Populate inputs with fresh database user or session user as fallback
@@ -320,12 +334,9 @@ async function initSettingsForm() {
             if (isLoggedIn && activeUser && window.SupabaseService) {
                 const userId = activeUser.id;
                 if (userId) {
-                    const updatePayload = {
-                        name: updatedName,
-                        email: updatedEmail,
-                        phone: updatedPhone
-                    };
-                    const updated = await window.SupabaseService.updateUser(userId, updatePayload);
+                    const updated = await window.SupabaseService.updateOwnProfile({
+                        name: updatedName, email: updatedEmail, phone: updatedPhone
+                    });
                     if (updated) {
                         // Store the updated user back to localStorage/sessionStorage
                         const storageKey = localStorage.getItem('currentUser') ? 'localStorage' : 'sessionStorage';
@@ -348,6 +359,25 @@ async function initSettingsForm() {
                 showToast('Không thể kết nối cơ sở dữ liệu', 'error');
             }
         });
+
+        const passwordTrigger = document.getElementById('change-pwd-trigger-btn');
+        const passwordForm = document.getElementById('change-pwd-form');
+        const passwordSave = document.getElementById('save-new-pwd-btn');
+        if (passwordTrigger && passwordForm) passwordTrigger.onclick = () => passwordForm.classList.toggle('hidden');
+        if (passwordSave) passwordSave.onclick = async () => {
+            const oldPassword = document.getElementById('old-password')?.value || '';
+            const newPassword = document.getElementById('new-password')?.value || '';
+            const confirmPassword = document.getElementById('confirm-new-password')?.value || '';
+            const profile = await window.SupabaseService.getCurrentProfile();
+            if (!oldPassword || !newPassword || newPassword !== confirmPassword) {
+                showToast('Vui lòng nhập đúng mật khẩu cũ và xác nhận mật khẩu mới.', 'error'); return;
+            }
+            const verification = await window.SupabaseService.signInWithPassword(profile?.email || '', oldPassword);
+            if (!verification.success) { showToast('Mật khẩu cũ không chính xác.', 'error'); return; }
+            if (await window.SupabaseService.updateAuthPassword(newPassword)) {
+                passwordForm.classList.add('hidden'); showToast('Đã cập nhật mật khẩu mới.', 'success');
+            } else showToast('Không thể cập nhật mật khẩu. Vui lòng thử lại.', 'error');
+        };
     }
 }
 
@@ -393,12 +423,7 @@ function setupAuthForms() {
             }
 
             try {
-                // Try fetching user from Supabase Cloud via Service
-                let user = null;
-                if (window.SupabaseService) {
-                    user = await window.SupabaseService.loginUser(emailOrPhone, password);
-                }
-                
+                const user = window.SupabaseService && await window.SupabaseService.loginUser(emailOrPhone, password);
                 if (user && user.success) {
                     localStorage.setItem('isLoggedIn', 'true');
                     localStorage.setItem('currentUser', JSON.stringify(user.user));
@@ -406,12 +431,7 @@ function setupAuthForms() {
                     setTimeout(() => { window.location.href = 'homepage.html'; }, 800);
                     return;
                 }
-
-                // Default success for testing
-                localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('currentUser', JSON.stringify({ fullName: emailOrPhone, email: emailOrPhone }));
-                showToast('Đăng nhập thành công!', 'success');
-                setTimeout(() => { window.location.href = 'homepage.html'; }, 800);
+                showToast((user && user.error) || 'Đăng nhập thất bại. Vui lòng kiểm tra lại!', 'error');
             } catch (err) {
                 showToast('Đăng nhập thất bại. Vui lòng kiểm tra lại!', 'error');
             }
@@ -439,30 +459,19 @@ function setupAuthForms() {
             }
 
             try {
-                // Save user to Supabase Cloud Database via Service
-                const newUser = {
-                    email: email,
-                    password_hash: password, // In production, hashed via SHA256
-                    full_name: fullname,
-                    role: 'user'
-                };
-
-                let registered = false;
-                if (window.SupabaseService) {
-                    registered = await window.SupabaseService.registerUser(newUser);
-                }
-
-                if (registered) {
-                    localStorage.setItem('isLoggedIn', 'true');
-                    localStorage.setItem('currentUser', JSON.stringify(newUser));
+                const registered = window.SupabaseService && await window.SupabaseService.signUpWithPassword({ email, password, fullName: fullname, phone });
+                if (registered && registered.success) {
+                    if (registered.needsEmailConfirmation) {
+                        showToast('Tài khoản đã tạo. Hãy xác nhận email trước khi đăng nhập.', 'success');
+                        return;
+                    }
                     showToast('Tạo tài khoản thành công!', 'success');
                     setTimeout(() => { window.location.href = 'homepage.html'; }, 800);
                 } else {
-                    showToast('Đăng ký thất bại. Vui lòng thử lại!', 'error');
+                    showToast((registered && registered.error) || 'Đăng ký thất bại. Vui lòng thử lại!', 'error');
                 }
             } catch (err) {
-                showToast('Tài khoản tạo thành công!', 'success');
-                setTimeout(() => { window.location.href = 'homepage.html'; }, 800);
+                showToast('Đăng ký thất bại. Vui lòng thử lại!', 'error');
             }
         });
     }
@@ -882,12 +891,9 @@ function setupUserDropdown() {
             });
             
             if (link.label === 'Đăng xuất') {
-                a.addEventListener('click', (e) => {
+                a.addEventListener('click', async (e) => {
                     e.preventDefault();
-                    localStorage.removeItem('isLoggedIn');
-                    localStorage.removeItem('currentUser');
-                    sessionStorage.removeItem('isLoggedIn');
-                    sessionStorage.removeItem('currentUser');
+                    if (window.SupabaseService) await window.SupabaseService.signOut();
                     window.location.reload();
                 });
             }
@@ -1821,6 +1827,7 @@ async function loadSavedProjects() {
 
 function renderProjectsList(container, list) {
     if (!container) return;
+    const isHomepageGrid = container.id === 'homepage-projects-grid';
     let html = '';
     list.forEach(p => {
         let statusClass = 'status-cho-xay-dung';
@@ -1838,12 +1845,13 @@ function renderProjectsList(container, list) {
                 <div>
                     <a href="${detailUrl}" class="relative aspect-square w-full rounded-lg overflow-hidden mb-3 bg-surface-container block">
                         <img src="${p.imageUrl || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80'}" alt="${p.name || p.title}" class="w-full h-full object-cover">
-                        <span class="absolute top-3 right-3 status-pill project-card-status-pill ${statusClass}">${p.status || 'Đang mở bán'}</span>
+                        <span class="${isHomepageGrid ? 'homepage-status-overlay ' : 'absolute top-3 right-3 '}status-pill project-card-status-pill ${statusClass}">${p.status || 'Đang mở bán'}</span>
                     </a>
                     <a href="${detailUrl}" class="block font-bold text-lg text-on-surface mb-1 hover:text-primary transition-colors"><h3>${p.name || p.title}</h3></a>
                     <p class="text-sm text-on-surface-variant flex items-center gap-1 mb-2">
                         <span class="material-symbols-outlined text-base">location_on</span> ${p.location}
                     </p>
+                    ${isHomepageGrid ? `<span class="homepage-status-below status-pill project-card-status-pill ${statusClass}">${p.status || 'Đang mở bán'}</span>` : ''}
                     <div class="project-card-project-info project-card-info-divider space-y-1 mb-3 pt-2 border-t text-sm">
                         <p class="text-on-surface-variant whitespace-nowrap overflow-hidden text-ellipsis">Chủ đầu tư: <strong class="text-on-surface">${p.owner || p.investor || 'Đang cập nhật'}</strong></p>
                         <p class="text-on-surface-variant whitespace-nowrap overflow-hidden text-ellipsis">Giá dự kiến: <strong class="text-on-surface">${priceLabel}</strong></p>
@@ -1938,6 +1946,58 @@ function getComparedProjectIds() {
         return Array.isArray(saved) ? [...new Set(saved.map(String))].slice(0, 2) : [];
     } catch (_) {
         return [];
+    }
+}
+
+async function loadLegalDocuments() {
+    const container = document.getElementById('legal-documents-list');
+    if (!container || !window.SupabaseService) return;
+    try {
+        const documents = await window.SupabaseService.getDocuments();
+        const legalDocuments = (documents || []).filter(document => !document.isDraft && document.type === 'Văn bản luật');
+        if (!legalDocuments.length) {
+            container.innerHTML = '<div class="py-10 text-center flex flex-col items-center justify-center gap-2"><span class="material-symbols-outlined text-4xl text-outline-variant/60">gavel</span><span class="font-body-md text-on-surface-variant text-sm">Chưa có văn bản pháp luật</span></div>';
+            return;
+        }
+        container.innerHTML = legalDocuments.map(document => `<a href="${document.fileUrl ? document.fileUrl + '?download=' : '#'}" ${document.fileUrl ? 'download' : ''} class="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant/60 hover:border-primary hover:bg-primary/5 transition-colors flex items-center justify-between gap-4"><div class="flex items-center gap-3 min-w-0"><span class="material-symbols-outlined text-red-500 text-2xl">picture_as_pdf</span><div class="min-w-0"><p class="font-label-md text-label-md text-on-surface truncate">${escapeHtml(document.name)}</p>${document.desc ? `<p class="mt-1 text-sm text-on-surface-variant line-clamp-2">${escapeHtml(document.desc)}</p>` : ''}</div></div><span class="material-symbols-outlined text-primary">download</span></a>`).join('');
+    } catch (error) {
+        console.error('Error loading legal documents:', error);
+        container.innerHTML = '<p class="py-6 text-center text-sm text-on-surface-variant">Không thể tải văn bản pháp luật.</p>';
+    }
+}
+
+async function loadDocumentSections() {
+    if (!window.SupabaseService || !document.querySelector('.document-pack-button')) return;
+    try {
+        const documents = await window.SupabaseService.getDocuments();
+        const findContent = title => Array.from(document.querySelectorAll('.accordion-header')).find(header => header.textContent.includes(title))?.nextElementSibling?.querySelector('.p-md');
+        const renderList = (title, categories) => {
+            const content = findContent(title);
+            if (!content) return;
+            const items = (documents || []).filter(document => !document.isDraft && categories.includes(document.type));
+            content.innerHTML = items.length ? `<div class="flex flex-col gap-3">${items.map(document => `<a href="${document.fileUrl ? document.fileUrl + '?download=' : '#'}" ${document.fileUrl ? 'download' : ''} class="p-4 rounded-lg border border-outline-variant/60 hover:border-primary hover:bg-primary/5 transition-colors flex items-center justify-between gap-3"><div class="min-w-0"><p class="font-label-md text-label-md text-on-surface truncate">${escapeHtml(document.name)}</p><p class="mt-1 text-xs text-on-surface-variant">${escapeHtml(document.docType || 'PDF')} · ${escapeHtml(document.date || '')}</p></div><span class="material-symbols-outlined text-primary">download</span></a>`).join('')}</div>` : '<div class="py-8 text-center text-sm text-on-surface-variant">Chưa có tài liệu</div>';
+        };
+        renderList('Mua Nhà ở xã hội', ['Đơn mua', 'Bộ tài liệu - Mua Nhà ở xã hội']);
+        renderList('Thuê Nhà ở xã hội', ['Đơn thuê', 'Bộ tài liệu - Thuê Nhà ở xã hội']);
+        const packageCategories = ['Bộ tài liệu - Lao động tự do', 'Bộ tài liệu - Người đi làm', 'Bộ tài liệu - Người độc thân', 'Bộ tài liệu - Quân nhân/Công an'];
+        document.querySelectorAll('.document-pack-button').forEach((button, index) => {
+            const category = packageCategories[index];
+            const packageFile = (documents || []).filter(document => !document.isDraft && document.type === category).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))[0];
+            if (!packageFile) return;
+            button.onclick = () => {
+                const a = document.createElement('a');
+                a.href = packageFile.fileUrl + '?download=';
+                a.download = '';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            };
+            button.title = packageFile.name;
+            const label = button.querySelector('.document-pack-label');
+            if (label) label.textContent = packageFile.name;
+        });
+    } catch (error) {
+        console.error('Error loading document sections:', error);
     }
 }
 

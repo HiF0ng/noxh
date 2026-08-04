@@ -80,7 +80,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="assets/js/supabase-config.js"></script>
-    <script src="assets/js/supabase-service.js?v=3"></script>
+    <script src="assets/js/supabase-service.js?v=7"></script>
     <link rel="stylesheet" href="assets/css/admin.css?v=3">
 </head>
 <body class="admin-body flex h-screen overflow-hidden antialiased bg-background">
@@ -297,7 +297,7 @@
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div>
                         <h2 class="text-2xl font-semibold text-on-surface mb-1">Quản lý Người dùng</h2>
-                        <p class="text-on-surface-variant text-sm">Quản lý và giám sát tài khoản người dùng trên hệ thống.</p>
+                        <p class="text-on-surface-variant text-sm">Danh sách tài khoản đã xác thực bằng Supabase Auth. Email và mật khẩu được quản lý an toàn bởi Supabase.</p>
                     </div>
                     <button id="btn-export-xlsx" class="bg-primary hover:bg-surface-tint text-on-primary font-medium py-2 px-4 rounded-lg flex items-center gap-2 transition-colors w-fit">
                         <span class="material-symbols-outlined text-sm">download</span>
@@ -786,6 +786,13 @@
                                     </div>
                                     <span class="material-symbols-outlined text-primary text-sm check-icon hidden">check</span>
                                 </button>
+                                <button type="button" class="docs-filter-option w-full px-4 py-2.5 text-left text-sm text-on-surface hover:bg-surface-container-low transition-colors flex items-center justify-between font-medium" data-value="Văn bản luật">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                                        <span>Văn bản luật</span>
+                                    </div>
+                                    <span class="material-symbols-outlined text-primary text-sm check-icon hidden">check</span>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -837,14 +844,14 @@
                     <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
                         <h3 class="text-lg font-semibold text-on-surface">Mua Nhà ở xã hội</h3>
                         <p class="text-sm text-on-surface-variant mt-1 mb-5">Bộ tài liệu dành cho hồ sơ mua nhà ở xã hội.</p>
-                        <input id="package-buy-input" class="package-upload-input hidden" data-label="package-buy-file" type="file" accept=".pdf,.doc,.docx,.zip">
+                        <input id="package-buy-input" class="package-upload-input hidden" data-label="package-buy-file" data-category="Bộ tài liệu - Mua Nhà ở xã hội" type="file" accept=".zip">
                         <button type="button" onclick="document.getElementById('package-buy-input').click()" class="w-full py-2.5 px-4 rounded-lg bg-primary text-on-primary hover:bg-surface-tint transition-colors font-medium flex items-center justify-center gap-2"><span class="material-symbols-outlined text-[20px]">upload_file</span>Tải lên bộ tài liệu</button>
                         <p id="package-buy-file" class="package-upload-file mt-3 text-xs text-on-surface-variant">Chưa chọn tệp</p>
                     </div>
                     <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
                         <h3 class="text-lg font-semibold text-on-surface">Thuê Nhà ở xã hội</h3>
                         <p class="text-sm text-on-surface-variant mt-1 mb-5">Bộ tài liệu dành cho hồ sơ thuê nhà ở xã hội.</p>
-                        <input id="package-rent-input" class="package-upload-input hidden" data-label="package-rent-file" type="file" accept=".pdf,.doc,.docx,.zip">
+                        <input id="package-rent-input" class="package-upload-input hidden" data-label="package-rent-file" data-category="Bộ tài liệu - Thuê Nhà ở xã hội" type="file" accept=".zip">
                         <button type="button" onclick="document.getElementById('package-rent-input').click()" class="w-full py-2.5 px-4 rounded-lg bg-primary text-on-primary hover:bg-surface-tint transition-colors font-medium flex items-center justify-center gap-2"><span class="material-symbols-outlined text-[20px]">upload_file</span>Tải lên bộ tài liệu</button>
                         <p id="package-rent-file" class="package-upload-file mt-3 text-xs text-on-surface-variant">Chưa chọn tệp</p>
                     </div>
@@ -855,10 +862,10 @@
                         <div><h3 class="text-lg font-semibold text-on-surface">Bộ tài liệu</h3><p class="text-sm text-on-surface-variant mt-1">Bộ tài liệu chung và theo từng đối tượng.</p></div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="p-4 rounded-lg bg-surface-container-low border border-outline-variant"><h4 class="font-semibold text-on-surface">Lao động tự do</h4><input id="package-freelance-input" class="package-upload-input hidden" data-label="package-freelance-file" type="file" accept=".pdf,.doc,.docx,.zip"><button type="button" onclick="document.getElementById('package-freelance-input').click()" class="mt-3 text-primary hover:text-primary/80 font-medium text-sm flex items-center gap-1.5"><span class="material-symbols-outlined text-[18px]">upload_file</span>Tải lên bộ tài liệu</button><p id="package-freelance-file" class="package-upload-file mt-2 text-xs text-on-surface-variant">Chưa chọn tệp</p></div>
-                        <div class="p-4 rounded-lg bg-surface-container-low border border-outline-variant"><h4 class="font-semibold text-on-surface">Người đi làm</h4><input id="package-worker-input" class="package-upload-input hidden" data-label="package-worker-file" type="file" accept=".pdf,.doc,.docx,.zip"><button type="button" onclick="document.getElementById('package-worker-input').click()" class="mt-3 text-primary hover:text-primary/80 font-medium text-sm flex items-center gap-1.5"><span class="material-symbols-outlined text-[18px]">upload_file</span>Tải lên bộ tài liệu</button><p id="package-worker-file" class="package-upload-file mt-2 text-xs text-on-surface-variant">Chưa chọn tệp</p></div>
-                        <div class="p-4 rounded-lg bg-surface-container-low border border-outline-variant"><h4 class="font-semibold text-on-surface">Người độc thân</h4><input id="package-single-input" class="package-upload-input hidden" data-label="package-single-file" type="file" accept=".pdf,.doc,.docx,.zip"><button type="button" onclick="document.getElementById('package-single-input').click()" class="mt-3 text-primary hover:text-primary/80 font-medium text-sm flex items-center gap-1.5"><span class="material-symbols-outlined text-[18px]">upload_file</span>Tải lên bộ tài liệu</button><p id="package-single-file" class="package-upload-file mt-2 text-xs text-on-surface-variant">Chưa chọn tệp</p></div>
-                        <div class="p-4 rounded-lg bg-surface-container-low border border-outline-variant"><h4 class="font-semibold text-on-surface">Quân nhân/Công an</h4><input id="package-military-input" class="package-upload-input hidden" data-label="package-military-file" type="file" accept=".pdf,.doc,.docx,.zip"><button type="button" onclick="document.getElementById('package-military-input').click()" class="mt-3 text-primary hover:text-primary/80 font-medium text-sm flex items-center gap-1.5"><span class="material-symbols-outlined text-[18px]">upload_file</span>Tải lên bộ tài liệu</button><p id="package-military-file" class="package-upload-file mt-2 text-xs text-on-surface-variant">Chưa chọn tệp</p></div>
+<div class="p-4 rounded-lg bg-surface-container-low border border-outline-variant"><h4 class="font-semibold text-on-surface">Lao động tự do</h4><input id="package-freelance-input" class="package-upload-input hidden" data-label="package-freelance-file" data-category="Bộ tài liệu - Lao động tự do" type="file" accept=".zip"><button type="button" onclick="document.getElementById('package-freelance-input').click()" class="mt-3 text-primary hover:text-primary/80 font-medium text-sm flex items-center gap-1.5"><span class="material-symbols-outlined text-[18px]">upload_file</span>Tải lên bộ tài liệu</button><p id="package-freelance-file" class="package-upload-file mt-2 text-xs text-on-surface-variant">Chưa chọn tệp</p></div>
+<div class="p-4 rounded-lg bg-surface-container-low border border-outline-variant"><h4 class="font-semibold text-on-surface">Người đi làm</h4><input id="package-worker-input" class="package-upload-input hidden" data-label="package-worker-file" data-category="Bộ tài liệu - Người đi làm" type="file" accept=".zip"><button type="button" onclick="document.getElementById('package-worker-input').click()" class="mt-3 text-primary hover:text-primary/80 font-medium text-sm flex items-center gap-1.5"><span class="material-symbols-outlined text-[18px]">upload_file</span>Tải lên bộ tài liệu</button><p id="package-worker-file" class="package-upload-file mt-2 text-xs text-on-surface-variant">Chưa chọn tệp</p></div>
+<div class="p-4 rounded-lg bg-surface-container-low border border-outline-variant"><h4 class="font-semibold text-on-surface">Người độc thân</h4><input id="package-single-input" class="package-upload-input hidden" data-label="package-single-file" data-category="Bộ tài liệu - Người độc thân" type="file" accept=".zip"><button type="button" onclick="document.getElementById('package-single-input').click()" class="mt-3 text-primary hover:text-primary/80 font-medium text-sm flex items-center gap-1.5"><span class="material-symbols-outlined text-[18px]">upload_file</span>Tải lên bộ tài liệu</button><p id="package-single-file" class="package-upload-file mt-2 text-xs text-on-surface-variant">Chưa chọn tệp</p></div>
+<div class="p-4 rounded-lg bg-surface-container-low border border-outline-variant"><h4 class="font-semibold text-on-surface">Quân nhân/Công an</h4><input id="package-military-input" class="package-upload-input hidden" data-label="package-military-file" data-category="Bộ tài liệu - Quân nhân/Công an" type="file" accept=".zip"><button type="button" onclick="document.getElementById('package-military-input').click()" class="mt-3 text-primary hover:text-primary/80 font-medium text-sm flex items-center gap-1.5"><span class="material-symbols-outlined text-[18px]">upload_file</span>Tải lên bộ tài liệu</button><p id="package-military-file" class="package-upload-file mt-2 text-xs text-on-surface-variant">Chưa chọn tệp</p></div>
                     </div>
                 </div>
             </section>
@@ -874,8 +881,8 @@
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <h2 class="text-2xl font-semibold text-on-surface">Tải lên tài liệu mới</h2>
                     <div class="flex items-center gap-3">
-                        <button onclick="location.hash='#docs'" class="px-4 py-2 border border-outline-variant text-on-surface-variant font-medium rounded-lg hover:bg-surface-container transition-colors">Lưu nháp</button>
-                        <button class="bg-primary hover:bg-surface-tint text-on-primary font-medium py-2 px-6 rounded-lg transition-colors shadow-sm">Lưu tài liệu</button>
+                        <button id="btn-save-document-draft" type="button" class="px-4 py-2 border border-outline-variant text-on-surface-variant font-medium rounded-lg hover:bg-surface-container transition-colors">Lưu nháp</button>
+                        <button id="btn-save-document" class="bg-primary hover:bg-surface-tint text-on-primary font-medium py-2 px-6 rounded-lg transition-colors shadow-sm">Lưu tài liệu</button>
                     </div>
                 </div>
 
@@ -886,18 +893,19 @@
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-sm font-medium text-on-surface mb-1">Tên tài liệu</label>
-                                    <input type="text" class="w-full px-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg focus:outline-none focus:border-primary" placeholder="Ví dụ: Đơn đăng ký thuê mua">
+                                    <input id="doc-upload-name" type="text" class="w-full px-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg focus:outline-none focus:border-primary" placeholder="Ví dụ: Đơn đăng ký thuê mua">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-on-surface mb-1">Danh mục</label>
-                                    <select class="w-full px-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg focus:outline-none focus:border-primary">
+                                    <select id="doc-upload-category" class="w-full px-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg focus:outline-none focus:border-primary">
                                         <option value="Đơn mua">Đơn mua</option>
                                         <option value="Đơn thuê">Đơn thuê</option>
+                                        <option value="Văn bản luật">Văn bản luật</option>
                                     </select>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-on-surface mb-1">Nội dung</label>
-                                    <textarea rows="3" class="w-full px-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg focus:outline-none focus:border-primary" placeholder="Nhập nội dung tài liệu..."></textarea>
+                                    <textarea id="doc-upload-content" rows="3" class="w-full px-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg focus:outline-none focus:border-primary" placeholder="Nhập nội dung tài liệu..."></textarea>
                                 </div>
                             </div>
                         </div>
@@ -914,16 +922,18 @@
                                     <span class="material-symbols-outlined text-3xl text-error mb-2">picture_as_pdf</span>
                                     <p class="text-sm font-medium text-on-surface">Tải lên PDF</p>
                                     <p class="text-xs text-on-surface-variant mt-1">Kéo thả hoặc click</p>
+                                    <p id="pdf-selected-file" class="mt-2 hidden text-xs font-medium text-primary" aria-live="polite"></p>
                                 </div>
                             </div>
                             
-                            <div>
+                            <div id="docx-upload-section">
                                 <label class="block text-sm font-medium text-on-surface mb-2">Tệp DOCX (Bản mẫu điền)</label>
                                 <div id="docx-dropzone" class="border-2 border-dashed border-outline-variant rounded-xl p-6 text-center bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer relative">
                                     <input type="file" id="docx-input" accept=".docx,.doc" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                                     <span class="material-symbols-outlined text-3xl text-primary mb-2">description</span>
                                     <p class="text-sm font-medium text-on-surface">Tải lên Word</p>
                                     <p class="text-xs text-on-surface-variant mt-1">Kéo thả hoặc click</p>
+                                    <p id="docx-selected-file" class="mt-2 hidden text-xs font-medium text-primary" aria-live="polite"></p>
                                 </div>
                             </div>
                         </div>
@@ -1260,7 +1270,7 @@
         </div>
     </div>
 
-    <script src="assets/js/admin.js?v=15"></script>
+    <script src="assets/js/admin.js?v=23"></script>
 </body>
 </html>
 
