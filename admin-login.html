@@ -5,33 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng nhập Admin Central - NOXH.HELP</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script>
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#004ac6",
-                        "primary-tint": "#0053db",
-                        "surface-container-lowest": "#ffffff",
-                        "surface-container-low": "#eff4ff",
-                        "surface-container": "#e5eeff",
-                        "on-surface": "#0b1c30",
-                        "on-surface-variant": "#434655",
-                        "outline-variant": "#c3c6d7",
-                        "error": "#ba1a1a"
-                    },
-                    fontFamily: {
-                        "sans": ["Be Vietnam Pro", "sans-serif"]
-                    }
-                }
-            }
-        };
-    </script>
+    <script src="assets/js/admin-pages/admin-login-1.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <script src="assets/js/supabase-config.js"></script>
     <script src="assets/js/supabase-service.js?v=6"></script>
+    <link rel="stylesheet" href="assets/css/icon-utilities.css">
 </head>
 <body class="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-on-surface min-h-screen flex items-center justify-center p-4 font-sans antialiased">
 
@@ -89,70 +68,7 @@
 
     </div>
 
-    <script>
-        function togglePasswordVis() {
-            var pwd = document.getElementById('admin-password');
-            var icon = document.getElementById('pass-vis-icon');
-            if (pwd.type === 'password') {
-                pwd.type = 'text';
-                icon.textContent = 'visibility';
-            } else {
-                pwd.type = 'password';
-                icon.textContent = 'visibility_off';
-            }
-        }
-
-        function showAlert(msg, isError = true) {
-            var alertBox = document.getElementById('login-alert');
-            var alertText = document.getElementById('login-alert-text');
-            if (msg) {
-                alertText.textContent = msg;
-                alertBox.classList.remove('hidden');
-                if (isError) {
-                    alertBox.className = "p-3.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600 font-medium flex items-center gap-2";
-                } else {
-                    alertBox.className = "p-3.5 bg-green-50 border border-green-200 rounded-xl text-xs text-green-700 font-medium flex items-center gap-2";
-                }
-            } else {
-                alertBox.classList.add('hidden');
-            }
-        }
-
-        async function handleAdminLogin(e) {
-            e.preventDefault();
-            var email = document.getElementById('admin-email').value.trim();
-            var password = document.getElementById('admin-password').value.trim();
-            var btnSubmit = document.getElementById('btn-login-submit');
-            var btnText = document.getElementById('btn-login-text');
-
-            if (!email || !password) {
-                showAlert('Vui lòng nhập đầy đủ email và mật khẩu');
-                return;
-            }
-
-            btnSubmit.disabled = true;
-            btnText.textContent = 'Đang xác thực...';
-
-            try {
-                var result = await window.SupabaseService.signInWithPassword(email, password);
-                if (!result.success || !result.user || result.user.role !== 'admin') {
-                    if (result.success) await window.SupabaseService.signOut();
-                    showAlert(result.success ? 'Tài khoản này không có quyền quản trị.' : (result.error || 'Email hoặc mật khẩu không chính xác!'));
-                    btnSubmit.disabled = false;
-                    btnText.textContent = 'Đăng nhập Admin';
-                    return;
-                }
-                localStorage.setItem('adminUser', JSON.stringify(result.user));
-                localStorage.setItem('adminSessionExpiresAt', String(Date.now() + (30 * 24 * 60 * 60 * 1000)));
-                showAlert('Đăng nhập thành công! Đang chuyển hướng...', false);
-                setTimeout(function() { window.location.href = 'admin.html#dashboard'; }, 800);
-            } catch (err) {
-                showAlert('Có lỗi kết nối. Vui lòng thử lại!');
-                btnSubmit.disabled = false;
-                btnText.textContent = 'Đăng nhập Admin';
-            }
-        }
-    </script>
+    <script src="assets/js/admin-pages/admin-login-2.js"></script>
 </body>
 </html>
 

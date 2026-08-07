@@ -1,0 +1,79 @@
+.nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 38px;
+      border-radius: 9999px;
+      padding: 0 10px;
+      color: var(--on-surface-variant, #475569);
+      cursor: pointer;
+      position: relative;
+      z-index: 10;
+      transition: color 0.3s ease;
+  }
+  .nav-item:not(.is-active):not(.dropdown-open):hover {
+      background-color: var(--surface-container, #f1f5f9);
+  }
+  .nav-item .nav-icon {
+      font-size: 22px;
+  }
+  .nav-item .nav-text {
+      max-width: 0;
+      opacity: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      font-size: 14px;
+      font-weight: 600;
+      margin-left: 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .nav-item.is-active,
+  .nav-item.dropdown-open {
+      color: #ffffff;
+  }
+  .nav-item.is-active .nav-text,
+  .nav-item.dropdown-open .nav-text {
+      max-width: 200px;
+      opacity: 1;
+      margin-left: 6px;
+  }
+  .nav-item.no-icon {
+      padding: 0 16px !important;
+  }
+  .nav-item.no-icon .nav-text {
+      margin-left: 0 !important;
+      transform: translateY(1px);
+  }
+  .no-transitions * {
+      transition: none !important;
+  }
+
+  .nav-top-fade {
+      background: linear-gradient(to bottom, rgba(249, 250, 251, .95) 0%, rgba(249, 250, 251, .5) 60%, transparent 100%);
+      backdrop-filter: blur(12px);
+      -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 50%, transparent 100%);
+      mask-image: linear-gradient(to bottom, #000 0%, #000 50%, transparent 100%);
+  }
+  .nav-indicator-initial {
+      width: 0;
+      left: 0;
+      opacity: 0;
+  }
+
+  .top-navbar,
+  .top-navbar-desktop {
+      overflow: visible !important;
+  }
+  .top-navbar-desktop .nav-link.is-active {
+      color: var(--primary, #2563eb) !important;
+      font-weight: 700;
+      border-bottom: 2px solid currentColor;
+      padding-bottom: 4px;
+      margin-bottom: -6px;
+  }
+
+  /* Desktop navigation remains readable while scaling smoothly with the viewport. */
+  .top-navbar-desktop .nav-link {
+      font-size: clamp(15.5px, 1.18vw, 18px) !important;
+      line-height: 1.25;
+  }

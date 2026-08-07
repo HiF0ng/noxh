@@ -1,0 +1,28 @@
+/* Shared Material Symbols variants used by both public and admin pages. */
+.material-symbols-outlined.icon-filled {
+    font-variation-settings: 'FILL' 1;
+}
+
+.material-symbols-outlined.icon-outline {
+    font-variation-settings: 'FILL' 0;
+}
+
+.material-symbols-outlined.icon-weight-500 {
+    font-variation-settings: 'wght' 500;
+}
+
+.material-symbols-outlined.icon-outline.icon-weight-500 {
+    font-variation-settings: 'FILL' 0, 'wght' 500;
+}
+
+.material-symbols-outlined.icon-filled.icon-weight-500 {
+    font-variation-settings: 'FILL' 1, 'wght' 500;
+}
+
+.material-symbols-outlined.icon-filled.icon-weight-700 {
+    font-variation-settings: 'FILL' 1, 'wght' 700;
+}
+
+.material-symbols-outlined.icon-size-16 { font-size: 16px; }
+.material-symbols-outlined.icon-size-20 { font-size: 20px; }
+.material-symbols-outlined.icon-size-32 { font-size: 32px; }
