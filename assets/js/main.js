@@ -1843,7 +1843,7 @@ function renderProjectsList(container, list) {
         html += `
             <div class="project-card-item bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/60 shadow-sm hover:shadow-md transition-all flex flex-col justify-between" data-status="${p.status || ''}" data-date="${p.created_at || p.date || ''}" data-price="${p.price || p.price_per_sqm || ''}">
                 <div>
-                    <a href="${detailUrl}" class="relative aspect-square w-full rounded-lg overflow-hidden mb-3 bg-surface-container block">
+                    <a href="${detailUrl}" class="project-card-thumbnail relative w-full rounded-lg overflow-hidden mb-3 bg-surface-container block">
                         <img src="${p.imageUrl || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80'}" alt="${p.name || p.title}" class="w-full h-full object-cover">
                     </a>
                     <a href="${detailUrl}" class="block font-bold text-lg text-on-surface mb-1 hover:text-primary transition-colors"><h3>${p.name || p.title}</h3></a>
@@ -1875,6 +1875,21 @@ function renderProjectsList(container, list) {
 }
 
 // 5. Fetch and Render Live Documents
+function getDocumentDownloadName(document) {
+    const docType = String(document.doc_type || document.docType || 'PDF').toLowerCase();
+    const extension = docType === 'docx' ? '.docx' : '.pdf';
+    let name = String(document.name || document.title || 'tai-lieu').trim();
+    name = name.replace(/[\\/:*?"<>|]/g, '-');
+    return name.toLowerCase().endsWith(extension) ? name : `${name}${extension}`;
+}
+
+function getDocumentDownloadUrl(document) {
+    const fileUrl = document.fileUrl || document.file || '';
+    if (!fileUrl) return '#';
+    const separator = fileUrl.includes('?') ? '&' : '?';
+    return `${fileUrl}${separator}download=${encodeURIComponent(getDocumentDownloadName(document))}`;
+}
+
 async function loadLiveDocuments() {
     const containers = [
         document.getElementById('all-docs-list'),
@@ -1921,7 +1936,7 @@ async function loadLiveDocuments() {
                                 </div>
                             </div>
                         </div>
-                        <a href="${d.fileUrl || '#'}\" download class="px-2 md:px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 justify-center transition-colors">
+                        <a href="${getDocumentDownloadUrl(d)}" class="px-2 md:px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 justify-center transition-colors">
                             <span class="material-symbols-outlined text-base">download</span> Tải xuống
                         </a>
                     </div>
@@ -1964,7 +1979,7 @@ async function loadLegalDocuments() {
             container.innerHTML = '<div class="py-10 text-center flex flex-col items-center justify-center gap-2"><span class="material-symbols-outlined text-4xl text-outline-variant/60">gavel</span><span class="font-body-md text-on-surface-variant text-sm">Chưa có văn bản pháp luật</span></div>';
             return;
         }
-        container.innerHTML = legalDocuments.map(document => `<a href="${document.fileUrl ? document.fileUrl + '?download=' : '#'}" ${document.fileUrl ? 'download' : ''} class="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant/60 hover:border-primary hover:bg-primary/5 transition-colors flex items-center justify-between gap-4"><div class="flex items-center gap-3 min-w-0"><span class="material-symbols-outlined text-red-500 text-2xl">picture_as_pdf</span><div class="min-w-0"><p class="font-label-md text-label-md text-on-surface truncate">${escapeHtml(document.name)}</p>${document.desc ? `<p class="mt-1 text-sm text-on-surface-variant line-clamp-2">${escapeHtml(document.desc)}</p>` : ''}</div></div><span class="material-symbols-outlined text-primary">download</span></a>`).join('');
+        container.innerHTML = legalDocuments.map(document => `<a href="${getDocumentDownloadUrl(document)}" class="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant/60 hover:border-primary hover:bg-primary/5 transition-colors flex items-center justify-between gap-4"><div class="flex items-center gap-3 min-w-0"><span class="material-symbols-outlined text-red-500 text-2xl">picture_as_pdf</span><div class="min-w-0"><p class="font-label-md text-label-md text-on-surface truncate">${escapeHtml(document.name)}</p>${document.desc ? `<p class="mt-1 text-sm text-on-surface-variant line-clamp-2">${escapeHtml(document.desc)}</p>` : ''}</div></div><span class="material-symbols-outlined text-primary">download</span></a>`).join('');
     } catch (error) {
         console.error('Error loading legal documents:', error);
         container.innerHTML = '<p class="py-6 text-center text-sm text-on-surface-variant">Không thể tải văn bản pháp luật.</p>';
@@ -1980,7 +1995,7 @@ async function loadDocumentSections() {
             const content = findContent(title);
             if (!content) return;
             const items = (documents || []).filter(document => !document.isDraft && categories.includes(document.type));
-            content.innerHTML = items.length ? `<div class="flex flex-col gap-3">${items.map(document => `<a href="${document.fileUrl ? document.fileUrl + '?download=' : '#'}" ${document.fileUrl ? 'download' : ''} class="p-4 rounded-lg border border-outline-variant/60 hover:border-primary hover:bg-primary/5 transition-colors flex items-center justify-between gap-3"><div class="min-w-0"><p class="font-label-md text-label-md text-on-surface truncate">${escapeHtml(document.name)}</p><p class="mt-1 text-xs text-on-surface-variant">${escapeHtml(document.docType || 'PDF')} · ${escapeHtml(document.date || '')}</p></div><span class="material-symbols-outlined text-primary">download</span></a>`).join('')}</div>` : '<div class="py-8 text-center text-sm text-on-surface-variant">Chưa có tài liệu</div>';
+            content.innerHTML = items.length ? `<div class="flex flex-col gap-3">${items.map(document => `<a href="${getDocumentDownloadUrl(document)}" class="p-4 rounded-lg border border-outline-variant/60 hover:border-primary hover:bg-primary/5 transition-colors flex items-center justify-between gap-3"><div class="min-w-0"><p class="font-label-md text-label-md text-on-surface truncate">${escapeHtml(document.name)}</p><p class="mt-1 text-xs text-on-surface-variant">${escapeHtml(document.docType || 'PDF')} · ${escapeHtml(document.date || '')}</p></div><span class="material-symbols-outlined text-primary">download</span></a>`).join('')}</div>` : '<div class="py-8 text-center text-sm text-on-surface-variant">Chưa có tài liệu</div>';
         };
         renderList('Mua Nhà ở xã hội', ['Đơn mua', 'Bộ tài liệu - Mua Nhà ở xã hội']);
         renderList('Thuê Nhà ở xã hội', ['Đơn thuê', 'Bộ tài liệu - Thuê Nhà ở xã hội']);
@@ -1991,8 +2006,7 @@ async function loadDocumentSections() {
             if (!packageFile) return;
             button.onclick = () => {
                 const a = document.createElement('a');
-                a.href = packageFile.fileUrl + '?download=';
-                a.download = '';
+                a.href = getDocumentDownloadUrl(packageFile);
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -2172,7 +2186,7 @@ window.addProjectToCompareList = function(id, title, location, status, progress)
             <button type="button" aria-label="Xóa dự án khỏi so sánh" onclick="removeProjectFromCompare(this)" class="absolute top-2 right-2 z-20 w-8 h-8 rounded-full bg-white text-slate-700 border border-slate-200 shadow-md hover:bg-red-50 hover:text-red-600 hover:border-red-200 flex items-center justify-center transition-colors">
                 <span class="material-symbols-outlined text-lg">close</span>
             </button>
-            <a href="${detailUrl}" class="relative aspect-square w-full rounded-lg overflow-hidden mb-3 bg-surface-container block">
+            <a href="${detailUrl}" class="project-card-thumbnail relative w-full rounded-lg overflow-hidden mb-3 bg-surface-container block">
                 ${imageUrl ? `<img src="${imageUrl}" alt="${projectTitle}" class="w-full h-full object-cover">` : '<div class="w-full h-full bg-slate-100 flex items-center justify-center text-slate-400"><span class="material-symbols-outlined text-4xl">image</span></div>'}
             </a>
             <a href="${detailUrl}" class="block font-bold text-lg text-on-surface mb-1 hover:text-primary transition-colors"><h3>${projectTitle}</h3></a>
@@ -2431,9 +2445,13 @@ function initLoanCalculator() {
     const summaryTotal = document.getElementById('summary-total');
     const summaryAvail = document.getElementById('summary-available');
     const summaryBorrow = document.getElementById('summary-borrow');
-    const summaryPrincipal = document.getElementById('summary-principal');
     const summaryInterest = document.getElementById('summary-interest');
     const tbody = document.getElementById('schedule-tbody');
+    const exportExcelButton = document.getElementById('btn-export-loan-excel');
+    const validationModal = document.getElementById('loan-validation-modal');
+    const focusLoanInputButton = document.getElementById('btn-focus-loan-input');
+    let latestLoanCalculation = null;
+    let validationFocusTarget = null;
 
     // Utility formatting
     function formatCurrency(num) {
@@ -2447,6 +2465,110 @@ function initLoanCalculator() {
     
     function updateCurrencyInput(inputEl, val) {
         inputEl.value = formatCurrency(val);
+    }
+
+    function getFirstMissingLoanInput() {
+        if (!inputTotal.value.trim()) return inputTotal;
+        if (!inputAvail.value.trim()) return inputAvail;
+        if (!inputTerm.value.trim() || parseFloat(inputTerm.value) <= 0) return inputTerm;
+
+        const bankType = document.querySelector('input[name="bank_type"]:checked').value;
+        const promoRows = Array.from(promoPeriodsContainer.querySelectorAll('.promo-row'));
+        for (const row of promoRows) {
+            const rateInput = row.querySelector('.promo-rate-input');
+            if (!rateInput.value.trim()) return rateInput;
+            if (bankType === 'thuong_mai') {
+                const timeInput = row.querySelector('.promo-time-input');
+                if (!timeInput.value.trim() || parseFloat(timeInput.value) <= 0) return timeInput;
+            }
+        }
+        if (bankType === 'thuong_mai' && (!inputInterest2.value.trim())) return inputInterest2;
+        return null;
+    }
+
+    function showLoanValidationModal(input) {
+        validationFocusTarget = input;
+        if (!validationModal) return;
+        validationModal.classList.remove('hidden');
+        validationModal.classList.add('flex');
+        focusLoanInputButton?.focus();
+    }
+
+    function closeLoanValidationModal() {
+        if (!validationModal) return;
+        validationModal.classList.add('hidden');
+        validationModal.classList.remove('flex');
+        if (validationFocusTarget) {
+            validationFocusTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            validationFocusTarget.focus({ preventScroll: true });
+        }
+    }
+
+    function exportLoanExcel() {
+        const missingInput = getFirstMissingLoanInput();
+        if (missingInput || !latestLoanCalculation || latestLoanCalculation.schedule.length === 0) {
+            showLoanValidationModal(missingInput || inputTerm);
+            return;
+        }
+        if (!window.XLSX) {
+            alert('Không thể tải thư viện xuất Excel. Vui lòng kiểm tra kết nối mạng và thử lại.');
+            return;
+        }
+
+        const calculation = latestLoanCalculation;
+        const scheduleName = 'Lịch trả nợ';
+        const settingsSheet = XLSX.utils.aoa_to_sheet([
+            ['Thông tin khoản vay', 'Giá trị'],
+            ['Tổng giá trị căn hộ', calculation.total],
+            ['Số tiền sẵn có', calculation.available],
+            ['Tổng số tiền vay', calculation.borrow],
+            ['Thời gian vay (năm)', calculation.termYears],
+            ['Thời gian vay (tháng)', calculation.termMonths],
+            ['Ngân hàng', calculation.bankName],
+            ['Phương thức trả nợ', calculation.methodName],
+            ['Lãi suất/Giai đoạn', calculation.rateDescription]
+        ]);
+
+        const scheduleSheet = XLSX.utils.aoa_to_sheet([
+            ['Kỳ hạn', 'Gốc (đồng)', 'Lãi (đồng)', 'Tổng trả (đồng)', 'Dư nợ (đồng)'],
+            ...calculation.schedule.map(item => [
+                `Tháng ${item.month}`,
+                Math.round(item.principalRepayment),
+                Math.round(item.interest),
+                Math.round(item.totalPayment),
+                Math.round(item.remainingPrincipal)
+            ])
+        ]);
+
+        const lastScheduleRow = calculation.schedule.length + 1;
+        const summarySheet = XLSX.utils.aoa_to_sheet([
+            ['Tổng hợp', 'Giá trị (đồng)'],
+            ['Tổng giá trị căn hộ', calculation.total],
+            ['Số tiền sẵn có', calculation.available],
+            ['Tổng số tiền vay', calculation.borrow],
+            ['Tổng tiền gốc phải trả', 0],
+            ['Tổng tiền lãi dự kiến', 0],
+            ['Tổng thanh toán dự kiến', 0]
+        ]);
+        summarySheet.B5 = { t: 'n', f: `SUM('${scheduleName}'!B2:B${lastScheduleRow})` };
+        summarySheet.B6 = { t: 'n', f: `SUM('${scheduleName}'!C2:C${lastScheduleRow})` };
+        summarySheet.B7 = { t: 'n', f: `SUM('${scheduleName}'!D2:D${lastScheduleRow})` };
+
+        [settingsSheet, scheduleSheet, summarySheet].forEach(sheet => {
+            Object.keys(sheet).forEach(key => {
+                if (key[0] !== '!' && sheet[key].t === 'n') sheet[key].z = '#,##0';
+            });
+        });
+        settingsSheet['!cols'] = [{ wch: 28 }, { wch: 26 }];
+        scheduleSheet['!cols'] = [{ wch: 14 }, { wch: 18 }, { wch: 18 }, { wch: 20 }, { wch: 18 }];
+        summarySheet['!cols'] = [{ wch: 28 }, { wch: 22 }];
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, settingsSheet, 'Thông tin vay');
+        XLSX.utils.book_append_sheet(workbook, scheduleSheet, scheduleName);
+        XLSX.utils.book_append_sheet(workbook, summarySheet, 'Tổng hợp');
+        const date = new Date().toISOString().slice(0, 10);
+        XLSX.writeFile(workbook, `lich-tra-no-${date}.xlsx`);
     }
     
     // Sync logic
@@ -2575,6 +2697,16 @@ function initLoanCalculator() {
     }
     
     methodRadios.forEach(r => r.addEventListener('change', calculateLoan));
+    if (exportExcelButton) exportExcelButton.addEventListener('click', exportLoanExcel);
+    if (focusLoanInputButton) focusLoanInputButton.addEventListener('click', closeLoanValidationModal);
+    if (validationModal) {
+        validationModal.addEventListener('click', event => {
+            if (event.target === validationModal) closeLoanValidationModal();
+        });
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && !validationModal.classList.contains('hidden')) closeLoanValidationModal();
+        });
+    }
 
     function calculateLoan() {
         const total = parseCurrency(inputTotal.value);
@@ -2590,11 +2722,11 @@ function initLoanCalculator() {
         if (summaryTotal) summaryTotal.textContent = formatCurrency(total) + ' ₫';
         if (summaryAvail) summaryAvail.textContent = formatCurrency(avail) + ' ₫';
         if (summaryBorrow) summaryBorrow.textContent = formatCurrency(borrow) + ' ₫';
-        if (summaryPrincipal) summaryPrincipal.textContent = formatCurrency(borrow) + ' ₫';
         
         if (borrow <= 0) {
             if (summaryInterest) summaryInterest.textContent = '0 ₫';
             if (tbody) tbody.innerHTML = '';
+            latestLoanCalculation = null;
             return;
         }
         
@@ -2706,6 +2838,22 @@ function initLoanCalculator() {
         
         if (summaryInterest) summaryInterest.textContent = formatCurrency(Math.round(totalInterest)) + ' ₫';
         if (tbody) tbody.innerHTML = scheduleHtml;
+        const rateDescription = Array.from(promoRows).map((row, index) => {
+            const rate = row.querySelector('.promo-rate-input').value || '0';
+            const months = row.querySelector('.promo-time-input').value;
+            return bankType === 'csxh' ? `${rate}%/năm` : `Giai đoạn ${index + 1}: ${rate}%/năm trong ${months || 0} tháng`;
+        }).join('; ');
+        latestLoanCalculation = {
+            total,
+            available: avail,
+            borrow,
+            termYears,
+            termMonths,
+            bankName: bankType === 'csxh' ? 'Ngân hàng Chính sách Xã hội' : 'Ngân hàng thương mại',
+            methodName: method === 'giam_dan' ? 'Dư nợ giảm dần' : 'Gốc và lãi trả đều',
+            rateDescription,
+            schedule: scheduleData
+        };
     }
     
     calculateLoan();

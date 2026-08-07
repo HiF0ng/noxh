@@ -1,3 +1,8 @@
+/* Page-level state that cannot be expressed with a static utility class. */
+#detail-map-background {
+    background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDLlY8P-7V7z7tETcTr7xpJC1mQU77dgdgYoyzmGN7NMVUFCElUtuU20RUxdTtKADHbHxim6h8E9gHnExmlYJFgJgJNaSprpvFYQIG9sGD0HLOfyvHkoBuLaxDPUzTsRJ2Ba5N4CXgxwb_xf01RxOyg7kDAAZEihw7ZlgBs1vaPeN3eDUFoLgSMg5hVwljKdtnY5kfa5lRUT0TTdz_IAIJwTYUFYjnha8TEgYsMq1txXSn8DIJwJxs2gvjHBej8GznIVLBd2VcCDAW-');
+}
+
 body {
     font-family: 'Be Vietnam Pro', sans-serif;
     background-color: #F9FAFB;
@@ -172,6 +177,11 @@ body {
     border-color: #cbd5e1 !important;
 }
 
+/* Keep every project-card thumbnail consistently wide on all breakpoints. */
+.project-card-thumbnail {
+    aspect-ratio: 5 / 3;
+}
+
 @media (max-width: 1023px) {
     #homepage-projects-grid .project-card-item { padding: 0.65rem; }
     #homepage-projects-grid .project-card-item > div > a:first-child { margin-bottom: 0.5rem; }
@@ -199,8 +209,14 @@ body {
 }
 
 @media (min-width: 1024px) {
+    /* The featured-project title, filters, and grid use one compact rhythm. */
+    #featured-projects {
+        gap: 1.2rem;
+    }
+
     .project-card-status-pill {
-        padding: 7px 14px !important;
+        display: flex !important;
+        padding: 8px 14px 6px !important;
         font-size: 14px !important;
         line-height: 1.1 !important;
         align-items: center !important;
@@ -210,6 +226,31 @@ body {
     .project-card-project-info {
         font-size: 12px;
         line-height: 1.25rem;
+        padding-top: 0.65rem !important;
+        margin-bottom: 0.65rem !important;
+    }
+
+    .project-card-project-info > * + * {
+        margin-top: 0.65rem !important;
+    }
+
+    .project-card-project-info > div:nth-of-type(1) > strong,
+    .project-card-project-info > div:nth-of-type(2) > strong {
+        font-size: 1rem;
+        line-height: 1.35;
+    }
+
+    .project-card-project-info > div:nth-of-type(1),
+    .project-card-project-info > div:nth-of-type(2) {
+        gap: 0.15rem !important;
+    }
+
+    .project-card-item > div > a:first-child {
+        margin-bottom: 0.65rem !important;
+    }
+
+    .project-card-item > div > p {
+        margin-bottom: 0.65rem !important;
     }
 }
 

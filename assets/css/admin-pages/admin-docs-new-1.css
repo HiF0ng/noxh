@@ -1,0 +1,9 @@
+body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+        
+        .upload-zone-hover {
+            border-color: theme('colors.primary');
+            background-color: theme('colors.surface-container-low');
+        }

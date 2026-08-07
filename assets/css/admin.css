@@ -20,6 +20,22 @@ body.admin-body {
     font-variation-settings: 'FILL' 1;
 }
 
+.admin-brand {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--outline-variant);
+}
+
+.admin-brand-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.admin-brand-logo {
+    height: 1.75rem;
+    width: auto;
+}
+
 /* ---- Sidebar ---- */
 .admin-sidebar {
     width: 260px;

@@ -5,8 +5,10 @@
     <link rel="stylesheet" href="assets/css/style.css">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script src="assets/js/tailwind-config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/icon-utilities.css">
 </head>
 <body class="bg-background text-on-background min-h-screen flex flex-col">
 <!-- TopNavBar -->
@@ -30,8 +32,7 @@
 <!-- Left Column: Loan Information (Bento/Glassmorphism style) -->
 <div class="lg:col-span-5 flex flex-col gap-sm">
 <div class="bg-surface-container-lowest rounded-xl shadow-level-1 p-4 md:p-md border border-outline-variant/30 relative overflow-hidden group">
-<h2 class="text-title-lg md:text-headline-md font-headline-md font-bold text-on-background mb-2 md:mb-lg flex items-center gap-2">
-<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">calculate</span>
+<h2 class="text-title-lg md:text-headline-md font-headline-md font-bold text-on-background mb-2">
                         Thông tin khoản vay
                     </h2>
 <!-- Tổng số tiền căn hộ -->
@@ -163,14 +164,18 @@
     <div class="flex flex-col gap-lg min-h-0 lg:absolute lg:inset-0 w-full h-full">
 <!-- Summary Card -->
 <div class="bg-surface-container-lowest rounded-xl shadow-level-1 p-4 md:p-md border border-outline-variant/30">
-<h3 class="text-title-lg md:text-headline-md font-headline-md font-bold text-on-background mb-md">Kết quả tính toán</h3>
-<div class="grid grid-cols-1 gap-4 md:p-md">
+<div class="flex flex-wrap items-center justify-between gap-3 mb-2">
+<h3 class="text-title-lg md:text-headline-md font-headline-md font-bold text-on-background">Kết quả tính toán</h3>
+<button id="btn-export-loan-excel" type="button" class="flex items-center gap-2 px-3 py-2 bg-primary text-on-primary rounded-lg text-sm font-semibold shadow-sm hover:shadow-md hover:bg-on-primary-fixed-variant transition-all">
+<span class="material-symbols-outlined text-[20px] icon-outline">download</span>Xuất file Excel
+</button>
+</div>
+<div class="grid grid-cols-1 gap-4">
 <div class="flex flex-col gap-sm w-full">
 <div class="flex justify-between items-center py-2 border-b border-outline-variant/20"><span class="font-body-md text-body-md text-on-surface-variant">Tổng giá trị căn hộ</span><span id="summary-total" class="font-label-md text-label-md text-on-background">1.500.000.000 ₫</span></div>
 <div class="flex justify-between items-center py-2 border-b border-outline-variant/20"><span class="font-body-md text-body-md text-on-surface-variant">Số tiền bạn có</span><span id="summary-available" class="font-label-md text-label-md text-primary">500.000.000 ₫</span></div>
 <div class="flex justify-between items-center py-2 border-b border-outline-variant/20"><span class="font-body-md text-body-md text-on-surface-variant">Tổng số tiền vay</span><span id="summary-borrow" class="font-label-md text-label-md text-error">1.000.000.000 ₫</span></div>
-<div class="flex justify-between items-center py-2 border-b border-outline-variant/20 pl-8"><span class="font-body-md text-body-md text-on-surface-variant">Số tiền gốc phải trả</span><span id="summary-principal" class="font-label-md text-label-md text-on-background">1.000.000.000 ₫</span></div>
-<div class="flex justify-between items-center py-2 border-b border-outline-variant/20 pl-8"><span class="font-body-md text-body-md text-on-surface-variant">Tổng tiền lãi dự kiến</span><span id="summary-interest" class="font-label-md text-label-md text-on-background">362.400.000 ₫</span></div>
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/20"><span class="font-body-md text-body-md text-on-surface-variant">Tổng tiền lãi dự kiến</span><span id="summary-interest" class="font-label-md text-label-md text-on-background">362.400.000 ₫</span></div>
 </div>
 </div>
 </div>
@@ -183,8 +188,7 @@
 <button id="btn-view-month" class="px-2 md:px-4 py-1 rounded-full text-label-sm font-label-sm bg-surface shadow-sm text-on-surface transition-all">Tháng</button>
 <button id="btn-view-year" class="px-2 md:px-4 py-1 rounded-full text-label-sm font-label-sm text-on-surface-variant hover:text-on-surface transition-all">Năm</button>
 </div>
-<button class="hidden flex items-center gap-2 px-2 md:px-4 py-2 bg-primary text-on-primary rounded-full font-label-md shadow-sm hover:shadow-md hover:bg-on-primary-fixed-variant transition-all"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">download</span>Xuất PDF</button>
-<button class="hidden flex items-center gap-2 px-2 md:px-4 py-2 bg-primary text-on-primary rounded-full font-label-md shadow-sm hover:shadow-md hover:bg-on-primary-fixed-variant transition-all"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">download</span>Xuất Excel</button>
+<button class="hidden flex items-center gap-2 px-2 md:px-4 py-2 bg-primary text-on-primary rounded-full font-label-md shadow-sm hover:shadow-md hover:bg-on-primary-fixed-variant transition-all"><span class="material-symbols-outlined text-[20px] icon-outline">download</span>Xuất PDF</button>
 </div>
 </div>
 <div class="overflow-x-auto overflow-y-auto no-scrollbar h-[400px] lg:h-0 lg:flex-1 min-h-0">
@@ -209,17 +213,27 @@
 </div>
 <!-- Warning Alert -->
 <div class="mt-6 bg-error/5 border border-error/20 rounded-xl p-4 flex gap-3 items-start md:items-center">
-    <span class="material-symbols-outlined text-error flex-shrink-0 text-2xl" style="font-variation-settings: 'FILL' 0;">error</span>
+    <span class="material-symbols-outlined text-error flex-shrink-0 text-2xl icon-outline">error</span>
     <p class="font-body-sm text-body-sm md:font-body-md md:text-body-md text-error/90 italic leading-relaxed">
         Đây chỉ là tính toán sơ bộ để có góc nhìn về tình hình tài chính khi bạn mua nhà. Vui lòng trao đổi kĩ hơn với nhân viên tín dụng tại ngân hàng bạn vay để có kế hoạch vay cụ thể và chính xác.
     </p>
 </div>
 </section>
 </main>
+<!-- Loan validation modal -->
+<div id="loan-validation-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-950/45 p-4" role="dialog" aria-modal="true" aria-labelledby="loan-validation-title">
+    <div class="w-full max-w-lg rounded-xl bg-surface-container-lowest p-6 shadow-2xl flex flex-col items-center text-center">
+        <h2 id="loan-validation-title" class="text-xl font-bold text-on-surface">Thông tin khoản vay</h2>
+        <p class="mt-3 whitespace-nowrap text-sm text-on-surface-variant">Vui lòng nhập đầy đủ các thông tin khoản vay</p>
+        <div class="mt-6 flex justify-center">
+            <button id="btn-focus-loan-input" type="button" class="rounded-lg bg-primary px-4 py-2 font-semibold text-on-primary transition-colors hover:bg-on-primary-fixed-variant">Nhập thông tin</button>
+        </div>
+    </div>
+</div>
 <!-- Footer -->
 <div id="footer-placeholder"></div>
 
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/supabase-service.js"></script>
-<script src="assets/js/main.js?v=17"></script>
+<script src="assets/js/main.js?v=19"></script>
 </body></html>

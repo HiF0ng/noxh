@@ -1,75 +1,13 @@
-<style>
-  .nav-item {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 38px;
-      border-radius: 9999px;
-      padding: 0 10px;
-      color: var(--on-surface-variant, #475569);
-      cursor: pointer;
-      position: relative;
-      z-index: 10;
-      transition: color 0.3s ease;
-  }
-  .nav-item:not(.is-active):not(.dropdown-open):hover {
-      background-color: var(--surface-container, #f1f5f9);
-  }
-  .nav-item .nav-icon {
-      font-size: 22px;
-  }
-  .nav-item .nav-text {
-      max-width: 0;
-      opacity: 0;
-      overflow: hidden;
-      white-space: nowrap;
-      font-size: 14px;
-      font-weight: 600;
-      margin-left: 0;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  .nav-item.is-active,
-  .nav-item.dropdown-open {
-      color: #ffffff;
-  }
-  .nav-item.is-active .nav-text,
-  .nav-item.dropdown-open .nav-text {
-      max-width: 200px;
-      opacity: 1;
-      margin-left: 6px;
-  }
-  .nav-item.no-icon {
-      padding: 0 16px !important;
-  }
-  .nav-item.no-icon .nav-text {
-      margin-left: 0 !important;
-      transform: translateY(1px);
-  }
-  .no-transitions * {
-      transition: none !important;
-  }
-
-  .top-navbar,
-  .top-navbar-desktop {
-      overflow: visible !important;
-  }
-  .top-navbar-desktop .nav-link.is-active {
-      color: var(--primary, #2563eb) !important;
-      font-weight: 700;
-      border-bottom: 2px solid currentColor;
-      padding-bottom: 4px;
-      margin-bottom: -6px;
-  }
-</style>
+<link rel="stylesheet" href="assets/css/components/navbar.css">
 
 <!-- Navbar Blur Mask -->
-<div class="fixed top-0 left-0 right-0 h-24 sm:h-28 z-40 pointer-events-none" style="background: linear-gradient(to bottom, rgba(249,250,251,0.95) 0%, rgba(249,250,251,0.5) 60%, transparent 100%); backdrop-filter: blur(12px); -webkit-mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%); mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%);"></div>
+<div class="nav-top-fade fixed top-0 left-0 right-0 h-24 sm:h-28 z-40 pointer-events-none"></div>
 
 <nav class="top-navbar flex lg:hidden fixed top-0 left-0 right-0 z-50 items-center justify-between px-3 py-1.5 md:px-5 md:py-2 max-w-max mx-auto bg-surface-container-lowest rounded-full mt-margin-mobile shadow-sm transition-all duration-300">
     <!-- Links -->
     <div class="relative flex items-center gap-0.5 md:gap-1" id="nav-links-container">
         <!-- Sliding Indicator -->
-        <div id="nav-indicator" class="absolute h-[38px] bg-primary rounded-full transition-all duration-300 ease-out z-0" style="width: 0; left: 0; opacity: 0;"></div>
+        <div id="nav-indicator" class="nav-indicator-initial absolute h-[38px] bg-primary rounded-full transition-all duration-300 ease-out z-0"></div>
         
         <a class="nav-link nav-item" href="homepage.html" title="Trang chủ">
             <span class="material-symbols-outlined nav-icon">home</span>

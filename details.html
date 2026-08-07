@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html><html lang="vi" style=""><head>
+<!DOCTYPE html><html lang="vi"><head>
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>Chi tiết Dự án - Vietnam Housing</title>
@@ -16,6 +16,7 @@
 <!-- Tailwind Configuration -->
 
 
+    <link rel="stylesheet" href="assets/css/icon-utilities.css">
 </head>
 <body class="bg-surface font-body-md text-on-surface antialiased">
 <!-- TopNavBar -->
@@ -147,7 +148,7 @@
 <div>
 <h2 class="font-headline-md text-headline-md text-on-surface mb-md">Vị trí Dự án</h2>
 <div id="detail-map-container" class="w-full h-[300px] md:h-[400px] rounded-xl overflow-hidden bg-surface-container-low flex items-center justify-center border border-outline-variant shadow-sm relative cursor-pointer">
-<div class="bg-cover bg-center w-full h-full absolute inset-0 opacity-80" data-alt="A highly detailed, aesthetically pleasing digital map illustration focused on the Long Biên district in Hanoi, Vietnam. The map uses a modern, light-mode corporate color palette with soft greys for roads, subtle greens for parks, and a prominent blue location marker indicating the project site. The visual style is clean, interface-ready, and professional." data-location="Long Biên, Hà Nội" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDLlY8P-7V7z7tETcTr7xpJC1mQU77dgdgYoyzmGN7NMVUFCElUtuU20RUxdTtKADHbHxim6h8E9gHnExmlYJFgJgJNaSprpvFYQIG9sGD0HLOfyvHkoBuLaxDPUzTsRJ2Ba5N4CXgxwb_xf01RxOyg7kDAAZEihw7ZlgBs1vaPeN3eDUFoLgSMg5hVwljKdtnY5kfa5lRUT0TTdz_IAIJwTYUFYjnha8TEgYsMq1txXSn8DIJwJxs2gvjHBej8GznIVLBd2VcCDAW-')"></div>
+<div id="detail-map-background" class="bg-cover bg-center w-full h-full absolute inset-0 opacity-80" data-alt="A highly detailed, aesthetically pleasing digital map illustration focused on the Long Biên district in Hanoi, Vietnam. The map uses a modern, light-mode corporate color palette with soft greys for roads, subtle greens for parks, and a prominent blue location marker indicating the project site. The visual style is clean, interface-ready, and professional." data-location="Long Biên, Hà Nội"></div>
 <!-- Overlay marker -->
 <div class="relative z-10 flex flex-col items-center">
 <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center shadow-lg mb-2">
@@ -211,7 +212,7 @@
         <span id="detail-progress" class="text-primary font-semibold text-label-lg">85%</span>
     </h3>
     <div class="w-full bg-surface-container rounded-full h-2 overflow-hidden mb-6">
-        <div id="detail-progress-bar" class="bg-primary h-full rounded-full transition-all duration-500" style="width: 85%"></div>
+        <div id="detail-progress-bar" class="bg-primary h-full rounded-full transition-all duration-500 w-[85%]"></div>
     </div>
 <div class="flex flex-col gap-0">
 <!-- Step 1 (Completed) -->
