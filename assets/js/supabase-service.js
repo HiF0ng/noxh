@@ -362,7 +362,8 @@
 
         async uploadProjectImage(projectId, file, group = 'images') {
             try {
-                const safeName = (file.name || 'image').replace(/[^a-zA-Z0-9._-]/g, '_');
+                let safeName = file.name || 'image';
+                safeName = safeName.replace(/[#?%\\/]/g, '_');
                 const path = `${projectId}/${group}/${Date.now()}-${safeName}`;
                 const res = await fetch(`${config.url}/storage/v1/object/project-images/${path}`, {
                     method: 'POST',
@@ -641,7 +642,8 @@
 
         async uploadDocumentFile(file, group = 'documents') {
             try {
-                const safeName = (file.name || 'document.pdf').replace(/[^a-zA-Z0-9._-]/g, '_');
+                let safeName = file.name || 'document.pdf';
+                safeName = safeName.replace(/[#?%\\/]/g, '_');
                 const path = `documents/${group}/${Date.now()}-${safeName}`;
                 const res = await fetch(`${config.url}/storage/v1/object/project-images/${path}`, {
                     method: 'POST',

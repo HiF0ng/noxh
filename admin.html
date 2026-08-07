@@ -801,11 +801,11 @@
                         <table class="w-full text-left border-collapse min-w-[700px]">
                             <thead>
                                 <tr class="bg-surface-container-low text-on-surface-variant text-sm">
-                                    <th class="p-4 border-b border-outline-variant font-medium text-center">Tên tài liệu</th>
-                                    <th class="p-4 border-b border-outline-variant font-medium text-center">Loại đơn</th>
-                                    <th class="p-4 border-b border-outline-variant font-medium text-center">Loại tài liệu</th>
-                                    <th class="p-4 border-b border-outline-variant font-medium text-center">Ngày tạo</th>
-                                    <th class="p-4 border-b border-outline-variant font-medium text-center">Hành động</th>
+                                    <th class="p-4 border-b border-outline-variant font-medium text-left align-middle">Tên tài liệu</th>
+                                    <th class="p-4 border-b border-outline-variant font-medium text-center align-middle">Loại đơn</th>
+                                    <th class="p-4 border-b border-outline-variant font-medium text-center align-middle">Loại tài liệu</th>
+                                    <th class="p-4 border-b border-outline-variant font-medium text-center align-middle">Ngày tạo</th>
+                                    <th class="p-4 border-b border-outline-variant font-medium text-center align-middle">Hành động</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -923,6 +923,20 @@
                                     <p class="text-sm font-medium text-on-surface">Tải lên PDF</p>
                                     <p class="text-xs text-on-surface-variant mt-1">Kéo thả hoặc click</p>
                                     <p id="pdf-selected-file" class="mt-2 hidden text-xs font-medium text-primary" aria-live="polite"></p>
+                                    
+                                    <!-- Existing File Overlay -->
+                                    <div id="pdf-existing-file" class="absolute inset-0 bg-surface-container-low flex flex-col items-center justify-center rounded-xl hidden z-10 border-2 border-solid border-outline-variant">
+                                        <div class="flex items-center gap-3 bg-surface-container-lowest p-3 rounded-lg border border-outline-variant shadow-sm max-w-[90%] w-full">
+                                            <span class="material-symbols-outlined text-3xl text-error flex-shrink-0">picture_as_pdf</span>
+                                            <div class="flex-1 min-w-0 text-left">
+                                                <a href="#" id="pdf-existing-link" target="_blank" class="text-sm font-medium text-primary hover:underline truncate block w-full" title="Tải xuống/Xem"></a>
+                                                <span class="text-xs text-on-surface-variant">Tệp hiện tại trên hệ thống</span>
+                                            </div>
+                                            <button type="button" id="pdf-existing-delete" class="p-2 text-on-surface-variant hover:text-error hover:bg-error-container/30 rounded-md transition-colors" title="Xóa tệp này">
+                                                <span class="material-symbols-outlined text-[18px]">delete</span>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             
@@ -934,6 +948,20 @@
                                     <p class="text-sm font-medium text-on-surface">Tải lên Word</p>
                                     <p class="text-xs text-on-surface-variant mt-1">Kéo thả hoặc click</p>
                                     <p id="docx-selected-file" class="mt-2 hidden text-xs font-medium text-primary" aria-live="polite"></p>
+                                    
+                                    <!-- Existing File Overlay -->
+                                    <div id="docx-existing-file" class="absolute inset-0 bg-surface-container-low flex flex-col items-center justify-center rounded-xl hidden z-10 border-2 border-solid border-outline-variant">
+                                        <div class="flex items-center gap-3 bg-surface-container-lowest p-3 rounded-lg border border-outline-variant shadow-sm max-w-[90%] w-full">
+                                            <span class="material-symbols-outlined text-3xl text-primary flex-shrink-0">description</span>
+                                            <div class="flex-1 min-w-0 text-left">
+                                                <a href="#" id="docx-existing-link" target="_blank" class="text-sm font-medium text-primary hover:underline truncate block w-full" title="Tải xuống/Xem"></a>
+                                                <span class="text-xs text-on-surface-variant">Tệp hiện tại trên hệ thống</span>
+                                            </div>
+                                            <button type="button" id="docx-existing-delete" class="p-2 text-on-surface-variant hover:text-error hover:bg-error-container/30 rounded-md transition-colors" title="Xóa tệp này">
+                                                <span class="material-symbols-outlined text-[18px]">delete</span>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
