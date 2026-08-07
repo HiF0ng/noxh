@@ -1,4 +1,4 @@
-﻿const API_BASE_URL = 'http://localhost:3000/api/v1';
+const API_BASE_URL = 'http://localhost:3000/api/v1';
 
 function checkAdminSessionExpiration() {
     var session = window.SupabaseService && window.SupabaseService.getAuthSession();
@@ -106,6 +106,8 @@ window.handleAdminLogout = function() {
             resetProjectNewForm();
         }
         if (page === 'docs') {
+            localStorage.removeItem('noxh_document_edit_id');
+            localStorage.removeItem('noxh_document_draft_key');
             initDocsFilter();
             renderAdminDocuments();
         }
@@ -181,7 +183,12 @@ window.handleAdminLogout = function() {
         document.querySelectorAll('.nav-item[data-page]').forEach(function(item) {
             item.addEventListener('click', function(e) {
                 e.preventDefault();
-                navigateTo(this.getAttribute('data-page'));
+                var destPage = this.getAttribute('data-page');
+                if (destPage === 'docs' || destPage === 'docs-new') {
+                    localStorage.removeItem('noxh_document_edit_id');
+                    localStorage.removeItem('noxh_document_draft_key');
+                }
+                navigateTo(destPage);
             });
         });
 
@@ -206,7 +213,12 @@ window.handleAdminLogout = function() {
         document.querySelectorAll('.nav-submenu-item[data-page]').forEach(function(item) {
             item.addEventListener('click', function(e) {
                 e.preventDefault();
-                navigateTo(this.getAttribute('data-page'));
+                var destPage = this.getAttribute('data-page');
+                if (destPage === 'docs' || destPage === 'docs-new') {
+                    localStorage.removeItem('noxh_document_edit_id');
+                    localStorage.removeItem('noxh_document_draft_key');
+                }
+                navigateTo(destPage);
             });
         });
 
@@ -541,7 +553,86 @@ window.handleAdminLogout = function() {
             localStorage.removeItem(draftStorageKey);
         };
 
+        var editId = localStorage.getItem('noxh_document_edit_id') || '';
+        var activeEditDoc = null;
+        var activeEditDocFileDeleted = false;
+
         var loadDraft = async function() {
+            var pdfFileLabel = document.getElementById('pdf-selected-file');
+            var docxFileLabel = document.getElementById('docx-selected-file');
+            if (pdfFileLabel) { pdfFileLabel.textContent = ''; pdfFileLabel.classList.add('hidden'); }
+            if (docxFileLabel) { docxFileLabel.textContent = ''; docxFileLabel.classList.add('hidden'); }
+            var pdfInput = document.getElementById('pdf-input');
+            var docxInput = document.getElementById('docx-input');
+            if (pdfInput) pdfInput.value = '';
+            if (docxInput) docxInput.value = '';
+            
+            var pdfExistingOverlay = document.getElementById('pdf-existing-file');
+            var docxExistingOverlay = document.getElementById('docx-existing-file');
+            if (pdfExistingOverlay) pdfExistingOverlay.classList.add('hidden');
+            if (docxExistingOverlay) docxExistingOverlay.classList.add('hidden');
+            activeEditDocFileDeleted = false;
+
+            if (editId && window.SupabaseService) {
+                var documents = await window.SupabaseService.getDocuments();
+                activeEditDoc = (documents || []).find(function(doc) { return doc.id == editId; });
+                if (activeEditDoc) {
+                    document.getElementById('doc-upload-name').value = activeEditDoc.name || '';
+                    document.getElementById('doc-upload-content').value = activeEditDoc.desc || '';
+                    category.value = activeEditDoc.type || 'Đơn mua';
+                    syncAttachments();
+                    var titleEl = document.querySelector('#page-docs-new h2');
+                    if (titleEl) titleEl.textContent = 'Chỉnh sửa tài liệu';
+                    saveButton.textContent = 'Cập nhật tài liệu';
+                    if (draftButton) draftButton.classList.add('hidden');
+                    
+                    if (activeEditDoc.file) {
+                        var isLegal = category.value === 'Văn bản luật';
+                        var fileName = activeEditDoc.file.split('/').pop().split('?')[0];
+                        try { fileName = decodeURIComponent(fileName); } catch(e){}
+                        
+                        if (activeEditDoc.docType === 'PDF' || isLegal) {
+                            if (pdfExistingOverlay) {
+                                document.getElementById('pdf-existing-link').textContent = fileName || 'Tài liệu PDF';
+                                document.getElementById('pdf-existing-link').href = activeEditDoc.file;
+                                pdfExistingOverlay.classList.remove('hidden');
+                                document.getElementById('pdf-existing-delete').onclick = function(e) {
+                                    e.preventDefault(); e.stopPropagation();
+                                    pdfExistingOverlay.classList.add('hidden');
+                                    activeEditDocFileDeleted = true;
+                                };
+                                document.getElementById('pdf-existing-link').onclick = function(e) { e.stopPropagation(); };
+                            }
+                        } else if (activeEditDoc.docType === 'DOCX') {
+                            if (docxExistingOverlay) {
+                                document.getElementById('docx-existing-link').textContent = fileName || 'Tài liệu Word';
+                                document.getElementById('docx-existing-link').href = activeEditDoc.file;
+                                docxExistingOverlay.classList.remove('hidden');
+                                document.getElementById('docx-existing-delete').onclick = function(e) {
+                                    e.preventDefault(); e.stopPropagation();
+                                    docxExistingOverlay.classList.add('hidden');
+                                    activeEditDocFileDeleted = true;
+                                };
+                                document.getElementById('docx-existing-link').onclick = function(e) { e.stopPropagation(); };
+                            }
+                        }
+                    }
+                    return;
+                } else {
+                    localStorage.removeItem('noxh_document_edit_id');
+                    editId = '';
+                }
+            } else {
+                var titleEl = document.querySelector('#page-docs-new h2');
+                if (titleEl) titleEl.textContent = 'Tải lên tài liệu mới';
+                saveButton.textContent = 'Lưu tài liệu';
+                if (draftButton) draftButton.classList.remove('hidden');
+                document.getElementById('doc-upload-name').value = '';
+                document.getElementById('doc-upload-content').value = '';
+                category.value = 'Đơn mua';
+                syncAttachments();
+            }
+
             if (!draftKey || !window.SupabaseService) return;
             var documents = await window.SupabaseService.getDocuments();
             activeDrafts = (documents || []).filter(function(doc) { return doc.isDraft && doc.draftKey === draftKey; });
@@ -565,7 +656,8 @@ window.handleAdminLogout = function() {
 
             if (!isDraft && !name) { alert('Vui lòng nhập tên tài liệu.'); return; }
             var draftFiles = activeDrafts.filter(function(doc) { return !!doc.fileUrl; });
-            if (!isDraft && isLegalDocument && !pdfFile && !draftFiles.length) { alert('Văn bản luật cần đính kèm một tệp PDF.'); return; }
+            var hasExistingFile = activeEditDoc && activeEditDoc.file && !activeEditDocFileDeleted;
+            if (!isDraft && isLegalDocument && !pdfFile && !draftFiles.length && !hasExistingFile) { alert('Văn bản luật cần đính kèm một tệp PDF.'); return; }
             if (pdfFile && !/\.pdf$/i.test(pdfFile.name)) { alert('Tệp PDF phải có định dạng .pdf.'); return; }
             if ((pdfFile && pdfFile.size > 50 * 1024 * 1024) || (wordFile && wordFile.size > 50 * 1024 * 1024)) { alert('Tệp đính kèm vượt quá giới hạn 50 MB.'); return; }
 
@@ -573,10 +665,10 @@ window.handleAdminLogout = function() {
             var original = button.innerHTML;
             if (!draftKey) draftKey = 'doc-draft-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
             button.disabled = true;
-            button.textContent = isDraft ? 'Đang lưu nháp...' : 'Đang lưu...';
+            button.textContent = isDraft ? 'Đang lưu nháp...' : (editId ? 'Đang cập nhật...' : 'Đang lưu...');
             try {
                 var files = [pdfFile, isLegalDocument ? null : wordFile].filter(Boolean);
-                if (!isDraft && !files.length && !draftFiles.length) throw new Error('Vui lòng chọn ít nhất một tệp đính kèm.');
+                if (!isDraft && !files.length && !draftFiles.length && !hasExistingFile) throw new Error('Vui lòng chọn ít nhất một tệp đính kèm.');
                 if (isDraft) {
                     await removeDrafts(false);
                     for (var i = 0; i < Math.max(files.length, 1); i++) {
@@ -593,21 +685,38 @@ window.handleAdminLogout = function() {
                     alert('Đã lưu bản nháp.');
                     return;
                 }
-                var finalFiles = files.length ? files : draftFiles.map(function(doc) { return { existingUrl: doc.fileUrl, docType: doc.docType }; });
-                for (var j = 0; j < finalFiles.length; j++) {
-                    var item = finalFiles[j];
-                    var finalUrl = item.existingUrl || await window.SupabaseService.uploadDocumentFile(item, isLegalDocument ? 'legal' : 'forms');
-                    if (!finalUrl) throw new Error('Không thể tải tệp đính kèm lên.');
-                    var finalType = item.docType || (/\.pdf$/i.test(item.name) ? 'PDF' : 'DOCX');
-                    var created = await window.SupabaseService.addDocument({ name: finalFiles.length > 1 ? name + ' (' + finalType + ')' : name, type: category.value, desc: content, file: finalUrl, docType: finalType });
-                    if (!created) throw new Error('Không thể lưu tài liệu.');
+                
+                if (editId && activeEditDoc) {
+                    var item = files[0];
+                    var finalUrl = activeEditDoc.file;
+                    var finalType = activeEditDoc.docType;
+                    if (item) {
+                        finalUrl = await window.SupabaseService.uploadDocumentFile(item, isLegalDocument ? 'legal' : 'forms');
+                        if (!finalUrl) throw new Error('Không thể tải tệp đính kèm lên.');
+                        finalType = (/\.pdf$/i.test(item.name) ? 'PDF' : 'DOCX');
+                    }
+                    var updated = await window.SupabaseService.updateDocument(editId, { name: name, type: category.value, desc: content, file: finalUrl, docType: finalType });
+                    if (!updated) throw new Error('Không thể cập nhật tài liệu.');
+                    alert('Đã cập nhật tài liệu thành công.');
+                } else {
+                    var finalFiles = files.length ? files : draftFiles.map(function(doc) { return { existingUrl: doc.fileUrl, docType: doc.docType }; });
+                    for (var j = 0; j < finalFiles.length; j++) {
+                        var item = finalFiles[j];
+                        var finalUrl = item.existingUrl || await window.SupabaseService.uploadDocumentFile(item, isLegalDocument ? 'legal' : 'forms');
+                        if (!finalUrl) throw new Error('Không thể tải tệp đính kèm lên.');
+                        var finalType = item.docType || (/\.pdf$/i.test(item.name) ? 'PDF' : 'DOCX');
+                        var created = await window.SupabaseService.addDocument({ name: finalFiles.length > 1 ? name + ' (' + finalType + ')' : name, type: category.value, desc: content, file: finalUrl, docType: finalType });
+                        if (!created) throw new Error('Không thể lưu tài liệu.');
+                    }
+                    await removeDrafts(!files.length);
+                    alert('Đã lưu tài liệu thành công.');
                 }
-                await removeDrafts(!files.length);
-                alert('Đã lưu tài liệu thành công.');
+                
+                localStorage.removeItem('noxh_document_edit_id');
                 window.location.hash = '#docs';
             } catch (err) {
                 console.error('Document save error:', err);
-                alert(isDraft ? 'Không thể lưu bản nháp. Vui lòng thử lại.' : 'Không thể lưu tài liệu. Vui lòng thử lại.');
+                alert(isDraft ? 'Không thể lưu bản nháp. Vui lòng thử lại.' : (editId ? 'Không thể cập nhật tài liệu. Vui lòng thử lại.' : 'Không thể lưu tài liệu. Vui lòng thử lại.'));
             } finally {
                 button.disabled = false;
                 button.innerHTML = original;
@@ -1774,18 +1883,29 @@ window.handleAdminLogout = function() {
             return;
         }
         tbody.innerHTML = documents.map(function(doc) {
-            return '<tr data-document-row class="border-b border-outline-variant/50">' +
-                '<td class="p-4 font-medium text-on-surface">' + escapeHtml(doc.name) + (doc.isDraft ? ' <span class="ml-2 inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">Bản nháp</span>' : '') + '</td>' +
-                '<td class="p-4 text-on-surface-variant">' + escapeHtml(doc.type || '') + '</td>' +
-                '<td class="p-4 text-on-surface-variant">' + escapeHtml(doc.docType || 'PDF') + '</td>' +
-                '<td class="p-4 text-on-surface-variant">' + escapeHtml(doc.date || '') + '</td>' +
-                '<td class="p-4 text-center">' + (doc.isDraft ? '<button type="button" data-draft-key="' + escapeHtml(doc.draftKey || '') + '" class="btn-open-document-draft text-primary hover:bg-primary/10 p-2 rounded-lg" title="Mở bản nháp"><span class="material-symbols-outlined">edit</span></button>' : '') + '<button type="button" data-document-id="' + doc.id + '" data-draft-key="' + escapeHtml(doc.draftKey || '') + '" class="btn-delete-document text-error hover:bg-error/10 p-2 rounded-lg" title="Xóa tài liệu"><span class="material-symbols-outlined">delete</span></button></td>' +
+            return '<tr data-document-row class="border-b border-outline-variant/50 hover:bg-surface-container-lowest transition-colors">' +
+                '<td class="p-4 font-medium text-on-surface align-middle"><a href="javascript:void(0)" data-document-id="' + doc.id + '" class="btn-edit-document hover:text-primary transition-colors">' + escapeHtml(doc.name) + '</a>' + (doc.isDraft ? ' <span class="ml-2 inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 align-middle">Bản nháp</span>' : '') + '</td>' +
+                '<td class="p-4 text-on-surface-variant align-middle text-center">' + escapeHtml(doc.type || '') + '</td>' +
+                '<td class="p-4 text-on-surface-variant align-middle text-center">' + escapeHtml(doc.docType || 'PDF') + '</td>' +
+                '<td class="p-4 text-on-surface-variant align-middle text-center">' + escapeHtml(doc.date || '') + '</td>' +
+                '<td class="p-4 text-center align-middle">' + 
+                '<div class="flex justify-center items-center gap-1">' +
+                (doc.isDraft ? '<button type="button" data-draft-key="' + escapeHtml(doc.draftKey || '') + '" class="btn-open-document-draft text-primary hover:bg-primary/10 p-2 rounded-lg" title="Mở bản nháp"><span class="material-symbols-outlined">edit</span></button>' : 
+                '<button type="button" data-document-id="' + doc.id + '" class="btn-edit-document text-primary hover:bg-primary/10 p-2 rounded-lg" title="Sửa"><span class="material-symbols-outlined">edit</span></button>') + 
+                '<button type="button" data-document-id="' + doc.id + '" data-draft-key="' + escapeHtml(doc.draftKey || '') + '" class="btn-delete-document text-error hover:bg-error/10 p-2 rounded-lg" title="Xóa tài liệu"><span class="material-symbols-outlined">delete</span></button>' +
+                '</div></td>' +
             '</tr>';
         }).join('');
         initDocsFilter();
         tbody.querySelectorAll('.btn-open-document-draft').forEach(function(button) {
             button.onclick = function() {
                 localStorage.setItem('noxh_document_draft_key', button.getAttribute('data-draft-key'));
+                window.location.hash = '#docs-new';
+            };
+        });
+        tbody.querySelectorAll('.btn-edit-document').forEach(function(el) {
+            el.onclick = function() {
+                localStorage.setItem('noxh_document_edit_id', el.getAttribute('data-document-id'));
                 window.location.hash = '#docs-new';
             };
         });

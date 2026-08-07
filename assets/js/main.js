@@ -1845,16 +1845,21 @@ function renderProjectsList(container, list) {
                 <div>
                     <a href="${detailUrl}" class="relative aspect-square w-full rounded-lg overflow-hidden mb-3 bg-surface-container block">
                         <img src="${p.imageUrl || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80'}" alt="${p.name || p.title}" class="w-full h-full object-cover">
-                        <span class="${isHomepageGrid ? 'homepage-status-overlay ' : 'absolute top-3 right-3 '}status-pill project-card-status-pill ${statusClass}">${p.status || 'Đang mở bán'}</span>
                     </a>
                     <a href="${detailUrl}" class="block font-bold text-lg text-on-surface mb-1 hover:text-primary transition-colors"><h3>${p.name || p.title}</h3></a>
-                    <p class="text-sm text-on-surface-variant flex items-center gap-1 mb-2">
+                    <p class="text-sm text-on-surface-variant flex items-center gap-1 mb-3">
                         <span class="material-symbols-outlined text-base">location_on</span> ${p.location}
                     </p>
-                    ${isHomepageGrid ? `<span class="homepage-status-below status-pill project-card-status-pill ${statusClass}">${p.status || 'Đang mở bán'}</span>` : ''}
-                    <div class="project-card-project-info project-card-info-divider space-y-1 mb-3 pt-2 border-t text-sm">
-                        <p class="text-on-surface-variant whitespace-nowrap overflow-hidden text-ellipsis">Chủ đầu tư: <strong class="text-on-surface">${p.owner || p.investor || 'Đang cập nhật'}</strong></p>
-                        <p class="text-on-surface-variant whitespace-nowrap overflow-hidden text-ellipsis">Giá dự kiến: <strong class="text-on-surface">${priceLabel}</strong></p>
+                    <div class="project-card-project-info project-card-info-divider space-y-3 mb-3 pt-3 border-t-2 border-outline-variant/80 text-sm">
+                        <span class="status-pill project-card-status-pill ${statusClass} block w-full text-center py-1.5 rounded-md text-xs font-semibold">${p.status || 'Đang mở bán'}</span>
+                        <div class="flex flex-col gap-1">
+                            <span class="text-on-surface-variant">Chủ đầu tư:</span>
+                            <strong class="text-on-surface line-clamp-1">${p.owner || p.investor || 'Đang cập nhật'}</strong>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <span class="text-on-surface-variant">Giá dự kiến:</span>
+                            <strong class="text-on-surface">${priceLabel}</strong>
+                        </div>
                     </div>
                 </div>
                 <a href="${detailUrl}" class="mt-1 w-full text-center px-4 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg text-sm font-semibold transition-colors">Xem chi tiết</a>
@@ -2169,18 +2174,33 @@ window.addProjectToCompareList = function(id, title, location, status, progress)
             </button>
             <a href="${detailUrl}" class="relative aspect-square w-full rounded-lg overflow-hidden mb-3 bg-surface-container block">
                 ${imageUrl ? `<img src="${imageUrl}" alt="${projectTitle}" class="w-full h-full object-cover">` : '<div class="w-full h-full bg-slate-100 flex items-center justify-center text-slate-400"><span class="material-symbols-outlined text-4xl">image</span></div>'}
-                <span class="absolute top-3 right-3 status-pill project-card-status-pill ${statusClass}">${projectStatus}</span>
             </a>
             <a href="${detailUrl}" class="block font-bold text-lg text-on-surface mb-1 hover:text-primary transition-colors"><h3>${projectTitle}</h3></a>
-            <p class="text-sm text-on-surface-variant flex items-center gap-1 mb-2">
+            <p class="text-sm text-on-surface-variant flex items-center gap-1 mb-3">
                 <span class="material-symbols-outlined text-base">location_on</span> ${projectLocation}
             </p>
-            <div class="project-card-project-info project-card-info-divider space-y-1 mb-3 pt-2 border-t text-sm">
-                <p class="text-on-surface-variant whitespace-nowrap overflow-hidden text-ellipsis">Chủ đầu tư: <strong class="text-on-surface">${investor}</strong></p>
-                <p class="text-on-surface-variant whitespace-nowrap overflow-hidden text-ellipsis">Giá dự kiến: <strong class="text-on-surface">${priceLabel}</strong></p>
-                <p class="text-on-surface-variant whitespace-nowrap overflow-hidden text-ellipsis">Quy mô: <strong class="text-on-surface">${projectScale}</strong></p>
-                <p class="text-on-surface-variant whitespace-nowrap overflow-hidden text-ellipsis">Diện tích: <strong class="text-on-surface">${projectArea}</strong></p>
-                <p class="text-on-surface-variant whitespace-nowrap overflow-hidden text-ellipsis">Bàn giao: <strong class="text-on-surface">${projectHandover}</strong></p>
+            <div class="project-card-project-info project-card-info-divider space-y-3 mb-3 pt-3 border-t-2 border-outline-variant/80 text-sm">
+                <span class="status-pill project-card-status-pill ${statusClass} block w-full text-center py-1.5 rounded-md text-xs font-semibold">${projectStatus}</span>
+                <div class="flex flex-col gap-1">
+                    <span class="text-on-surface-variant">Chủ đầu tư:</span>
+                    <strong class="text-on-surface line-clamp-1">${investor}</strong>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <span class="text-on-surface-variant">Giá dự kiến:</span>
+                    <strong class="text-on-surface">${priceLabel}</strong>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <span class="text-on-surface-variant">Quy mô:</span>
+                    <strong class="text-on-surface">${projectScale}</strong>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <span class="text-on-surface-variant">Diện tích:</span>
+                    <strong class="text-on-surface">${projectArea}</strong>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <span class="text-on-surface-variant">Bàn giao:</span>
+                    <strong class="text-on-surface">${projectHandover}</strong>
+                </div>
             </div>
         </div>
         <a href="${detailUrl}" class="mt-1 w-full text-center px-4 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg text-sm font-semibold transition-colors">Xem chi tiết</a>
