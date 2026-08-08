@@ -308,6 +308,21 @@
             }
         },
 
+        async getFollowedProjects(userId) {
+            try {
+                const res = await fetch(`${BASE_URL}/user_followed_projects?user_id=eq.${encodeURIComponent(userId)}&select=projects(*)&order=created_at.desc`, { headers: getHeaders() });
+                if (!res.ok) throw new Error('Failed to fetch followed projects');
+                return (await res.json()).map(row => {
+                    const db = row.projects;
+                    if (!db) return null;
+                    return { id: db.id, name: db.title, location: db.location, owner: db.investor, status: db.status, progress: db.progress, desc: db.details_json?.desc || '', imageUrl: db.details_json?.mainImageUrl || '', details: db.details_json || {}, created_at: db.created_at };
+                }).filter(Boolean);
+            } catch (err) {
+                console.error('Fetch followed projects error:', err);
+                return null;
+            }
+        },
+
         // --- Users ---
         async getUsers() {
             try {
@@ -642,8 +657,17 @@
 
         async uploadDocumentFile(file, group = 'documents') {
             try {
-                let safeName = file.name || 'document.pdf';
-                safeName = safeName.replace(/[#?%\\/]/g, '_');
+                // Supabase Storage object keys reject Vietnamese diacritics. Keep the
+                // object key ASCII-only; the Vietnamese title remains in `documents`
+                // and is used as the browser download filename.
+                let safeName = (file.name || 'document.pdf')
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .replace(/đ/g, 'd')
+                    .replace(/Đ/g, 'D')
+                    .replace(/[^a-zA-Z0-9._-]+/g, '_')
+                    .replace(/_+/g, '_');
+                if (!safeName || safeName === '.') safeName = 'document.pdf';
                 const path = `documents/${group}/${Date.now()}-${safeName}`;
                 const res = await fetch(`${config.url}/storage/v1/object/project-images/${path}`, {
                     method: 'POST',

@@ -275,6 +275,7 @@ function initPageScripts() {
     loadProjectDetails();
     setupFloorplanZoom(document.querySelector('[data-floorplan-zoom]'));
     loadSavedProjects();
+    loadFollowedProjects();
     restoreCompareProjects();
     setupScrollDownBtn();
 }
@@ -797,8 +798,8 @@ function setupUserDropdown() {
         dropdown.className = 'absolute right-0 top-full mt-6 w-64 bg-surface-container-lowest rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-outline-variant pt-2 pb-1 hidden flex-col z-50 user-dropdown-menu';
         
         // Support both persistent and per-tab login sessions.
-        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true' ||
-            sessionStorage.getItem('isLoggedIn') === 'true';
+        const authSession = window.SupabaseService && window.SupabaseService.getAuthSession();
+        const isLoggedIn = Boolean(authSession && authSession.access_token);
         let currentUser = null;
         let currentUserStorage = null;
         try {
@@ -1443,8 +1444,8 @@ async function loadProjectDetails() {
     if (progressCard) {
         const milestones = ['Chờ xây dựng', 'Đang xây dựng', 'Sắp nhận hồ sơ', 'Đang nhận đơn', 'Chờ bàn giao'];
         const stored = details.statusTimeline || []; const lastReached = stored.reduce((last, item, index) => item.checked ? index : last, -1);
-        progressCard.innerHTML = `<h3 class="font-title-lg text-title-lg font-bold text-on-surface mb-5">Tiến độ Dự án</h3><div class="flex flex-col">${milestones.map((label, index) => { const item = stored[index] || {}; const reached = index <= lastReached; const current = index === lastReached; return `<div class="relative pl-12 ${index < milestones.length - 1 ? 'pb-7' : ''}">${index < milestones.length - 1 ? `<span class="absolute left-4 -translate-x-1/2 top-8 -bottom-7 w-0.5 ${index < lastReached ? 'bg-primary' : 'border-l-2 border-dashed border-outline-variant'}"></span>` : ''}<span class="absolute left-0 top-0 w-8 h-8 rounded-full flex items-center justify-center ${reached ? 'bg-primary text-white' : 'border-2 border-outline-variant bg-surface-container-lowest text-outline'}">${reached ? '<span class="material-symbols-outlined text-[17px]">check</span>' : '<span class="w-2.5 h-2.5 rounded-full bg-outline-variant"></span>'}</span><div class="pt-0.5"><p class="font-label-md text-label-md ${current ? 'text-primary font-bold' : reached ? 'text-on-surface' : 'text-outline'}">${label}</p>${item.note ? `<p class="font-body-md text-sm text-on-surface-variant mt-0.5">${escapeHtml(item.note)}</p>` : ''}</div></div>`; }).join('')}</div>`;
-        progressCard.innerHTML += '<button id="detail-follow-btn" type="button" class="mt-5 w-full border border-primary text-primary bg-surface-container-lowest font-label-md text-label-md py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"><span class="material-symbols-outlined text-[20px]">bookmark</span><span>Theo dõi dự án</span></button>';
+        progressCard.innerHTML = `<h3 class="font-title-lg text-title-lg font-bold text-on-surface mb-5">Tiến độ Dự án</h3><div class="flex flex-col">${milestones.map((label, index) => { const item = stored[index] || {}; const reached = index <= lastReached; const current = index === lastReached; return `<div class="detail-timeline-item relative flex items-center gap-4 ${index < milestones.length - 1 ? 'pb-7' : ''}">${index < milestones.length - 1 ? `<span class="detail-timeline-connector absolute left-4 -translate-x-1/2 top-8 -bottom-7 w-0.5 ${index < lastReached ? 'bg-primary' : 'border-l-2 border-dashed border-outline-variant'}"></span>` : ''}<span class="detail-timeline-point relative z-10 w-8 h-8 shrink-0 rounded-full flex items-center justify-center ${reached ? 'bg-primary text-white' : 'border-2 border-outline-variant bg-surface-container-lowest text-outline'}">${reached ? '<span class="material-symbols-outlined text-[17px]">check</span>' : '<span class="w-2.5 h-2.5 rounded-full bg-outline-variant"></span>'}</span><div class="detail-timeline-content min-w-0"><p class="detail-timeline-title font-label-md text-label-md ${current ? 'text-primary font-bold' : reached ? 'text-on-surface' : 'text-outline'}">${label}</p>${item.note ? `<p class="detail-timeline-note font-body-md text-sm text-on-surface-variant mt-0.5">${escapeHtml(item.note)}</p>` : ''}</div></div>`; }).join('')}</div>`;
+        progressCard.innerHTML += '<button id="detail-follow-btn" type="button" class="mt-5 w-full border border-primary text-primary bg-surface-container-lowest font-label-md text-label-md py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"><span class="material-symbols-outlined text-[20px]">edit_document</span><span>Đăng ký dự án</span></button>';
     }
     const amenitiesList = Array.from(document.querySelectorAll('ul.grid')).find(list => list.previousElementSibling && list.previousElementSibling.textContent.trim() === 'Tiện ích nổi bật');
     if (amenitiesList && Array.isArray(details.amenities)) amenitiesList.innerHTML = details.amenities.map(item => `<li class="flex items-center gap-2 overflow-hidden"><span class="material-symbols-outlined text-secondary icon-fill flex-shrink-0">check_circle</span><span class="font-body-md text-body-md text-on-surface truncate">${escapeHtml(item)}</span></li>`).join('');
@@ -1507,10 +1508,10 @@ async function setupProjectFollowButton(projectId) {
         button.classList.toggle('text-white', followed);
         button.classList.toggle('text-primary', !followed);
         button.classList.toggle('bg-surface-container-lowest', !followed);
-        button.innerHTML = `<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' ${followed ? 1 : 0}">bookmark</span><span>${followed ? 'Đang theo dõi dự án' : 'Theo dõi dự án'}</span>`;
+        button.innerHTML = `<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' ${followed ? 1 : 0}">edit_document</span><span>${followed ? 'Đang đăng ký' : 'Đăng ký dự án'}</span>`;
     };
     let followed = await window.SupabaseService.isProjectFollowed(user.id, projectId); setState(followed);
-    button.onclick = async () => { button.disabled = true; const next = !followed; if (await window.SupabaseService.setProjectFollowed(user.id, projectId, next)) { followed = next; setState(followed); } else alert('Không thể cập nhật trạng thái theo dõi. Vui lòng thử lại.'); button.disabled = false; };
+    button.onclick = async () => { button.disabled = true; const next = !followed; if (await window.SupabaseService.setProjectFollowed(user.id, projectId, next)) { followed = next; setState(followed); } else alert('Không thể cập nhật trạng thái đăng ký. Vui lòng thử lại.'); button.disabled = false; };
 }
 
 async function loadFaqsFromSupabase() {
@@ -1825,6 +1826,24 @@ async function loadSavedProjects() {
     renderProjectsList(grid, projects);
 }
 
+async function loadFollowedProjects() {
+    const grid = document.getElementById('working-projects-grid');
+    if (!grid || !window.SupabaseService) return;
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser') || 'null'); user = user && (user.user || user); } catch (_) {}
+    if (!user) { grid.innerHTML = '<div class="py-12 text-center text-on-surface-variant">Vui lòng <a href="login.html" class="text-primary font-semibold hover:underline">đăng nhập</a> để xem các dự án đang đăng ký.</div>'; return; }
+    if (!user.id && user.email) user = await window.SupabaseService.getUser(user.email);
+    if (!user || !user.id) { grid.innerHTML = '<div class="py-12 text-center text-on-surface-variant">Không xác định được tài khoản người dùng.</div>'; return; }
+    grid.innerHTML = '<div class="py-12 text-center text-on-surface-variant">Đang tải dự án đang đăng ký...</div>';
+    const projects = await window.SupabaseService.getFollowedProjects(user.id);
+    if (projects === null) { grid.innerHTML = '<div class="py-12 text-center text-error">Không thể tải các dự án đang đăng ký. Vui lòng thử lại.</div>'; return; }
+    if (!projects.length) {
+        grid.innerHTML = '<div class="py-xl flex flex-col items-center justify-center text-center bg-surface-container-lowest rounded-lg border border-dashed border-outline-variant"><div class="w-24 h-24 bg-surface-container-low rounded-full flex items-center justify-center mb-4 text-primary"><span class="material-symbols-outlined text-4xl">edit_document</span></div><h3 class="font-headline-md text-headline-md text-on-surface mb-2">Chưa có dự án đang đăng ký</h3><p class="font-body-md text-body-md text-on-surface-variant mb-6 max-w-md">Hãy chọn một dự án phù hợp để bắt đầu đăng ký.</p><a href="all-projects.html" class="bg-primary text-on-primary font-label-md text-label-md px-6 py-3 rounded-full">Khám phá Dự án</a></div>';
+        return;
+    }
+    renderProjectsList(grid, projects);
+}
+
 function renderProjectsList(container, list) {
     if (!container) return;
     const isHomepageGrid = container.id === 'homepage-projects-grid';
@@ -1875,6 +1894,14 @@ function renderProjectsList(container, list) {
 }
 
 // 5. Fetch and Render Live Documents
+function updateLegalDocumentsUpdateLabel() {
+    const now = new Date();
+    const label = `Cập nhật tới T${now.getMonth() + 1}/${now.getFullYear()}`;
+    document.querySelectorAll('[data-legal-update-label]').forEach(element => {
+        element.textContent = label;
+    });
+}
+
 function getDocumentDownloadName(document) {
     const docType = String(document.doc_type || document.docType || 'PDF').toLowerCase();
     const extension = docType === 'docx' ? '.docx' : '.pdf';
@@ -1952,9 +1979,28 @@ async function loadLiveDocuments() {
 
 // Auto-run Live Loaders on Page Load
 document.addEventListener('DOMContentLoaded', () => {
+    updateLegalDocumentsUpdateLabel();
     loadLiveProjects();
     loadLiveDocuments();
 });
+
+// Authenticated visitors should not see forms intended for a new login or signup.
+async function redirectAuthenticatedUsersFromAuthPages() {
+    const pageName = window.location.pathname.split('/').pop().toLowerCase();
+    if (pageName !== 'login.html' && pageName !== 'signup.html') return;
+    if (!window.SupabaseService) return;
+
+    let session = window.SupabaseService.getAuthSession();
+    const isSessionValid = currentSession => currentSession && currentSession.access_token &&
+        (!currentSession.expires_at || currentSession.expires_at * 1000 > Date.now() + 5000);
+
+    if (!isSessionValid(session) && session && session.refresh_token) {
+        session = await window.SupabaseService.refreshAuthSession();
+    }
+    if (isSessionValid(session)) window.location.replace('homepage.html');
+}
+
+void redirectAuthenticatedUsersFromAuthPages();
 
 /* INTERACTIVE COMPARE MODAL & LIVE SEARCH HANDLER */
 let compareModalProjectsCache = [];
@@ -1979,7 +2025,7 @@ async function loadLegalDocuments() {
             container.innerHTML = '<div class="py-10 text-center flex flex-col items-center justify-center gap-2"><span class="material-symbols-outlined text-4xl text-outline-variant/60">gavel</span><span class="font-body-md text-on-surface-variant text-sm">Chưa có văn bản pháp luật</span></div>';
             return;
         }
-        container.innerHTML = legalDocuments.map(document => `<a href="${getDocumentDownloadUrl(document)}" class="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant/60 hover:border-primary hover:bg-primary/5 transition-colors flex items-center justify-between gap-4"><div class="flex items-center gap-3 min-w-0"><span class="material-symbols-outlined text-red-500 text-2xl">picture_as_pdf</span><div class="min-w-0"><p class="font-label-md text-label-md text-on-surface truncate">${escapeHtml(document.name)}</p>${document.desc ? `<p class="mt-1 text-sm text-on-surface-variant line-clamp-2">${escapeHtml(document.desc)}</p>` : ''}</div></div><span class="material-symbols-outlined text-primary">download</span></a>`).join('');
+        container.innerHTML = legalDocuments.map(document => `<a href="${getDocumentDownloadUrl(document)}" class="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant/60 hover:border-primary hover:bg-primary/5 transition-colors flex items-center justify-between gap-4"><div class="flex items-center gap-3 min-w-0"><span class="material-symbols-outlined text-red-500 text-2xl">picture_as_pdf</span><div class="min-w-0"><p class="font-label-md text-label-md text-on-surface truncate">${escapeHtml(document.name)}</p>${document.desc ? `<p class="mt-1 text-sm text-on-surface-variant">${escapeHtml(document.desc)}</p>` : ''}</div></div><span class="material-symbols-outlined text-primary">download</span></a>`).join('');
     } catch (error) {
         console.error('Error loading legal documents:', error);
         container.innerHTML = '<p class="py-6 text-center text-sm text-on-surface-variant">Không thể tải văn bản pháp luật.</p>';

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Central - Hệ thống Hỗ trợ Nhà ở</title>
+    <title>Admin Central</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="assets/js/supabase-config.js"></script>
-    <script src="assets/js/supabase-service.js?v=7"></script>
+    <script src="assets/js/supabase-service.js?v=8"></script>
     <link rel="stylesheet" href="assets/css/admin.css?v=3">
     <link rel="stylesheet" href="assets/css/icon-utilities.css">
 </head>
@@ -114,7 +114,7 @@
             <!-- PAGE: DASHBOARD -->
             <section id="page-dashboard" class="page-section active w-full">
                 <div class="mb-8">
-                    <h2 class="text-2xl font-semibold text-on-surface mb-1">Xin chào, Admin</h2>
+                    <h2 class="text-2xl font-semibold text-on-surface mb-1">Xin chào quản trị viên!</h2>
                     <p class="text-on-surface-variant">Dưới đây là tổng quan về hoạt động hệ thống của bạn.</p>
                 </div>
                 
@@ -775,22 +775,6 @@
                     <p class="text-on-surface-variant text-sm">Tải lên bộ biểu mẫu và tài liệu theo từng nhóm đối tượng.</p>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
-                        <h3 class="text-lg font-semibold text-on-surface">Mua Nhà ở xã hội</h3>
-                        <p class="text-sm text-on-surface-variant mt-1 mb-5">Bộ tài liệu dành cho hồ sơ mua nhà ở xã hội.</p>
-                        <input id="package-buy-input" class="package-upload-input hidden" data-label="package-buy-file" data-category="Bộ tài liệu - Mua Nhà ở xã hội" type="file" accept=".zip">
-                        <button type="button" onclick="document.getElementById('package-buy-input').click()" class="w-full py-2.5 px-4 rounded-lg bg-primary text-on-primary hover:bg-surface-tint transition-colors font-medium flex items-center justify-center gap-2"><span class="material-symbols-outlined text-[20px]">upload_file</span>Tải lên bộ tài liệu</button>
-                        <p id="package-buy-file" class="package-upload-file mt-3 text-xs text-on-surface-variant">Chưa chọn tệp</p>
-                    </div>
-                    <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
-                        <h3 class="text-lg font-semibold text-on-surface">Thuê Nhà ở xã hội</h3>
-                        <p class="text-sm text-on-surface-variant mt-1 mb-5">Bộ tài liệu dành cho hồ sơ thuê nhà ở xã hội.</p>
-                        <input id="package-rent-input" class="package-upload-input hidden" data-label="package-rent-file" data-category="Bộ tài liệu - Thuê Nhà ở xã hội" type="file" accept=".zip">
-                        <button type="button" onclick="document.getElementById('package-rent-input').click()" class="w-full py-2.5 px-4 rounded-lg bg-primary text-on-primary hover:bg-surface-tint transition-colors font-medium flex items-center justify-center gap-2"><span class="material-symbols-outlined text-[20px]">upload_file</span>Tải lên bộ tài liệu</button>
-                        <p id="package-rent-file" class="package-upload-file mt-3 text-xs text-on-surface-variant">Chưa chọn tệp</p>
-                    </div>
-                </div>
 
                 <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm mt-6">
                     <div class="mb-6">
@@ -1236,4 +1220,3 @@
     <script src="assets/js/admin.js?v=23"></script>
 </body>
 </html>
-

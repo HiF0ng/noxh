@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>Tài liệu &amp; Hướng dẫn - Vietnam Housing</title>
-<link rel="stylesheet" href="assets/css/style.css?v=16">
+<link rel="stylesheet" href="assets/css/style.css?v=17">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script src="assets/js/tailwind-config.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
@@ -103,13 +103,13 @@
 <button class="accordion-header w-full flex items-center justify-between p-md bg-surface-container-lowest hover:bg-surface-container-low transition-colors text-left">
 <span class="font-headline-md text-headline-md text-primary">Văn bản pháp luật</span>
 <div class="flex items-center gap-sm">
-<span class="font-label-sm text-label-sm text-outline hidden md:inline-block">Đang cập nhật</span>
+<span data-legal-update-label class="font-label-sm text-label-sm text-outline hidden md:inline-block">Cập nhật tới T8/2026</span>
 <span class="material-symbols-outlined accordion-icon text-on-surface-variant">expand_more</span>
 </div>
 </button>
 <div class="accordion-content bg-surface">
 <div class="p-md">
-<span class="font-label-sm text-label-sm text-outline md:hidden block mb-sm">Đang cập nhật</span>
+<span data-legal-update-label class="font-label-sm text-label-sm text-outline md:hidden block mb-sm">Cập nhật tới T8/2026</span>
 <div id="legal-documents-list" class="flex flex-col gap-3">
 <div class="py-10 text-center flex flex-col items-center justify-center gap-2">
     <span class="material-symbols-outlined text-4xl text-outline-variant/60">gavel</span>
@@ -121,7 +121,10 @@
 </div>
 <div class="mt-xl bg-red-50 rounded-xl p-md flex gap-md items-center border border-red-200">
     <span class="material-symbols-outlined text-red-500 shrink-0 text-3xl">error</span>
-    <p class="text-sm text-red-900/90 italic">Các biểu mẫu và tài liệu được tổng hợp từ nguồn công khai nhằm mục đích tham khảo và hỗ trợ cộng đồng. Người dùng vui lòng đối chiếu lại với hướng dẫn từ Chủ đầu tư và cơ quan chức năng tại thời điểm nộp hồ sơ.</p>
+    <ul class="list-disc space-y-2 pl-5 text-sm text-red-900/90 italic">
+        <li>Các biểu mẫu và tài liệu được tổng hợp từ nguồn công khai nhằm mục đích tham khảo và hỗ trợ cộng đồng. Người dùng vui lòng đối chiếu lại với hướng dẫn từ Chủ đầu tư và cơ quan chức năng tại thời điểm nộp hồ sơ.</li>
+        <li>Khuyến khích người dùng dành thời gian đọc qua các văn bản pháp luật có liên quan để nắm rõ nhất thông tin về quy trình và quy định về NOXH.</li>
+    </ul>
 </div>
 </section>
 </main>
@@ -129,5 +132,5 @@
 <div id="footer-placeholder"></div>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/supabase-service.js?v=7"></script>
-<script src="assets/js/main.js?v=47"></script>
+<script src="assets/js/main.js?v=49"></script>
 </body></html>
