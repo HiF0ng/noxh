@@ -132,7 +132,15 @@ body {
 
 /* Larger status pill used only on project cards. */
 .document-pack-button {
-    transition: background-color 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    box-sizing: border-box;
+    transition: background-color 180ms ease, color 180ms ease, font-weight 180ms ease;
+}
+
+.document-pack-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    flex: 0 0 1.5rem;
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
 @media (min-width: 1024px) {
@@ -144,24 +152,24 @@ body {
         margin-top: 0 !important;
     }
 
+    .document-pack-button {
+        height: 72px;
+    }
+
     .document-pack-button:hover {
         background-color: #2563eb !important;
         border-color: #2563eb !important;
         color: #ffffff !important;
     }
 
-    .document-pack-button:hover .document-pack-label,
-    .document-pack-button:hover .document-pack-icon {
+    .document-pack-button:hover .document-pack-label {
         color: #ffffff !important;
         font-weight: 600 !important;
     }
 
-    .document-pack-button:hover .document-pack-label {
-        font-size: 1.02em;
-    }
-
     .document-pack-button:hover .document-pack-icon {
-        font-size: 1.2rem !important;
+        color: #ffffff !important;
+        font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
     }
 }
 
@@ -656,6 +664,44 @@ body:not(:has(.homepage-hero-section)) [class*="mt-[80px]"] {
 }
 
 @media (min-width: 1024px) {
+    /* Keep every settings-sidebar row on the same left alignment. Some legacy
+       pages used scale-95 on the first group, which shifted those rows inward. */
+    .sidebar-menu > a,
+    .sidebar-menu > div > a {
+        font-weight: 600 !important;
+    }
+
+    .sidebar-menu > a.scale-95 {
+        transform: none !important;
+    }
+
+    .sidebar-menu .material-symbols-outlined.icon-weight-500.icon-outline {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24 !important;
+    }
+
+    .sidebar-menu .material-symbols-outlined.icon-weight-500.icon-filled {
+        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24 !important;
+    }
+
+    .sidebar-menu .material-symbols-outlined.icon-weight-500:not(.icon-outline):not(.icon-filled) {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24 !important;
+    }
+
+    /* Align each timeline marker to the vertical centre of its text group. */
+    #detail-progress-card .detail-timeline-item {
+        align-items: center;
+    }
+
+    #detail-progress-card .detail-timeline-title {
+        font-size: 1.0625rem !important;
+        line-height: 1.4;
+    }
+
+    #detail-progress-card .detail-timeline-note {
+        font-size: 0.8125rem !important;
+        line-height: 1.45;
+    }
+
     /* Desktop: denser rows with stronger, more legible labels and icons. */
     .user-dropdown-link {
         min-height: 2.25rem;
