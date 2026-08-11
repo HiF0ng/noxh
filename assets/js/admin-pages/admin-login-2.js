@@ -28,6 +28,7 @@ function togglePasswordVis() {
 
         async function handleAdminLogin(e) {
             e.preventDefault();
+            window.SupabaseService.setAuthContext('admin');
             var email = document.getElementById('admin-email').value.trim();
             var password = document.getElementById('admin-password').value.trim();
             var btnSubmit = document.getElementById('btn-login-submit');

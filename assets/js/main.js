@@ -199,6 +199,17 @@ async function loadNavbar() {
 async function loadFooter() {
     const placeholder = document.getElementById('footer-placeholder');
     if (!placeholder) return;
+    // Keep authentication pages usable even when the shared component request
+    // is unavailable (for example, while opening a local preview).
+    const fallbackFooter = `
+        <footer class="w-full py-10 lg:py-14 px-6 md:px-12 max-w-5xl mx-auto flex flex-col bg-surface-container-low border-t border-outline-variant">
+            <div class="flex flex-col md:flex-row justify-between items-start gap-8 mb-8 lg:mb-10">
+                <div class="footer-logo-col w-fit flex flex-col"><div class="flex items-center gap-sm mb-3 lg:mb-4"><img src="img/logo.svg" alt="noxh.help" class="h-7 lg:h-10 w-auto"></div><p id="footer-desc" class="font-body-sm text-[14px] md:text-[15px] lg:text-[16px] text-on-surface-variant leading-relaxed">Cung cấp thông tin chính xác và miễn phí<br class="lg:hidden"> giúp bạn hiện thực hóa giấc mơ Nhà ở xã hội.</p></div>
+                <div class="flex flex-col gap-2 lg:gap-3"><h4 class="font-label-sm text-[11px] lg:text-[14px] font-bold text-on-surface uppercase tracking-wider mb-2 lg:mb-3">LIÊN KẾT</h4><a class="font-body-sm text-[13px] lg:text-[17px] text-on-surface-variant hover:text-primary" href="about_us.html">Về chúng tôi</a><a class="font-body-sm text-[13px] lg:text-[17px] text-on-surface-variant hover:text-primary" href="policy.html">Chính sách bảo mật</a><a class="font-body-sm text-[13px] lg:text-[17px] text-on-surface-variant hover:text-primary" href="contact.html">Liên hệ hỗ trợ</a><a class="font-body-sm text-[13px] lg:text-[17px] text-on-surface-variant hover:text-primary" href="term_of_use.html">Điều khoản sử dụng</a></div>
+            </div>
+            <div class="border-t border-outline-variant/60 pt-5 lg:pt-6 flex flex-col sm:flex-row items-center justify-between gap-2"><p class="font-body-sm text-[12px] lg:text-[13px] text-on-surface-variant/70 text-center sm:text-left">© 2026 <span class="font-semibold text-on-surface-variant">noxh.help</span>. Tất cả quyền được bảo lưu.</p><p class="font-body-sm text-[12px] lg:text-[13px] text-on-surface-variant/50 text-center sm:text-right">Dữ liệu mang tính tham khảo. Không phải tư vấn pháp lý.</p></div>
+        </footer>`;
+    placeholder.innerHTML = fallbackFooter;
     try {
         const response = await fetch('components/footer.html');
         if (response.ok) {
@@ -208,7 +219,7 @@ async function loadFooter() {
             requestAnimationFrame(() => requestAnimationFrame(() => fitFooterDesc()));
         }
     } catch (err) {
-        console.error('Failed to load footer component', err);
+        console.warn('Using fallback footer:', err);
     }
 }
 
@@ -265,6 +276,8 @@ function initPageScripts() {
     loadFaqsFromSupabase();
     loadLegalDocuments();
     loadDocumentSections();
+    setupPolicyTableOfContents();
+    setupContactForm();
     setupPasswordToggles();
     setupAuthForms();
     initSettingsForm();
@@ -462,11 +475,7 @@ function setupAuthForms() {
             try {
                 const registered = window.SupabaseService && await window.SupabaseService.signUpWithPassword({ email, password, fullName: fullname, phone });
                 if (registered && registered.success) {
-                    if (registered.needsEmailConfirmation) {
-                        showToast('Tài khoản đã tạo. Hãy xác nhận email trước khi đăng nhập.', 'success');
-                        return;
-                    }
-                    showToast('Tạo tài khoản thành công!', 'success');
+                    showToast('Tạo tài khoản thành công! Bạn đã được đăng nhập.', 'success');
                     setTimeout(() => { window.location.href = 'homepage.html'; }, 800);
                 } else {
                     showToast((registered && registered.error) || 'Đăng ký thất bại. Vui lòng thử lại!', 'error');
@@ -1399,6 +1408,97 @@ function setupSaveProjectToggle() {
     });
 }
 
+function setupPolicyTableOfContents() {
+    const toc = document.getElementById('policy-toc');
+    if (!toc) return;
+    const links = Array.from(toc.querySelectorAll('.policy-toc-link'));
+    const sections = links.map(link => document.getElementById(link.dataset.policySection)).filter(Boolean);
+    if (!links.length || !sections.length) return;
+
+    const setActive = id => links.forEach(link => link.classList.toggle('is-active', link.dataset.policySection === id));
+    const updateActiveSection = () => {
+        const offset = 160;
+        let current = sections[0].id;
+        sections.forEach(section => { if (section.getBoundingClientRect().top <= offset) current = section.id; });
+        setActive(current);
+    };
+
+    if (window._policyTocCleanup) window._policyTocCleanup();
+    toc.addEventListener('click', event => {
+        const link = event.target.closest('.policy-toc-link');
+        if (link) setActive(link.dataset.policySection);
+    });
+    window.addEventListener('scroll', updateActiveSection, { passive: true });
+    window.addEventListener('resize', updateActiveSection);
+    window._policyTocCleanup = () => {
+        window.removeEventListener('scroll', updateActiveSection);
+        window.removeEventListener('resize', updateActiveSection);
+    };
+    updateActiveSection();
+}
+
+function setupContactForm() {
+    const form = document.getElementById('contact-form');
+    if (!form || form.dataset.bound === 'true') return;
+    form.dataset.bound = 'true';
+    const imageInput = document.getElementById('contact-images');
+    const fileList = document.getElementById('contact-file-list');
+    if (imageInput && fileList) imageInput.addEventListener('change', () => {
+        fileList.innerHTML = Array.from(imageInput.files).map(file => `<span class="inline-flex items-center gap-1 rounded-md bg-surface-container px-3 py-1.5 text-sm text-on-surface-variant"><span class="material-symbols-outlined text-[16px]">image</span>${escapeHtml(file.name)}</span>`).join('');
+    });
+    form.addEventListener('submit', event => {
+        event.preventDefault();
+        const name = document.getElementById('contact-name').value.trim();
+        const email = document.getElementById('contact-email').value.trim();
+        const subject = document.getElementById('contact-subject').value;
+        const message = document.getElementById('contact-message').value.trim();
+        const body = `Họ và tên: ${name}\nEmail: ${email}\nChủ đề: ${subject}\n\n${message}`;
+        window.location.href = `mailto:trogiup.noxh@gmail.com?subject=${encodeURIComponent(`[${subject}] ${name}`)}&body=${encodeURIComponent(body)}`;
+    });
+}
+
+function showLoginRequiredModal() {
+    let modal = document.getElementById('login-required-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'login-required-modal';
+        modal.className = 'fixed inset-0 z-[120] hidden items-center justify-center bg-black/45 p-4';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-labelledby', 'login-required-title');
+        modal.innerHTML = `
+            <div class="w-full max-w-md rounded-2xl bg-surface-container-lowest p-6 shadow-2xl">
+                <div class="flex items-start gap-3">
+                    <span class="material-symbols-outlined flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-fixed text-primary">lock</span>
+                    <div>
+                        <h2 id="login-required-title" class="font-title-lg text-title-lg font-bold text-on-surface">Yêu cầu đăng nhập</h2>
+                        <p class="mt-2 font-body-md text-body-md text-on-surface-variant">Bạn cần đăng nhập để sử dụng tính năng này.</p>
+                    </div>
+                </div>
+                <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                    <button type="button" data-close class="rounded-lg border border-outline-variant px-5 py-2.5 font-label-md text-label-md text-on-surface hover:bg-surface-container transition-colors">Quay lại</button>
+                    <button type="button" data-login class="rounded-lg bg-primary px-5 py-2.5 font-label-md text-label-md text-on-primary hover:bg-surface-tint transition-colors">Đăng nhập</button>
+                </div>
+            </div>`;
+        document.body.appendChild(modal);
+
+        const close = () => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        };
+        modal.querySelector('[data-close]').addEventListener('click', close);
+        modal.querySelector('[data-login]').addEventListener('click', () => { window.location.href = 'login.html'; });
+        modal.addEventListener('click', event => { if (event.target === modal) close(); });
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && !modal.classList.contains('hidden')) close();
+        });
+    }
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    modal.querySelector('[data-login]').focus();
+}
+
 async function loadProjectDetails() {
     if (!document.getElementById('detail-title') || !window.SupabaseService) return;
     const id = new URLSearchParams(window.location.search).get('id');
@@ -1487,9 +1587,10 @@ function setupFloorplanZoom(image) {
 }
 
 async function setupProjectSaveButton(projectId) {
-    const button = document.getElementById('detail-save-btn'); if (!button || !window.SupabaseService) return;
+    const button = document.getElementById('detail-save-btn'); if (!button) return;
     let user = null; try { user = JSON.parse(localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser') || 'null'); user = user && (user.user || user); } catch (_) {}
-    if (!user) { button.onclick = () => { window.location.href = 'login.html'; }; return; }
+    if (!user) { button.onclick = showLoginRequiredModal; return; }
+    if (!window.SupabaseService) return;
     if (!user.id && user.email) user = await window.SupabaseService.getUser(user.email);
     if (!user || !user.id) return;
     const setState = saved => { button.classList.toggle('bg-primary', saved); button.classList.toggle('text-white', saved); button.classList.toggle('text-primary', !saved); const icon = button.querySelector('.material-symbols-outlined'); const label = button.querySelector('span:not(.material-symbols-outlined)'); if (icon) icon.classList.toggle('icon-fill', saved); if (label) label.textContent = saved ? 'Đã lưu' : 'Lưu Dự án'; };
@@ -1498,9 +1599,10 @@ async function setupProjectSaveButton(projectId) {
 }
 
 async function setupProjectFollowButton(projectId) {
-    const button = document.getElementById('detail-follow-btn'); if (!button || !window.SupabaseService) return;
+    const button = document.getElementById('detail-follow-btn'); if (!button) return;
     let user = null; try { user = JSON.parse(localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser') || 'null'); user = user && (user.user || user); } catch (_) {}
-    if (!user) { button.onclick = () => { window.location.href = 'login.html'; }; return; }
+    if (!user) { button.onclick = showLoginRequiredModal; return; }
+    if (!window.SupabaseService) return;
     if (!user.id && user.email) user = await window.SupabaseService.getUser(user.email);
     if (!user || !user.id) return;
     const setState = followed => {
