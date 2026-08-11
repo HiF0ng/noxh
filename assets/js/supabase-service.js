@@ -11,8 +11,12 @@
     const BASE_URL = `${config.url}/rest/v1`;
 
     const AUTH_SESSION_KEY = 'noxh_auth_session';
+    const ADMIN_AUTH_SESSION_KEY = 'noxh_admin_auth_session';
+    let authContext = 'user';
+    const isAdminContext = () => authContext === 'admin';
+    const getSessionKey = () => isAdminContext() ? ADMIN_AUTH_SESSION_KEY : AUTH_SESSION_KEY;
     const getAuthSession = () => {
-        try { return JSON.parse(localStorage.getItem(AUTH_SESSION_KEY) || sessionStorage.getItem(AUTH_SESSION_KEY) || 'null'); }
+        try { const key = getSessionKey(); return JSON.parse(localStorage.getItem(key) || sessionStorage.getItem(key) || 'null'); }
         catch (_) { return null; }
     };
     const getAccessToken = () => getAuthSession()?.access_token || config.anonKey;
@@ -22,10 +26,27 @@
         'Content-Type': 'application/json',
         'Prefer': 'return=representation'
     });
+    const translateAuthError = message => {
+        const text = String(message || '');
+        const rateLimit = text.match(/For security purposes, you can only request this after\s+(\d+)\s+seconds/i);
+        if (rateLimit) return `Vì lý do bảo mật, bạn chỉ có thể gửi lại yêu cầu sau ${rateLimit[1]} giây.`;
+        if (/User already registered/i.test(text)) return 'Email này đã được đăng ký.';
+        if (/Invalid login credentials/i.test(text)) return 'Email hoặc mật khẩu không chính xác.';
+        if (/Email not confirmed/i.test(text)) return 'Email chưa được xác thực.';
+        return text;
+    };
 
     const SupabaseService = {
         // --- Supabase Auth ---
         getAuthSession,
+        setAuthContext(context) { authContext = context === 'admin' ? 'admin' : 'user'; },
+        migrateLegacyAdminSession() {
+            if (!isAdminContext() || getAuthSession() || !localStorage.getItem('adminUser')) return;
+            try {
+                const legacySession = JSON.parse(localStorage.getItem(AUTH_SESSION_KEY) || sessionStorage.getItem(AUTH_SESSION_KEY) || 'null');
+                if (legacySession?.access_token) localStorage.setItem(ADMIN_AUTH_SESSION_KEY, JSON.stringify(legacySession));
+            } catch (_) {}
+        },
         async signInWithPassword(email, password) {
             try {
                 const res = await fetch(`${config.url}/auth/v1/token?grant_type=password`, {
@@ -34,12 +55,28 @@
                     body: JSON.stringify({ email, password })
                 });
                 const data = await res.json();
-                if (!res.ok) return { success: false, error: data?.error_description || data?.msg || 'Đăng nhập không thành công.' };
-                localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(data));
-                localStorage.setItem('isLoggedIn', 'true');
+                if (!res.ok) return { success: false, error: translateAuthError(data?.error_description || data?.msg || 'Đăng nhập không thành công.') };
+                localStorage.setItem(getSessionKey(), JSON.stringify(data));
+                if (!isAdminContext()) localStorage.setItem('isLoggedIn', 'true');
                 const profile = await this.getCurrentProfile();
                 const user = profile || { id: data.user.id, email: data.user.email, full_name: data.user.user_metadata?.full_name || '' };
-                localStorage.setItem('currentUser', JSON.stringify(user));
+                if (isAdminContext()) {
+                    // Remove only a legacy public session for this same admin account.
+                    // A separate website user's session is left untouched.
+                    const publicSession = (() => {
+                        try { return JSON.parse(localStorage.getItem(AUTH_SESSION_KEY) || sessionStorage.getItem(AUTH_SESSION_KEY) || 'null'); }
+                        catch (_) { return null; }
+                    })();
+                    if (publicSession?.user?.id === data.user.id) {
+                        [localStorage, sessionStorage].forEach(store => {
+                            store.removeItem(AUTH_SESSION_KEY);
+                            store.removeItem('isLoggedIn');
+                            store.removeItem('currentUser');
+                        });
+                    }
+                } else {
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+                }
                 return { success: true, user, session: data };
             } catch (err) {
                 console.error('Supabase Auth login error:', err);
@@ -54,12 +91,16 @@
                     body: JSON.stringify({ email, password, data: { full_name: fullName, phone: phone || '' } })
                 });
                 const data = await res.json();
-                if (!res.ok) return { success: false, error: data?.msg || data?.error_description || 'Không thể tạo tài khoản.' };
+                if (!res.ok) return { success: false, error: translateAuthError(data?.msg || data?.error_description || 'Không thể tạo tài khoản.') };
                 if (data.access_token) {
-                    localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(data));
+                    localStorage.setItem(getSessionKey(), JSON.stringify(data));
                     localStorage.setItem('isLoggedIn', 'true');
+                    const profile = await this.getCurrentProfile();
+                    const user = profile || { id: data.user.id, email: data.user.email, full_name: data.user.user_metadata?.full_name || '' };
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+                    return { success: true, needsEmailConfirmation: false, user, session: data };
                 }
-                return { success: true, needsEmailConfirmation: !data.access_token, user: data.user };
+                return { success: false, error: 'Hệ thống chưa thể đăng nhập ngay sau khi đăng ký. Vui lòng liên hệ hỗ trợ.' };
             } catch (err) {
                 console.error('Supabase Auth signup error:', err);
                 return { success: false, error: 'Không thể kết nối dịch vụ đăng ký.' };
@@ -70,7 +111,10 @@
             try {
                 if (session?.access_token) await fetch(`${config.url}/auth/v1/logout`, { method: 'POST', headers: getHeaders() });
             } finally {
-                [localStorage, sessionStorage].forEach(store => { store.removeItem(AUTH_SESSION_KEY); store.removeItem('isLoggedIn'); store.removeItem('currentUser'); });
+                [localStorage, sessionStorage].forEach(store => {
+                    store.removeItem(getSessionKey());
+                    if (!isAdminContext()) { store.removeItem('isLoggedIn'); store.removeItem('currentUser'); }
+                });
             }
         },
         async refreshAuthSession() {
@@ -84,7 +128,7 @@
                 });
                 if (!res.ok) return null;
                 const refreshed = await res.json();
-                localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(refreshed));
+                localStorage.setItem(getSessionKey(), JSON.stringify(refreshed));
                 return refreshed;
             } catch (_) { return null; }
         },
@@ -93,10 +137,35 @@
                 const res = await fetch(`${config.url}/auth/v1/recover`, {
                     method: 'POST',
                     headers: { apikey: config.anonKey, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, redirect_to: `${window.location.origin}${window.location.pathname.replace(/[^/]+$/, '')}recover-password.html` })
+                    body: JSON.stringify({ email })
                 });
-                return res.ok;
-            } catch (_) { return false; }
+                const data = await res.json().catch(() => ({}));
+                return {
+                    success: res.ok,
+                    error: translateAuthError(data?.error_description || data?.msg || 'Không thể gửi email khôi phục. Vui lòng thử lại sau.')
+                };
+            } catch (_) {
+                return { success: false, error: 'Không thể kết nối dịch vụ gửi email. Vui lòng thử lại.' };
+            }
+        },
+        async verifyRecoveryOtp(email, token) {
+            try {
+                const res = await fetch(`${config.url}/auth/v1/verify`, {
+                    method: 'POST',
+                    headers: { apikey: config.anonKey, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, token, type: 'recovery' })
+                });
+                const data = await res.json();
+                if (!res.ok || !data?.access_token) {
+                    return { success: false, error: translateAuthError(data?.error_description || data?.msg || 'Mã xác thực không hợp lệ hoặc đã hết hạn.') };
+                }
+                localStorage.setItem(getSessionKey(), JSON.stringify(data));
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('currentUser', JSON.stringify(data.user || { id: '', email }));
+                return { success: true, user: data.user || { email } };
+            } catch (_) {
+                return { success: false, error: 'Không thể xác thực mã. Vui lòng thử lại.' };
+            }
         },
         async updateAuthPassword(password) {
             try {
