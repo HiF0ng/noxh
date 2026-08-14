@@ -14,111 +14,59 @@
 <div id="navbar-placeholder"></div>
 
 <!-- Main Content -->
-<main class="flex-grow pb-xl px-6 md:px-12 w-full max-w-5xl mx-auto flex flex-col mt-[80px]">
-    <div class="mb-lg mt-8">
-        <nav aria-label="Breadcrumb" class="flex text-on-surface-variant font-label-sm text-label-sm mb-4 mt-2">
+<main class="project-page-compact-spacing flex-grow pb-xl px-6 md:px-12 w-full max-w-5xl mx-auto flex flex-col pt-[86px] lg:pt-24">
+    <div class="mb-6">
+        <nav aria-label="Breadcrumb" class="project-page-breadcrumb flex text-on-surface-variant text-[13px] md:text-[14px] lg:text-[18px] font-medium my-4 lg:my-6">
             <ol class="inline-flex items-center gap-xs">
                 <li class="inline-flex items-center"><a class="hover:text-primary transition-colors" href="homepage.html">Trang chủ</a></li>
-                <li><div class="flex items-center"><span class="material-symbols-outlined text-[16px] mx-1">chevron_right</span><a class="hover:text-primary transition-colors" href="documents.html">Tài liệu</a></div></li>
-                <li><div class="flex items-center"><span class="material-symbols-outlined text-[16px] mx-1">chevron_right</span><span class="text-on-surface truncate max-w-[200px] md:max-w-none">Hướng dẫn điền đơn</span></div></li>
+                <li><div class="flex items-center"><span class="material-symbols-outlined text-[16px] md:text-[18px] lg:text-[22px] mx-1">chevron_right</span><a class="hover:text-primary transition-colors" href="documents.html">Tài liệu</a></div></li>
+                <li><div class="flex items-center"><span class="material-symbols-outlined text-[16px] md:text-[18px] lg:text-[22px] mx-1">chevron_right</span><span class="text-on-surface font-medium truncate max-w-[200px] md:max-w-none">Hướng dẫn điền đơn</span></div></li>
             </ol>
         </nav>
-        <h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface mb-2">Hướng dẫn điền [Tên tài liệu]</h1>
-        <p class="font-body-md text-body-md text-on-surface-variant max-w-4xl">Hướng dẫn điền chính xác, nhanh chóng và đúng yêu cầu</p>
+        <h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface">Hướng dẫn điền</h1>
+        <div id="document-guide-name-skeleton" class="skeleton-shimmer mt-2 h-5 w-full max-w-2xl rounded"></div>
+        <p id="document-guide-name" class="hidden mt-1 max-w-4xl text-sm md:text-base font-medium leading-snug text-on-surface-variant"></p>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-md mb-lg">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-md mb-6">
         <div class="lg:col-span-7 relative bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm overflow-hidden flex items-center justify-center p-md">
-            <div class="relative w-full max-w-2xl mx-auto">
-                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6UeyZ87whWYun4ObNCnmTITId11PkMYOB_wc7AfCfL8cOxkU3bqNsbDdDNUSA6czyLHq2tyJAuTRwYeUsalDGO9wjESHoVtpZZCwoE_W2R6Yr5mufp7O2O6MaKWcN3TQmW3wz3xjkarrQ-Ll8eSPjq2hmbmtLTljl5nEyOnALmh093DDjDICbsoA09M8HdV95vn2t92kZS1_6WzBRMHOMg7e5dMFFhizOPxEsmGsPjBYuyRPgXh7JGj643b-FK9PjwYQobJk8ivqw" alt="Mẫu đơn xin đăng ký nhà ở xã hội" class="w-full h-auto rounded shadow-sm border border-outline-variant/30">
+            <div class="relative w-full max-w-2xl mx-auto" id="document-guide-image-container">
+                <img id="document-guide-image" src="" alt="Ảnh minh họa tài liệu" class="hidden w-full h-auto rounded shadow-sm border border-outline-variant/30">
+                <div id="document-guide-image-skeleton" class="skeleton-shimmer min-h-[360px] w-full rounded"></div>
+                <div id="document-guide-image-empty" class="hidden min-h-[360px] flex-col items-center justify-center text-center text-on-surface-variant"><span class="material-symbols-outlined text-5xl">image_not_supported</span></div>
             </div>
         </div>
 
         <div class="lg:col-span-5 flex flex-col gap-md">
             <div class="bg-surface-container-lowest rounded-xl p-md md:p-lg border border-outline-variant/30 shadow-sm flex-grow">
-                <h2 class="text-[20px] font-bold text-on-surface mb-md whitespace-nowrap overflow-hidden text-ellipsis">Chi tiết các trường thông tin</h2>
-                
-                <div class="space-y-md">
-                    <div class="flex gap-3 items-start">
-                        <div class="w-8 h-8 shrink-0 bg-primary-container text-primary rounded-full flex items-center justify-center font-bold font-label-md">1</div>
-                        <div class="flex flex-col">
-                            <h3 class="text-lg font-bold text-on-surface leading-8 mb-1">Họ và tên</h3>
-                            <p class="text-sm text-on-surface-variant">Điền đầy đủ họ và tên viết hoa có dấu, khớp chính xác với thông tin trên Căn cước công dân (CCCD).</p>
-                        </div>
-                    </div>
-
-                    <div class="flex gap-3 items-start">
-                        <div class="w-8 h-8 shrink-0 bg-primary-container text-primary rounded-full flex items-center justify-center font-bold font-label-md">2</div>
-                        <div class="flex flex-col">
-                            <h3 class="text-lg font-bold text-on-surface leading-8 mb-1">Số định danh</h3>
-                            <p class="text-sm text-on-surface-variant">Nhập chính xác dãy số gồm 12 chữ số trên thẻ Căn cước công dân gắn chip của bạn.</p>
-                        </div>
-                    </div>
-
-                    <div class="flex gap-3 items-start">
-                        <div class="w-8 h-8 shrink-0 bg-primary-container text-primary rounded-full flex items-center justify-center font-bold font-label-md">3</div>
-                        <div class="flex flex-col">
-                            <h3 class="text-lg font-bold text-on-surface leading-8 mb-1">Địa chỉ thường trú</h3>
-                            <p class="text-sm text-on-surface-variant">Ghi rõ địa chỉ theo sổ hộ khẩu hoặc dữ liệu cư trú trên VNeID (Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố).</p>
-                        </div>
-                    </div>
-
-                    <div class="flex gap-3 items-start">
-                        <div class="w-8 h-8 shrink-0 bg-primary-container text-primary rounded-full flex items-center justify-center font-bold font-label-md">4</div>
-                        <div class="flex flex-col">
-                            <h3 class="text-lg font-bold text-on-surface leading-8 mb-1">Thu nhập hàng tháng</h3>
-                            <p class="text-sm text-on-surface-variant">Ghi tổng thu nhập thực tế hàng tháng sau thuế (VND). Thông tin này cần khớp với giấy xác nhận thu nhập đính kèm.</p>
-                        </div>
-                    </div>
+                <div class="space-y-md" id="document-guide-steps">
+                    <div class="flex gap-3 items-start"><div class="skeleton-shimmer h-8 w-8 shrink-0 rounded-full"></div><div class="flex-1 space-y-2"><div class="skeleton-shimmer h-5 w-3/5 rounded"></div><div class="skeleton-shimmer h-3 w-full rounded"></div><div class="skeleton-shimmer h-3 w-4/5 rounded"></div></div></div>
+                    <div class="flex gap-3 items-start"><div class="skeleton-shimmer h-8 w-8 shrink-0 rounded-full"></div><div class="flex-1 space-y-2"><div class="skeleton-shimmer h-5 w-2/5 rounded"></div><div class="skeleton-shimmer h-3 w-full rounded"></div><div class="skeleton-shimmer h-3 w-3/5 rounded"></div></div></div>
+                    <div class="flex gap-3 items-start"><div class="skeleton-shimmer h-8 w-8 shrink-0 rounded-full"></div><div class="flex-1 space-y-2"><div class="skeleton-shimmer h-5 w-1/2 rounded"></div><div class="skeleton-shimmer h-3 w-full rounded"></div></div></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="bg-red-50 rounded-xl p-md md:p-lg border border-red-100 mb-lg flex flex-col md:flex-row gap-lg items-start">
+    <div id="document-guide-notes-section" class="hidden bg-red-50 rounded-xl p-md md:p-lg border border-red-100 mb-lg flex flex-col md:flex-row gap-lg items-start">
         <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0">
             <span class="material-symbols-outlined icon-fill text-[24px]">info</span>
         </div>
         <div>
             <h2 class="font-headline-md text-headline-md text-red-900 mb-sm">Lưu ý quan trọng</h2>
-            <ul class="list-none space-y-sm">
-                <li class="flex items-center gap-3">
-                    <div class="w-[20px] h-[20px] rounded-full bg-white border border-red-400 shrink-0 shadow-sm flex items-center justify-center">
-                        <span class="material-symbols-outlined text-[14px] text-red-500 font-bold">check</span>
-                    </div>
-                    <span class="text-sm text-red-900/80">Sử dụng bút mực xanh hoặc đen, không dùng bút chì hoặc bút đỏ.</span>
-                </li>
-                <li class="flex items-center gap-3">
-                    <div class="w-[20px] h-[20px] rounded-full bg-white border border-red-400 shrink-0 shadow-sm flex items-center justify-center">
-                        <span class="material-symbols-outlined text-[14px] text-red-500 font-bold">check</span>
-                    </div>
-                    <span class="text-sm text-red-900/80">Chữ viết cần rõ ràng, dễ đọc, không tẩy xóa hay sửa chữa trên đơn.</span>
-                </li>
-                <li class="flex items-center gap-3">
-                    <div class="w-[20px] h-[20px] rounded-full bg-white border border-red-400 shrink-0 shadow-sm flex items-center justify-center">
-                        <span class="material-symbols-outlined text-[14px] text-red-500 font-bold">check</span>
-                    </div>
-                    <span class="text-sm text-red-900/80">Bắt buộc phải có chữ ký và ghi rõ họ tên ở cuối đơn để xác nhận thông tin.</span>
-                </li>
-                <li class="flex items-center gap-3">
-                    <div class="w-[20px] h-[20px] rounded-full bg-white border border-red-400 shrink-0 shadow-sm flex items-center justify-center">
-                        <span class="material-symbols-outlined text-[14px] text-red-500 font-bold">check</span>
-                    </div>
-                    <span class="text-sm text-red-900/80">Đảm bảo tài liệu in ra đạt chất lượng tốt, không bị nhòe mực hay rách mép.</span>
-                </li>
-            </ul>
+            <ul id="document-guide-notes" class="list-none space-y-sm"></ul>
         </div>
     </div>
 
     <div class="flex flex-col sm:flex-row gap-md justify-center items-center">
-        <button class="w-full sm:w-auto bg-surface-container-lowest border-2 border-primary text-primary hover:bg-primary hover:text-white px-8 py-3 rounded-full flex items-center justify-center gap-sm font-label-md transition-all shadow-sm"><span class="material-symbols-outlined">picture_as_pdf</span>Tải tài liệu PDF</button>
-        <button class="w-full sm:w-auto bg-surface-container-lowest border-2 border-primary text-primary hover:bg-primary hover:text-white px-8 py-3 rounded-full flex items-center justify-center gap-sm font-label-md transition-all shadow-sm"><span class="material-symbols-outlined">description</span>Tải tài liệu Docx</button>
+        <a id="document-guide-pdf" href="#" class="w-full sm:w-auto bg-white border-2 border-orange-500 text-orange-600 hover:bg-orange-500 hover:text-white px-8 py-3 rounded-full flex items-center justify-center gap-sm font-label-md transition-all shadow-sm"><span class="material-symbols-outlined">picture_as_pdf</span>Tải tài liệu PDF</a>
+        <a id="document-guide-docx" href="#" class="w-full sm:w-auto bg-white border-2 border-blue-600 text-blue-700 hover:bg-blue-600 hover:text-white px-8 py-3 rounded-full flex items-center justify-center gap-sm font-label-md transition-all shadow-sm"><span class="material-symbols-outlined">description</span>Tải tài liệu DOCX</a>
     </div>
 </main>
 
 <!-- Footer -->
 <div id="footer-placeholder"></div>
 <script src="assets/js/supabase-config.js"></script>
-<script src="assets/js/supabase-service.js"></script>
-<script src="assets/js/main.js?v=17"></script>
+<script src="assets/js/supabase-service.js?v=11"></script>
+<script src="assets/js/main.js?v=54"></script>
 </body></html>

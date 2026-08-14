@@ -553,7 +553,10 @@ window.handleAdminLogout = function() {
 
         var removeDrafts = async function(keepFiles) {
             for (var i = 0; i < activeDrafts.length; i++) {
-                await window.SupabaseService.deleteDocument(activeDrafts[i].id, { keepFile: !!keepFiles });
+                var sourceIds = activeDrafts[i].sourceIds || [activeDrafts[i].id];
+                for (var sourceIndex = 0; sourceIndex < sourceIds.length; sourceIndex++) {
+                    await window.SupabaseService.deleteDocument(sourceIds[sourceIndex], { keepFile: !!keepFiles });
+                }
             }
             activeDrafts = [];
             localStorage.removeItem(draftStorageKey);
@@ -561,7 +564,8 @@ window.handleAdminLogout = function() {
 
         var editId = localStorage.getItem('noxh_document_edit_id') || '';
         var activeEditDoc = null;
-        var activeEditDocFileDeleted = false;
+        var activeEditPdfDeleted = false;
+        var activeEditDocxDeleted = false;
 
         var loadDraft = async function() {
             var pdfFileLabel = document.getElementById('pdf-selected-file');
@@ -577,7 +581,8 @@ window.handleAdminLogout = function() {
             var docxExistingOverlay = document.getElementById('docx-existing-file');
             if (pdfExistingOverlay) pdfExistingOverlay.classList.add('hidden');
             if (docxExistingOverlay) docxExistingOverlay.classList.add('hidden');
-            activeEditDocFileDeleted = false;
+            activeEditPdfDeleted = false;
+            activeEditDocxDeleted = false;
 
             if (editId && window.SupabaseService) {
                 var documents = await window.SupabaseService.getDocuments();
@@ -592,37 +597,27 @@ window.handleAdminLogout = function() {
                     saveButton.textContent = 'Cập nhật tài liệu';
                     if (draftButton) draftButton.classList.add('hidden');
                     
-                    if (activeEditDoc.file) {
-                        var isLegal = category.value === 'Văn bản luật';
-                        var fileName = activeEditDoc.file.split('/').pop().split('?')[0];
+                    var showExistingFile = function(kind, url) {
+                        if (!url) return;
+                        var overlay = kind === 'PDF' ? pdfExistingOverlay : docxExistingOverlay;
+                        var link = document.getElementById(kind === 'PDF' ? 'pdf-existing-link' : 'docx-existing-link');
+                        var deleteButton = document.getElementById(kind === 'PDF' ? 'pdf-existing-delete' : 'docx-existing-delete');
+                        if (!overlay || !link || !deleteButton) return;
+                        var fileName = url.split('/').pop().split('?')[0];
                         try { fileName = decodeURIComponent(fileName); } catch(e){}
-                        
-                        if (activeEditDoc.docType === 'PDF' || isLegal) {
-                            if (pdfExistingOverlay) {
-                                document.getElementById('pdf-existing-link').textContent = fileName || 'Tài liệu PDF';
-                                document.getElementById('pdf-existing-link').href = activeEditDoc.file;
-                                pdfExistingOverlay.classList.remove('hidden');
-                                document.getElementById('pdf-existing-delete').onclick = function(e) {
-                                    e.preventDefault(); e.stopPropagation();
-                                    pdfExistingOverlay.classList.add('hidden');
-                                    activeEditDocFileDeleted = true;
-                                };
-                                document.getElementById('pdf-existing-link').onclick = function(e) { e.stopPropagation(); };
-                            }
-                        } else if (activeEditDoc.docType === 'DOCX') {
-                            if (docxExistingOverlay) {
-                                document.getElementById('docx-existing-link').textContent = fileName || 'Tài liệu Word';
-                                document.getElementById('docx-existing-link').href = activeEditDoc.file;
-                                docxExistingOverlay.classList.remove('hidden');
-                                document.getElementById('docx-existing-delete').onclick = function(e) {
-                                    e.preventDefault(); e.stopPropagation();
-                                    docxExistingOverlay.classList.add('hidden');
-                                    activeEditDocFileDeleted = true;
-                                };
-                                document.getElementById('docx-existing-link').onclick = function(e) { e.stopPropagation(); };
-                            }
-                        }
-                    }
+                        link.textContent = fileName || (kind === 'PDF' ? 'Tài liệu PDF' : 'Tài liệu Word');
+                        link.href = url;
+                        link.onclick = function(e) { e.stopPropagation(); };
+                        overlay.classList.remove('hidden');
+                        deleteButton.onclick = function(e) {
+                            e.preventDefault(); e.stopPropagation();
+                            overlay.classList.add('hidden');
+                            if (kind === 'PDF') activeEditPdfDeleted = true;
+                            else activeEditDocxDeleted = true;
+                        };
+                    };
+                    showExistingFile('PDF', activeEditDoc.pdfUrl || (activeEditDoc.docType === 'PDF' ? activeEditDoc.file : ''));
+                    showExistingFile('DOCX', activeEditDoc.docxUrl || (activeEditDoc.docType === 'DOCX' ? activeEditDoc.file : ''));
                     return;
                 } else {
                     localStorage.removeItem('noxh_document_edit_id');
@@ -648,6 +643,25 @@ window.handleAdminLogout = function() {
             document.getElementById('doc-upload-content').value = draft.desc || '';
             category.value = draft.type || 'Đơn mua';
             syncAttachments();
+            var showDraftAttachment = function(kind, url) {
+                if (!url) return;
+                var overlay = document.getElementById(kind === 'PDF' ? 'pdf-existing-file' : 'docx-existing-file');
+                var link = document.getElementById(kind === 'PDF' ? 'pdf-existing-link' : 'docx-existing-link');
+                var deleteButton = document.getElementById(kind === 'PDF' ? 'pdf-existing-delete' : 'docx-existing-delete');
+                if (!overlay || !link || !deleteButton) return;
+                link.textContent = kind === 'PDF' ? 'Tệp PDF trong bản nháp' : 'Tệp DOCX trong bản nháp';
+                link.href = url;
+                link.onclick = function(e) { e.stopPropagation(); };
+                overlay.classList.remove('hidden');
+                deleteButton.onclick = function(e) {
+                    e.preventDefault(); e.stopPropagation();
+                    overlay.classList.add('hidden');
+                    if (kind === 'PDF') draft.pdfUrl = '';
+                    else draft.docxUrl = '';
+                };
+            };
+            showDraftAttachment('PDF', draft.pdfUrl);
+            showDraftAttachment('DOCX', draft.docxUrl);
             if (draftButton) draftButton.textContent = 'Đã lưu nháp';
         };
         loadDraft();
@@ -659,12 +673,17 @@ window.handleAdminLogout = function() {
             var pdfFile = pdfInput && pdfInput.files[0];
             var wordFile = docxInput && docxInput.files[0];
             var isLegalDocument = category.value === 'Văn bản luật';
+            var isCombinedForm = category.value === 'Đơn mua' || category.value === 'Đơn thuê';
 
             if (!isDraft && !name) { alert('Vui lòng nhập tên tài liệu.'); return; }
-            var draftFiles = activeDrafts.filter(function(doc) { return !!doc.fileUrl; });
-            var hasExistingFile = activeEditDoc && activeEditDoc.file && !activeEditDocFileDeleted;
-            if (!isDraft && isLegalDocument && !pdfFile && !draftFiles.length && !hasExistingFile) { alert('Văn bản luật cần đính kèm một tệp PDF.'); return; }
+            var activeDraft = activeDrafts[0] || null;
+            var existingPdfUrl = activeEditDoc && !activeEditPdfDeleted ? (activeEditDoc.pdfUrl || (activeEditDoc.docType === 'PDF' ? activeEditDoc.file : '')) : '';
+            var existingDocxUrl = activeEditDoc && !activeEditDocxDeleted ? (activeEditDoc.docxUrl || (activeEditDoc.docType === 'DOCX' ? activeEditDoc.file : '')) : '';
+            var draftPdfUrl = activeDraft && activeDraft.pdfUrl || '';
+            var draftDocxUrl = activeDraft && activeDraft.docxUrl || '';
+            if (!isDraft && isLegalDocument && !pdfFile && !draftPdfUrl && !existingPdfUrl) { alert('Văn bản luật cần đính kèm một tệp PDF.'); return; }
             if (pdfFile && !/\.pdf$/i.test(pdfFile.name)) { alert('Tệp PDF phải có định dạng .pdf.'); return; }
+            if (wordFile && !/\.docx?$/i.test(wordFile.name)) { alert('Tệp Word phải có định dạng .doc hoặc .docx.'); return; }
             if ((pdfFile && pdfFile.size > 50 * 1024 * 1024) || (wordFile && wordFile.size > 50 * 1024 * 1024)) { alert('Tệp đính kèm vượt quá giới hạn 50 MB.'); return; }
 
             var button = isDraft ? draftButton : saveButton;
@@ -673,18 +692,22 @@ window.handleAdminLogout = function() {
             button.disabled = true;
             button.textContent = isDraft ? 'Đang lưu nháp...' : (editId ? 'Đang cập nhật...' : 'Đang lưu...');
             try {
-                var files = [pdfFile, isLegalDocument ? null : wordFile].filter(Boolean);
-                if (!isDraft && !files.length && !draftFiles.length && !hasExistingFile) throw new Error('Vui lòng chọn ít nhất một tệp đính kèm.');
+                var pdfUrl = existingPdfUrl || draftPdfUrl;
+                var docxUrl = isLegalDocument ? '' : (existingDocxUrl || draftDocxUrl);
+                if (pdfFile) {
+                    pdfUrl = await window.SupabaseService.uploadDocumentFile(pdfFile, isLegalDocument ? 'legal' : 'forms');
+                    if (!pdfUrl) throw new Error('Không thể tải tệp PDF lên.');
+                }
+                if (!isLegalDocument && wordFile) {
+                    docxUrl = await window.SupabaseService.uploadDocumentFile(wordFile, 'forms');
+                    if (!docxUrl) throw new Error('Không thể tải tệp Word lên.');
+                }
+                if (!isDraft && isCombinedForm && (!pdfUrl || !docxUrl)) throw new Error('Đơn mua và đơn thuê cần đính kèm đồng thời cả tệp PDF và DOCX.');
+                if (!isDraft && !isCombinedForm && !pdfUrl && !docxUrl) throw new Error('Vui lòng chọn ít nhất một tệp đính kèm.');
                 if (isDraft) {
-                    await removeDrafts(false);
-                    for (var i = 0; i < Math.max(files.length, 1); i++) {
-                        var uploadFile = files[i];
-                        var fileUrl = uploadFile ? await window.SupabaseService.uploadDocumentFile(uploadFile, isLegalDocument ? 'legal' : 'forms') : '';
-                        if (uploadFile && !fileUrl) throw new Error('Không thể tải tệp đính kèm lên.');
-                        var docType = uploadFile ? (/\.pdf$/i.test(uploadFile.name) ? 'PDF' : 'DOCX') : 'DRAFT';
-                        var createdDraft = await window.SupabaseService.addDocument({ name: name || 'Bản nháp chưa đặt tên', type: category.value, desc: content, file: fileUrl, docType: docType, isDraft: true, draftKey: draftKey });
-                        if (!createdDraft) throw new Error('Không thể lưu bản nháp.');
-                    }
+                    await removeDrafts(true);
+                    var createdDraft = await window.SupabaseService.addDocument({ name: name || 'Bản nháp chưa đặt tên', type: category.value, desc: content, pdfUrl: pdfUrl, docxUrl: docxUrl, isDraft: true, draftKey: draftKey });
+                    if (!createdDraft) throw new Error('Không thể lưu bản nháp.');
                     localStorage.setItem(draftStorageKey, draftKey);
                     var refreshed = await window.SupabaseService.getDocuments();
                     activeDrafts = (refreshed || []).filter(function(doc) { return doc.isDraft && doc.draftKey === draftKey; });
@@ -693,28 +716,17 @@ window.handleAdminLogout = function() {
                 }
                 
                 if (editId && activeEditDoc) {
-                    var item = files[0];
-                    var finalUrl = activeEditDoc.file;
-                    var finalType = activeEditDoc.docType;
-                    if (item) {
-                        finalUrl = await window.SupabaseService.uploadDocumentFile(item, isLegalDocument ? 'legal' : 'forms');
-                        if (!finalUrl) throw new Error('Không thể tải tệp đính kèm lên.');
-                        finalType = (/\.pdf$/i.test(item.name) ? 'PDF' : 'DOCX');
-                    }
-                    var updated = await window.SupabaseService.updateDocument(editId, { name: name, type: category.value, desc: content, file: finalUrl, docType: finalType });
+                    var updated = await window.SupabaseService.updateDocument(editId, { name: name, type: category.value, desc: content, pdfUrl: pdfUrl, docxUrl: docxUrl, guide: activeEditDoc.guide || null });
                     if (!updated) throw new Error('Không thể cập nhật tài liệu.');
+                    var redundantIds = (activeEditDoc.sourceIds || []).filter(function(id) { return String(id) !== String(editId); });
+                    for (var redundantIndex = 0; redundantIndex < redundantIds.length; redundantIndex++) {
+                        await window.SupabaseService.deleteDocument(redundantIds[redundantIndex], { keepFile: true });
+                    }
                     alert('Đã cập nhật tài liệu thành công.');
                 } else {
-                    var finalFiles = files.length ? files : draftFiles.map(function(doc) { return { existingUrl: doc.fileUrl, docType: doc.docType }; });
-                    for (var j = 0; j < finalFiles.length; j++) {
-                        var item = finalFiles[j];
-                        var finalUrl = item.existingUrl || await window.SupabaseService.uploadDocumentFile(item, isLegalDocument ? 'legal' : 'forms');
-                        if (!finalUrl) throw new Error('Không thể tải tệp đính kèm lên.');
-                        var finalType = item.docType || (/\.pdf$/i.test(item.name) ? 'PDF' : 'DOCX');
-                        var created = await window.SupabaseService.addDocument({ name: finalFiles.length > 1 ? name + ' (' + finalType + ')' : name, type: category.value, desc: content, file: finalUrl, docType: finalType });
-                        if (!created) throw new Error('Không thể lưu tài liệu.');
-                    }
-                    await removeDrafts(!files.length);
+                    var created = await window.SupabaseService.addDocument({ name: name, type: category.value, desc: content, pdfUrl: pdfUrl, docxUrl: docxUrl, file: pdfUrl || docxUrl, docType: isLegalDocument ? 'PDF' : undefined });
+                    if (!created) throw new Error('Không thể lưu tài liệu.');
+                    await removeDrafts(true);
                     alert('Đã lưu tài liệu thành công.');
                 }
                 
@@ -722,7 +734,7 @@ window.handleAdminLogout = function() {
                 window.location.hash = '#docs';
             } catch (err) {
                 console.error('Document save error:', err);
-                alert(isDraft ? 'Không thể lưu bản nháp. Vui lòng thử lại.' : (editId ? 'Không thể cập nhật tài liệu. Vui lòng thử lại.' : 'Không thể lưu tài liệu. Vui lòng thử lại.'));
+                alert(err && err.message ? err.message : (isDraft ? 'Không thể lưu bản nháp. Vui lòng thử lại.' : (editId ? 'Không thể cập nhật tài liệu. Vui lòng thử lại.' : 'Không thể lưu tài liệu. Vui lòng thử lại.')));
             } finally {
                 button.disabled = false;
                 button.innerHTML = original;
@@ -1883,7 +1895,7 @@ window.handleAdminLogout = function() {
         var tbody = document.querySelector('#page-docs tbody');
         if (!tbody || !window.SupabaseService) return;
         tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-on-surface-variant text-sm">Đang tải tài liệu...</td></tr>';
-        var documents = await window.SupabaseService.getDocuments();
+        var documents = (await window.SupabaseService.getDocuments()).filter(function(doc) { return doc.type !== 'Hướng dẫn'; });
         if (!documents || !documents.length) {
             tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-on-surface-variant text-sm">Không có tài liệu nào</td></tr>';
             return;
@@ -1898,7 +1910,7 @@ window.handleAdminLogout = function() {
                 '<div class="flex justify-center items-center gap-1">' +
                 (doc.isDraft ? '<button type="button" data-draft-key="' + escapeHtml(doc.draftKey || '') + '" class="btn-open-document-draft text-primary hover:bg-primary/10 p-2 rounded-lg" title="Mở bản nháp"><span class="material-symbols-outlined">edit</span></button>' : 
                 '<button type="button" data-document-id="' + doc.id + '" class="btn-edit-document text-primary hover:bg-primary/10 p-2 rounded-lg" title="Sửa"><span class="material-symbols-outlined">edit</span></button>') + 
-                '<button type="button" data-document-id="' + doc.id + '" data-draft-key="' + escapeHtml(doc.draftKey || '') + '" class="btn-delete-document text-error hover:bg-error/10 p-2 rounded-lg" title="Xóa tài liệu"><span class="material-symbols-outlined">delete</span></button>' +
+                '<button type="button" data-document-id="' + doc.id + '" data-source-ids="' + escapeHtml((doc.sourceIds || [doc.id]).join(',')) + '" data-draft-key="' + escapeHtml(doc.draftKey || '') + '" class="btn-delete-document text-error hover:bg-error/10 p-2 rounded-lg" title="Xóa tài liệu"><span class="material-symbols-outlined">delete</span></button>' +
                 '</div></td>' +
             '</tr>';
         }).join('');
@@ -1925,10 +1937,16 @@ window.handleAdminLogout = function() {
                     var allDocuments = await window.SupabaseService.getDocuments();
                     var drafts = (allDocuments || []).filter(function(doc) { return doc.isDraft && doc.draftKey === draftKey; });
                     for (var i = 0; i < drafts.length; i++) {
-                        if (!await window.SupabaseService.deleteDocument(drafts[i].id)) success = false;
+                        var draftSourceIds = drafts[i].sourceIds || [drafts[i].id];
+                        for (var draftSourceIndex = 0; draftSourceIndex < draftSourceIds.length; draftSourceIndex++) {
+                            if (!await window.SupabaseService.deleteDocument(draftSourceIds[draftSourceIndex])) success = false;
+                        }
                     }
                 } else {
-                    success = await window.SupabaseService.deleteDocument(button.getAttribute('data-document-id'));
+                    var sourceIds = (button.getAttribute('data-source-ids') || button.getAttribute('data-document-id')).split(',').filter(Boolean);
+                    for (var sourceIndex = 0; sourceIndex < sourceIds.length; sourceIndex++) {
+                        if (!await window.SupabaseService.deleteDocument(sourceIds[sourceIndex])) success = false;
+                    }
                 }
                 if (!success) alert('Không thể xóa tài liệu. Vui lòng kiểm tra quyền Storage và thử lại.');
                 await renderAdminDocuments();
@@ -2289,6 +2307,7 @@ window.handleAdminLogout = function() {
 
     // ---- Docs Guide Module ---- //
     var guidesList = [];
+    var activeGuideDocument = null;
     var isAutomaticGuideDocument = function(doc) {
         return doc && !doc.isDraft && (doc.type === 'Đơn mua' || doc.type === 'Đơn thuê');
     };
@@ -2305,12 +2324,40 @@ window.handleAdminLogout = function() {
         }
     };
 
+    var resetGuideForm = function() {
+        activeGuideDocument = null;
+        var nameInput = document.getElementById('guide-form-name');
+        var title = document.getElementById('guide-form-title');
+        var documentName = document.getElementById('guide-form-document-name');
+        var imageInput = document.getElementById('guide-image-input');
+        var imagePreview = document.getElementById('guide-image-preview');
+        var imagePlaceholder = document.getElementById('guide-image-placeholder');
+        if (nameInput) nameInput.value = '';
+        if (title) title.textContent = 'Tạo hướng dẫn';
+        if (documentName) { documentName.textContent = ''; documentName.classList.add('hidden'); }
+        if (imageInput) imageInput.value = '';
+        if (imagePreview) { imagePreview.src = ''; imagePreview.classList.add('hidden'); }
+        if (imagePlaceholder) imagePlaceholder.classList.remove('hidden');
+        var stepsContainer = document.getElementById('guide-steps-container');
+        if (stepsContainer) stepsContainer.innerHTML = '';
+        window.addGuideStep();
+        var notesContainer = document.getElementById('guide-notes-container');
+        if (notesContainer) notesContainer.innerHTML = '';
+        window.addGuideNote();
+    };
+
+    window.startNewGuide = function() {
+        resetGuideForm();
+        window.openGuideForm();
+    };
+
     window.closeGuideForm = function() {
         var listEl = document.getElementById('docs-guide-list-view');
         var formEl = document.getElementById('docs-guide-form-view');
         if (listEl && formEl) {
             listEl.classList.remove('hidden');
             formEl.classList.add('hidden');
+            resetGuideForm();
             renderGuideList();
         }
     };
@@ -2324,39 +2371,98 @@ window.handleAdminLogout = function() {
             return;
         }
 
-        try {
-            var docData = {
-                name: name,
-                type: 'Hướng dẫn',
-                status: status,
-                desc: ''
+        var steps = Array.from(document.querySelectorAll('#guide-steps-container .guide-step')).map(function(step) {
+            return {
+                title: (step.querySelector('input') && step.querySelector('input').value || '').trim(),
+                content: (step.querySelector('textarea') && step.querySelector('textarea').value || '').trim()
             };
-            
-            await window.SupabaseService.addDocument(docData);
+        }).filter(function(step) { return step.title || step.content; });
+        var notes = Array.from(document.querySelectorAll('#guide-notes-container .guide-note textarea')).map(function(input) {
+            return (input.value || '').trim();
+        }).filter(Boolean);
+        if (status === 'published' && !steps.length) {
+            alert('Vui lòng thêm ít nhất một bước hướng dẫn trước khi lưu.');
+            return;
+        }
+
+        try {
+            var currentGuide = activeGuideDocument && activeGuideDocument.guide || {};
+            var imageUrl = currentGuide.imageUrl || '';
+            var imageInput = document.getElementById('guide-image-input');
+            var imageFile = imageInput && imageInput.files && imageInput.files[0];
+            if (imageFile) {
+                if (!/^image\/(?:png|jpe?g)$/i.test(imageFile.type)) throw new Error('Ảnh hướng dẫn chỉ nhận PNG hoặc JPG.');
+                if (imageFile.size > 10 * 1024 * 1024) throw new Error('Ảnh hướng dẫn vượt quá giới hạn 10 MB.');
+                imageUrl = await window.SupabaseService.uploadDocumentFile(imageFile, 'guides');
+                if (!imageUrl) throw new Error('Không thể tải ảnh hướng dẫn lên.');
+            }
+            var guideData = { status: status, imageUrl: imageUrl, steps: steps, notes: notes, updatedAt: new Date().toISOString() };
+            var saved;
+            if (activeGuideDocument) {
+                saved = await window.SupabaseService.updateDocument(activeGuideDocument.id, {
+                    name: name,
+                    type: activeGuideDocument.type,
+                    desc: activeGuideDocument.desc || '',
+                    pdfUrl: activeGuideDocument.pdfUrl || '',
+                    docxUrl: activeGuideDocument.docxUrl || '',
+                    file: activeGuideDocument.file || '',
+                    docType: activeGuideDocument.docType,
+                    guide: guideData
+                });
+                if (saved && isAutomaticGuideDocument(activeGuideDocument)) {
+                    var duplicateDocumentIds = (activeGuideDocument.sourceIds || []).filter(function(id) { return String(id) !== String(activeGuideDocument.id); });
+                    for (var duplicateIndex = 0; duplicateIndex < duplicateDocumentIds.length; duplicateIndex++) {
+                        await window.SupabaseService.deleteDocument(duplicateDocumentIds[duplicateIndex], { keepFile: true });
+                    }
+                }
+            } else {
+                saved = await window.SupabaseService.addDocument({ name: name, type: 'Hướng dẫn', desc: '', docType: 'GUIDE', guide: guideData });
+            }
+            if (!saved) throw new Error('Không thể lưu hướng dẫn.');
             guidesList = (await window.SupabaseService.getDocuments() || []).filter(isGuideDocument);
-            
-            // Reset form
-            nameInput.value = '';
-            var stepsContainer = document.getElementById('guide-steps-container');
-            if (stepsContainer) stepsContainer.innerHTML = '';
-            if (typeof window.addGuideStep === 'function') window.addGuideStep(); 
-            
-            var notesContainer = document.getElementById('guide-notes-container');
-            if (notesContainer) notesContainer.innerHTML = '';
-            if (typeof window.addGuideNote === 'function') window.addGuideNote();
-            
+            alert(status === 'draft' ? 'Đã lưu nháp hướng dẫn.' : 'Đã lưu và xuất bản hướng dẫn.');
             window.closeGuideForm();
         } catch (err) {
             console.error('Lỗi khi lưu tài liệu:', err);
-            alert('Có lỗi xảy ra khi lưu tài liệu!');
+            alert(err && err.message ? err.message : 'Có lỗi xảy ra khi lưu hướng dẫn!');
         }
     };
 
     window.editGuide = function(id) {
         var guide = guidesList.find(function(g) { return g.id === id; });
         if (guide) {
+            activeGuideDocument = guide;
             var nameInput = document.getElementById('guide-form-name');
             if (nameInput) nameInput.value = guide.name;
+            var title = document.getElementById('guide-form-title');
+            if (title) title.textContent = guide.guide ? 'Chỉnh sửa hướng dẫn' : 'Tạo hướng dẫn';
+            var documentName = document.getElementById('guide-form-document-name');
+            if (documentName) {
+                documentName.textContent = guide.name;
+                documentName.classList.remove('hidden');
+            }
+            var guideData = guide.guide || {};
+            var stepsContainer = document.getElementById('guide-steps-container');
+            if (stepsContainer) stepsContainer.innerHTML = '';
+            (guideData.steps || []).forEach(function(step) {
+                window.addGuideStep(step);
+            });
+            if (stepsContainer && !stepsContainer.children.length) window.addGuideStep();
+            var notesContainer = document.getElementById('guide-notes-container');
+            if (notesContainer) notesContainer.innerHTML = '';
+            (guideData.notes || []).forEach(function(note) { window.addGuideNote(note); });
+            if (notesContainer && !notesContainer.children.length) window.addGuideNote();
+            var imagePreview = document.getElementById('guide-image-preview');
+            var imagePlaceholder = document.getElementById('guide-image-placeholder');
+            if (imagePreview && guideData.imageUrl) {
+                imagePreview.src = guideData.imageUrl;
+                imagePreview.classList.remove('hidden');
+                if (imagePlaceholder) imagePlaceholder.classList.add('hidden');
+            } else if (imagePreview) {
+                imagePreview.src = '';
+                imagePreview.classList.add('hidden');
+                if (imagePlaceholder) imagePlaceholder.classList.remove('hidden');
+            }
             window.openGuideForm();
         }
     };
@@ -2406,24 +2512,21 @@ window.handleAdminLogout = function() {
         }
 
         guidesList.forEach(function(guide) {
-            var isDraft = guide.status === 'draft';
+            var isDraft = guide.guideStatus === 'draft';
             var isAutomatic = isAutomaticGuideDocument(guide);
             var badgeHtml = isDraft ? '<span class="px-2 py-0.5 bg-surface-variant text-on-surface-variant text-[11px] font-bold rounded-full">Nháp</span>' : '';
             var bgClass = isDraft ? 'bg-surface-container-lowest/50' : 'bg-surface-container-lowest';
             var cardHtml = 
-                '<div class="' + bgClass + ' border border-outline-variant rounded-xl p-5 shadow-sm hover:shadow-md hover:border-primary transition-all group flex gap-4 items-start min-h-[100px]">' +
+                '<div role="button" tabindex="0" onclick="editGuide(\'' + guide.id + '\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();editGuide(\'' + guide.id + '\')}" class="' + bgClass + ' border border-outline-variant rounded-xl p-5 shadow-sm hover:shadow-md hover:border-primary transition-all group flex gap-4 items-start min-h-[100px] cursor-pointer">' +
                     '<div class="w-10 h-10 mt-0.5 shrink-0 rounded-full bg-primary text-white flex items-center justify-center">' +
                         '<span class="material-symbols-outlined text-[20px]">menu_book</span>' +
                     '</div>' +
                     '<div class="flex-1 min-w-0 flex flex-col">' +
                         '<h3 class="font-semibold text-[15px] text-on-surface line-clamp-3 leading-snug">' + escapeHtml(guide.name) + '</h3>' +
-                        (isAutomatic ? '<p class="mt-1 text-xs text-on-surface-variant">Hướng dẫn điền tự động · ' + escapeHtml(guide.type) + '</p>' : '') +
+                        (isAutomatic ? '<p class="mt-1 text-xs text-on-surface-variant">' + escapeHtml(guide.type) + '</p>' : '') +
                         (isDraft ? '<div class="mt-2">' + badgeHtml + '</div>' : '') +
                         (isAutomatic ? '' : '<div class="mt-3 flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">' +
-                            '<button onclick="editGuide(\'' + guide.id + '\')" class="text-[13px] font-semibold text-primary hover:underline cursor-pointer flex items-center gap-1">' +
-                                '<span class="material-symbols-outlined text-[16px]">edit</span> Sửa' +
-                            '</button>' +
-                            '<button onclick="deleteGuide(\'' + guide.id + '\')" class="text-[13px] font-semibold text-error hover:underline cursor-pointer flex items-center gap-1">' +
+                            '<button onclick="event.stopPropagation();deleteGuide(\'' + guide.id + '\')" class="text-[13px] font-semibold text-error hover:underline cursor-pointer flex items-center gap-1">' +
                                 '<span class="material-symbols-outlined text-[16px]">delete</span> Xóa' +
                             '</button>' +
                         '</div>') +
@@ -2457,6 +2560,16 @@ window.handleAdminLogout = function() {
                 window.addGuideNote();
             }
         }
+        var guideImageInput = document.getElementById('guide-image-input');
+        if (guideImageInput) guideImageInput.onchange = function() {
+            var file = this.files && this.files[0];
+            var preview = document.getElementById('guide-image-preview');
+            var placeholder = document.getElementById('guide-image-placeholder');
+            if (!file || !preview) return;
+            preview.src = URL.createObjectURL(file);
+            preview.classList.remove('hidden');
+            if (placeholder) placeholder.classList.add('hidden');
+        };
         
         if (window.targetGuideToEdit) {
             var gId = window.targetGuideToEdit;
@@ -2480,9 +2593,10 @@ window.handleAdminLogout = function() {
     }
 
     // Helper functions for Guide Steps
-    window.addGuideStep = function() {
+    window.addGuideStep = function(data) {
         var container = document.getElementById('guide-steps-container');
         if (!container) return;
+        data = data || {};
         var html = 
             '<div class="guide-step relative bg-surface border border-outline-variant/60 rounded-xl p-5 pt-6 shadow-sm group hover:border-primary/50 transition-colors">' +
                 '<button type="button" class="absolute top-2 right-2 p-1 text-on-surface-variant hover:text-error hover:bg-error-container rounded-full transition-colors opacity-0 group-hover:opacity-100" title="Xóa bước này" onclick="removeGuideStep(this)">' +
@@ -2493,11 +2607,11 @@ window.handleAdminLogout = function() {
                     '<div class="flex-1 space-y-4">' +
                         '<div>' +
                             '<label class="block text-[14px] font-semibold text-on-surface mb-2">Tiêu đề (Header)</label>' +
-                            '<input type="text" class="w-full p-3 bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-[15px]" placeholder="VD: Nhập thông tin...">' +
+                            '<input type="text" value="' + escapeHtml(data.title || '') + '" class="w-full p-3 bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-[15px]" placeholder="VD: Nhập thông tin...">' +
                         '</div>' +
                         '<div>' +
                             '<label class="block text-[14px] font-semibold text-on-surface mb-2">Nội dung hướng dẫn</label>' +
-                            '<textarea class="w-full p-3 bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none resize-y text-[15px]" rows="3" placeholder="Chi tiết cách điền..."></textarea>' +
+                            '<textarea class="w-full p-3 bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none resize-y text-[15px]" rows="3" placeholder="Chi tiết cách điền...">' + escapeHtml(data.content || '') + '</textarea>' +
                         '</div>' +
                     '</div>' +
                 '</div>' +
@@ -2522,13 +2636,13 @@ window.handleAdminLogout = function() {
         });
     };
 
-    window.addGuideNote = function() {
+    window.addGuideNote = function(value) {
         var container = document.getElementById('guide-notes-container');
         if (!container) return;
         var html = 
             '<div class="guide-note relative bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm group hover:border-primary/50 transition-colors flex gap-3 items-start">' +
                 '<span class="material-symbols-outlined text-primary mt-1 text-[22px]">info</span>' +
-                '<textarea class="flex-1 p-2 bg-transparent border-none focus:ring-0 outline-none resize-y text-[15px] text-on-surface" rows="2" placeholder="Nhập nội dung lưu ý..."></textarea>' +
+                '<textarea class="flex-1 p-2 bg-transparent border-none focus:ring-0 outline-none resize-y text-[15px] text-on-surface" rows="2" placeholder="Nhập nội dung lưu ý...">' + escapeHtml(value || '') + '</textarea>' +
                 '<button type="button" class="p-1.5 mt-0.5 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-full transition-colors opacity-0 group-hover:opacity-100" title="Xóa lưu ý" onclick="window.requestRemoveGuideNote(this)">' +
                     '<span class="material-symbols-outlined text-[18px]">close</span>' +
                 '</button>' +

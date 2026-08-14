@@ -14,7 +14,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="assets/js/supabase-config.js"></script>
-    <script src="assets/js/supabase-service.js?v=10"></script>
+    <script src="assets/js/supabase-service.js?v=11"></script>
     <link rel="stylesheet" href="assets/css/admin.css?v=3">
     <link rel="stylesheet" href="assets/css/icon-utilities.css">
 </head>
@@ -897,7 +897,7 @@
                             <h2 class="text-2xl font-semibold text-on-surface mb-1">Quản lý Hướng dẫn điền</h2>
                             <p class="font-body-md text-[16px] text-on-surface-variant mt-2">Quản lý các tài liệu mẫu và các bước hướng dẫn chi tiết cho người dùng.</p>
                         </div>
-                        <button onclick="openGuideForm()" class="bg-primary hover:bg-primary/90 text-on-primary font-semibold py-2.5 px-6 rounded-full flex items-center gap-2 transition-colors shadow-sm w-fit">
+                        <button onclick="startNewGuide()" class="bg-primary hover:bg-primary/90 text-on-primary font-semibold py-2.5 px-6 rounded-full flex items-center gap-2 transition-colors shadow-sm w-fit">
                             <span class="material-symbols-outlined text-sm">add</span>
                             <span>Tạo hướng dẫn mới</span>
                         </button>
@@ -916,12 +916,12 @@
                                 <span class="material-symbols-outlined text-sm">arrow_back</span>
                                 Quay lại danh sách
                             </button>
-                            <h2 class="text-2xl font-semibold text-on-surface mb-1" id="guide-form-title">Tạo Hướng dẫn mới</h2>
-                            <p class="font-body-md text-[16px] text-on-surface-variant mt-1">Thiết lập tài liệu mẫu và các bước hướng dẫn chi tiết cho người dùng.</p>
+                            <h2 class="text-2xl font-semibold text-on-surface" id="guide-form-title">Tạo hướng dẫn</h2>
+                            <p id="guide-form-document-name" class="hidden mt-1 max-w-4xl text-sm font-medium leading-snug text-on-surface-variant"></p>
                         </div>
-                        <div class="flex gap-4">
-                            <button onclick="saveGuideForm('draft')" class="px-6 py-2.5 border-2 border-outline-variant text-on-surface font-semibold text-sm rounded-full hover:bg-surface-container transition-colors cursor-pointer">Lưu nháp</button>
-                            <button onclick="saveGuideForm('published')" class="px-6 py-2.5 bg-primary text-on-primary font-semibold text-sm rounded-full hover:bg-primary/90 transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
+                        <div class="flex shrink-0 gap-3">
+                            <button onclick="saveGuideForm('draft')" class="h-9 px-5 border-2 border-outline-variant text-on-surface font-semibold text-sm leading-none whitespace-nowrap rounded-full hover:bg-surface-container transition-colors cursor-pointer">Lưu nháp</button>
+                            <button onclick="saveGuideForm('published')" class="h-9 px-5 bg-primary text-on-primary font-semibold text-sm leading-none whitespace-nowrap rounded-full hover:bg-primary/90 transition-colors shadow-sm flex items-center gap-1.5 cursor-pointer">
                                 <span class="material-symbols-outlined text-sm">save</span>
                                 Lưu
                             </button>
@@ -930,7 +930,7 @@
                     
                     <div class="mb-5">
                         <label class="block text-[14px] font-semibold text-on-surface mb-2">Tên tài liệu / Hướng dẫn <span class="text-error">*</span></label>
-                        <input type="text" id="guide-form-name" class="w-full max-w-xl p-3 bg-white border border-outline-variant rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none font-body-md" placeholder="VD: Hướng dẫn điền Mẫu C01">
+                        <input type="text" id="guide-form-name" class="w-full p-3 bg-white border border-outline-variant rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none font-body-md" placeholder="VD: Hướng dẫn điền Mẫu C01">
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
@@ -939,13 +939,16 @@
                             <h3 class="font-headline-md text-[20px] font-bold text-on-background mb-2">Hình ảnh tài liệu mẫu</h3>
                             <p class="font-body-sm text-[14px] text-on-surface-variant mb-4">Tải lên hình ảnh tài liệu để người dùng dễ dàng đối chiếu.</p>
                             
-                            <div class="border-2 border-dashed border-outline-variant rounded-xl p-8 flex flex-col items-center justify-center text-center bg-surface transition-all duration-200 cursor-pointer group min-h-[400px] hover:border-primary hover:bg-surface-container-low" id="guide-image-dropzone" onclick="document.getElementById('guide-image-input').click()">
-                                <div class="w-16 h-16 bg-primary-container/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                    <span class="material-symbols-outlined text-primary text-[32px]">add_photo_alternate</span>
+                            <div class="border-2 border-dashed border-outline-variant rounded-xl p-8 flex flex-col items-center justify-center text-center bg-surface transition-all duration-200 cursor-pointer group min-h-[400px] hover:border-primary hover:bg-surface-container-low relative overflow-hidden" id="guide-image-dropzone" onclick="document.getElementById('guide-image-input').click()">
+                                <img id="guide-image-preview" class="hidden absolute inset-4 w-[calc(100%-2rem)] h-[calc(100%-2rem)] object-contain rounded-lg" alt="Ảnh tài liệu hướng dẫn">
+                                <div id="guide-image-placeholder" class="flex flex-col items-center">
+                                    <div class="w-16 h-16 bg-primary-container/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                        <span class="material-symbols-outlined text-primary text-[32px]">add_photo_alternate</span>
+                                    </div>
+                                    <h4 class="font-label-md text-[16px] font-semibold text-on-surface mb-1">Tải ảnh lên</h4>
+                                    <p class="font-body-md text-[14px] text-on-surface-variant mb-4">PNG hoặc JPG, tối đa 10 MB</p>
+                                    <span class="px-4 py-2 border border-outline text-on-surface font-semibold text-[14px] rounded-full group-hover:bg-surface-container transition-colors">Chọn tệp</span>
                                 </div>
-                                <h4 class="font-label-md text-[16px] font-semibold text-on-surface mb-1">Tải ảnh lên</h4>
-                                <p class="font-body-md text-[14px] text-on-surface-variant mb-4">Kéo và thả tệp ảnh vào đây</p>
-                                <button class="px-4 py-2 border border-outline text-on-surface font-semibold text-[14px] rounded-full group-hover:bg-surface-container transition-colors cursor-pointer" type="button">Chọn tệp</button>
                                 <input accept="image/png, image/jpeg, image/jpg" class="hidden" id="guide-image-input" type="file"/>
                             </div>
                         </div>
@@ -1217,6 +1220,6 @@
         </div>
     </div>
 
-    <script src="assets/js/admin.js?v=24"></script>
+    <script src="assets/js/admin.js?v=27"></script>
 </body>
 </html>

@@ -81,6 +81,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 });
 
+// A page restored from the browser's back/forward cache can retain inline
+// styles from an interrupted SPA navigation. Always restore the main canvas.
+window.addEventListener('pageshow', () => {
+    const main = document.querySelector('main');
+    if (main) {
+        main.style.opacity = '';
+        main.style.transition = '';
+    }
+});
+
+let resumeDataRefreshInFlight = false;
+async function refreshDataAfterResume() {
+    if (resumeDataRefreshInFlight || document.visibilityState === 'hidden') return;
+    resumeDataRefreshInFlight = true;
+    try {
+        const session = window.SupabaseService?.getAuthSession?.();
+        if (session?.refresh_token && (!session.expires_at || session.expires_at * 1000 <= Date.now() + 60_000)) {
+            await window.SupabaseService.refreshAuthSession();
+        }
+        await Promise.allSettled([
+            loadLiveProjects(),
+            loadLiveDocuments(),
+            loadLegalDocuments(),
+            loadDocumentSections()
+        ]);
+    } finally {
+        resumeDataRefreshInFlight = false;
+    }
+}
+window.addEventListener('focus', refreshDataAfterResume);
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') refreshDataAfterResume();
+});
+
 async function loadNavbar() {
     const placeholder = document.getElementById('navbar-placeholder');
     if (!placeholder) return;
@@ -204,7 +238,7 @@ async function loadFooter() {
     const fallbackFooter = `
         <footer class="w-full py-10 lg:py-14 px-6 md:px-12 max-w-5xl mx-auto flex flex-col bg-surface-container-low border-t border-outline-variant">
             <div class="flex flex-col md:flex-row justify-between items-start gap-8 mb-8 lg:mb-10">
-                <div class="footer-logo-col w-fit flex flex-col"><div class="flex items-center gap-sm mb-3 lg:mb-4"><img src="img/logo.svg" alt="noxh.help" class="h-7 lg:h-10 w-auto"></div><p id="footer-desc" class="font-body-sm text-[14px] md:text-[15px] lg:text-[16px] text-on-surface-variant leading-relaxed">Cung cấp thông tin chính xác và miễn phí<br class="lg:hidden"> giúp bạn hiện thực hóa giấc mơ Nhà ở xã hội.</p></div>
+                <div class="footer-logo-col w-fit flex flex-col"><div class="flex items-center gap-sm mb-3 lg:mb-4"><img src="img/logo.svg" alt="noxh.help" class="h-7 lg:h-10 w-auto"></div><p id="footer-desc" class="font-body-sm text-[14px] md:text-[15px] lg:text-[16px] text-on-surface-variant leading-relaxed">Cung cấp thông tin chính xác và miễn phí<br class="lg:hidden"> giúp bạn hiện thực hóa giấc mơ Nhà ở xã hội.</p><div class="mt-5"><p class="text-sm text-on-surface-variant">Cộng đồng và kênh thông tin miễn phí</p><div class="mt-3 flex items-center gap-3"><a class="footer-social-link" href="#" aria-label="Zalo"><img src="img/Zalo.webp" alt="Zalo"></a><a class="footer-social-link" href="#" aria-label="Facebook"><img src="img/Facebook.webp" alt="Facebook"></a><a class="footer-social-link" href="#" aria-label="Instagram"><img src="img/Instagram.webp" alt="Instagram"></a><a class="footer-social-link" href="#" aria-label="Threads"><img src="img/Threads.png" alt="Threads"></a></div></div></div>
                 <div class="flex flex-col gap-2 lg:gap-3"><h4 class="font-label-sm text-[11px] lg:text-[14px] font-bold text-on-surface uppercase tracking-wider mb-2 lg:mb-3">LIÊN KẾT</h4><a class="font-body-sm text-[13px] lg:text-[17px] text-on-surface-variant hover:text-primary" href="about_us.html">Về chúng tôi</a><a class="font-body-sm text-[13px] lg:text-[17px] text-on-surface-variant hover:text-primary" href="policy.html">Chính sách bảo mật</a><a class="font-body-sm text-[13px] lg:text-[17px] text-on-surface-variant hover:text-primary" href="contact.html">Liên hệ hỗ trợ</a><a class="font-body-sm text-[13px] lg:text-[17px] text-on-surface-variant hover:text-primary" href="term_of_use.html">Điều khoản sử dụng</a></div>
             </div>
             <div class="border-t border-outline-variant/60 pt-5 lg:pt-6 flex flex-col sm:flex-row items-center justify-between gap-2"><p class="font-body-sm text-[12px] lg:text-[13px] text-on-surface-variant/70 text-center sm:text-left">© 2026 <span class="font-semibold text-on-surface-variant">noxh.help</span>. Tất cả quyền được bảo lưu.</p><p class="font-body-sm text-[12px] lg:text-[13px] text-on-surface-variant/50 text-center sm:text-right">Dữ liệu mang tính tham khảo. Không phải tư vấn pháp lý.</p></div>
@@ -276,6 +310,7 @@ function initPageScripts() {
     loadFaqsFromSupabase();
     loadLegalDocuments();
     loadDocumentSections();
+    loadDocumentGuide();
     setupPolicyTableOfContents();
     setupContactForm();
     setupPasswordToggles();
@@ -295,6 +330,76 @@ function initPageScripts() {
 
 async function initSettingsForm() {
     const saveBtn = document.getElementById('save-settings-btn');
+    const fullNameInput = document.getElementById('fullname');
+    const emailInput = document.getElementById('email');
+    const phoneInput = document.getElementById('phone');
+
+    // Profile fields are now read-only, but must still be populated even
+    // though the former "Save changes" section is no longer rendered.
+    if (fullNameInput || emailInput || phoneInput) {
+        const currentUserStr = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
+        let sessionUser = null;
+        try { sessionUser = currentUserStr ? (JSON.parse(currentUserStr).user || JSON.parse(currentUserStr)) : null; } catch (_) {}
+        const dbUser = window.SupabaseService?.getAuthSession() ? await window.SupabaseService.getCurrentProfile() : null;
+        const activeUser = dbUser || sessionUser;
+        if (activeUser) {
+            if (fullNameInput) fullNameInput.value = activeUser.full_name || activeUser.fullName || '';
+            if (emailInput) emailInput.value = activeUser.email || '';
+            if (phoneInput) phoneInput.value = activeUser.phone || '';
+        }
+    }
+
+    // Password controls remain independent from the removed profile-save area.
+    const passwordTriggerStandalone = document.getElementById('change-pwd-trigger-btn');
+    const passwordFormStandalone = document.getElementById('change-pwd-form');
+    if (passwordTriggerStandalone && passwordFormStandalone) passwordTriggerStandalone.onclick = () => passwordFormStandalone.classList.toggle('hidden');
+    const progressNotificationToggle = document.getElementById('project-progress-notification');
+    if (progressNotificationToggle) {
+        progressNotificationToggle.checked = localStorage.getItem('noxh_project_progress_notifications') !== 'false';
+        progressNotificationToggle.onchange = () => localStorage.setItem('noxh_project_progress_notifications', String(progressNotificationToggle.checked));
+    }
+
+    const settingsLogoutButton = document.getElementById('settings-logout-button');
+    if (settingsLogoutButton) {
+        let logoutModal = document.getElementById('settings-logout-modal');
+        if (!logoutModal) {
+            logoutModal = document.createElement('div');
+            logoutModal.id = 'settings-logout-modal';
+            logoutModal.className = 'fixed inset-0 z-[130] hidden items-center justify-center bg-black/45 p-4';
+            logoutModal.setAttribute('role', 'dialog');
+            logoutModal.setAttribute('aria-modal', 'true');
+            logoutModal.innerHTML = `
+                <div class="w-full max-w-sm rounded-2xl bg-surface-container-lowest p-6 shadow-2xl">
+                    <div class="flex items-start gap-3">
+                        <span class="material-symbols-outlined flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-error-container text-error">logout</span>
+                        <div><h2 class="text-lg font-bold text-on-surface">Đăng xuất tài khoản</h2><p class="mt-2 text-on-surface-variant">Bạn muốn đăng xuất tài khoản?</p></div>
+                    </div>
+                    <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                        <button type="button" data-cancel class="rounded-lg border border-outline-variant px-5 py-2.5 font-semibold text-on-surface hover:bg-surface-container transition-colors">Hủy</button>
+                        <button type="button" data-confirm class="rounded-lg bg-error px-5 py-2.5 font-semibold text-white hover:opacity-90 transition-opacity">Đăng xuất</button>
+                    </div>
+                </div>`;
+            document.body.appendChild(logoutModal);
+            const closeModal = () => { logoutModal.classList.add('hidden'); logoutModal.classList.remove('flex'); };
+            logoutModal.querySelector('[data-cancel]').onclick = closeModal;
+            logoutModal.onclick = event => { if (event.target === logoutModal) closeModal(); };
+            logoutModal.querySelector('[data-confirm]').onclick = async () => {
+                const confirmButton = logoutModal.querySelector('[data-confirm]');
+                confirmButton.disabled = true;
+                confirmButton.textContent = 'Đang đăng xuất...';
+                if (window.SupabaseService) await window.SupabaseService.signOut();
+                localStorage.removeItem('currentUser');
+                sessionStorage.removeItem('currentUser');
+                window.location.href = 'homepage.html';
+            };
+        }
+        settingsLogoutButton.onclick = () => {
+            logoutModal.classList.remove('hidden');
+            logoutModal.classList.add('flex');
+            logoutModal.querySelector('[data-cancel]').focus();
+        };
+    }
+
     if (saveBtn) {
         // Clone to avoid multiple listeners
         const newSaveBtn = saveBtn.cloneNode(true);
@@ -618,7 +723,7 @@ function setupSPARouter() {
         const href = link.getAttribute('href');
         
         // Ignore external, hash, or empty links
-        if (!href || href.startsWith('http') || href.startsWith('#') || href.startsWith('javascript:') || link.getAttribute('target') === '_blank') return;
+        if (!href || href.startsWith('http') || href.startsWith('#') || href.startsWith('javascript:') || link.getAttribute('target') === '_blank' || href.startsWith('register_steps.html')) return;
         
         e.preventDefault();
         
@@ -633,6 +738,10 @@ function setupSPARouter() {
     });
 
     window.addEventListener('popstate', async () => {
+        if (document.getElementById('register-project-title')) {
+            window.location.reload();
+            return;
+        }
         const href = window.location.pathname.split('/').pop() || 'homepage.html';
         await navigateTo(href, false);
     });
@@ -648,12 +757,6 @@ function setupSPARouter() {
         isNavigating = true;
         
         try {
-            const mainEl = document.querySelector('main');
-            if (mainEl) {
-                mainEl.style.opacity = '0.5';
-                mainEl.style.transition = 'opacity 0.2s';
-            }
-            
             const response = await fetch(href);
             if (!response.ok) throw new Error('Network response was not ok');
             
@@ -674,6 +777,8 @@ function setupSPARouter() {
             const currentMain = document.querySelector('main');
             
             if (newMain && currentMain) {
+                newMain.style.opacity = '';
+                newMain.style.transition = '';
                 currentMain.replaceWith(newMain);
                 document.title = doc.title;
                 
@@ -1467,17 +1572,14 @@ function showLoginRequiredModal() {
         modal.setAttribute('aria-modal', 'true');
         modal.setAttribute('aria-labelledby', 'login-required-title');
         modal.innerHTML = `
-            <div class="w-full max-w-md rounded-2xl bg-surface-container-lowest p-6 shadow-2xl">
-                <div class="flex items-start gap-3">
-                    <span class="material-symbols-outlined flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-fixed text-primary">lock</span>
-                    <div>
-                        <h2 id="login-required-title" class="font-title-lg text-title-lg font-bold text-on-surface">Yêu cầu đăng nhập</h2>
-                        <p class="mt-2 font-body-md text-body-md text-on-surface-variant">Bạn cần đăng nhập để sử dụng tính năng này.</p>
-                    </div>
+            <div class="w-full max-w-md rounded-2xl bg-surface-container-lowest p-6 text-center shadow-2xl">
+                <div>
+                    <h2 id="login-required-title" class="font-title-lg text-title-lg font-bold text-on-surface">Yêu cầu đăng nhập</h2>
+                    <p class="mt-2 font-body-md text-body-md text-on-surface-variant">Bạn cần đăng nhập để sử dụng tính năng này.</p>
                 </div>
-                <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                    <button type="button" data-close class="rounded-lg border border-outline-variant px-5 py-2.5 font-label-md text-label-md text-on-surface hover:bg-surface-container transition-colors">Quay lại</button>
-                    <button type="button" data-login class="rounded-lg bg-primary px-5 py-2.5 font-label-md text-label-md text-on-primary hover:bg-surface-tint transition-colors">Đăng nhập</button>
+                <div class="mt-6 flex flex-col-reverse justify-center gap-3 sm:flex-row">
+                    <button type="button" data-close class="rounded-lg border border-outline-variant px-5 py-2.5 font-label-md text-label-md text-on-surface hover:bg-slate-500 hover:text-white transition-colors">Quay lại</button>
+                    <button type="button" data-login class="rounded-lg border border-blue-600 bg-white px-5 py-2.5 font-label-md text-label-md text-blue-700 hover:bg-blue-600 hover:text-white transition-colors">Đăng nhập</button>
                 </div>
             </div>`;
         document.body.appendChild(modal);
@@ -1497,6 +1599,22 @@ function showLoginRequiredModal() {
     modal.classList.remove('hidden');
     modal.classList.add('flex');
     modal.querySelector('[data-login]').focus();
+}
+
+function hasAuthenticatedUserSession() {
+    const session = window.SupabaseService?.getAuthSession?.();
+    return Boolean(session?.access_token && (!session.expires_at || session.expires_at * 1000 > Date.now()));
+}
+
+function setupDocumentAccessGuard(container) {
+    if (!container || container.dataset.documentAccessGuardBound === 'true') return;
+    container.dataset.documentAccessGuardBound = 'true';
+    container.addEventListener('click', event => {
+        const action = event.target.closest('[data-login-required]');
+        if (!action || !container.contains(action) || hasAuthenticatedUserSession()) return;
+        event.preventDefault();
+        showLoginRequiredModal();
+    });
 }
 
 async function loadProjectDetails() {
@@ -1545,7 +1663,7 @@ async function loadProjectDetails() {
         const milestones = ['Chờ xây dựng', 'Đang xây dựng', 'Sắp nhận hồ sơ', 'Đang nhận đơn', 'Chờ bàn giao'];
         const stored = details.statusTimeline || []; const lastReached = stored.reduce((last, item, index) => item.checked ? index : last, -1);
         progressCard.innerHTML = `<h3 class="font-title-lg text-title-lg font-bold text-on-surface mb-5">Tiến độ Dự án</h3><div class="flex flex-col">${milestones.map((label, index) => { const item = stored[index] || {}; const reached = index <= lastReached; const current = index === lastReached; return `<div class="detail-timeline-item relative flex items-center gap-4 ${index < milestones.length - 1 ? 'pb-7' : ''}">${index < milestones.length - 1 ? `<span class="detail-timeline-connector absolute left-4 -translate-x-1/2 top-8 -bottom-7 w-0.5 ${index < lastReached ? 'bg-primary' : 'border-l-2 border-dashed border-outline-variant'}"></span>` : ''}<span class="detail-timeline-point relative z-10 w-8 h-8 shrink-0 rounded-full flex items-center justify-center ${reached ? 'bg-primary text-white' : 'border-2 border-outline-variant bg-surface-container-lowest text-outline'}">${reached ? '<span class="material-symbols-outlined text-[17px]">check</span>' : '<span class="w-2.5 h-2.5 rounded-full bg-outline-variant"></span>'}</span><div class="detail-timeline-content min-w-0"><p class="detail-timeline-title font-label-md text-label-md ${current ? 'text-primary font-bold' : reached ? 'text-on-surface' : 'text-outline'}">${label}</p>${item.note ? `<p class="detail-timeline-note font-body-md text-sm text-on-surface-variant mt-0.5">${escapeHtml(item.note)}</p>` : ''}</div></div>`; }).join('')}</div>`;
-        progressCard.innerHTML += '<button id="detail-follow-btn" type="button" class="mt-5 w-full border border-primary text-primary bg-surface-container-lowest font-label-md text-label-md py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"><span class="material-symbols-outlined text-[20px]">edit_document</span><span>Đăng ký dự án</span></button>';
+        progressCard.innerHTML += '<button id="detail-follow-btn" type="button" class="mt-5 w-full border border-primary text-primary bg-surface-container-lowest font-label-md text-label-md py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"><span class="material-symbols-outlined text-[20px]">edit_document</span><span>Đăng ký dự án</span></button><a id="detail-registration-steps-link" href="#" class="hidden mt-3 w-full text-center text-sm font-semibold text-primary hover:underline">Đến trang Quy trình đăng ký</a>';
     }
     const amenitiesList = Array.from(document.querySelectorAll('ul.grid')).find(list => list.previousElementSibling && list.previousElementSibling.textContent.trim() === 'Tiện ích nổi bật');
     if (amenitiesList && Array.isArray(details.amenities)) amenitiesList.innerHTML = details.amenities.map(item => `<li class="flex items-center gap-2 overflow-hidden"><span class="material-symbols-outlined text-secondary icon-fill flex-shrink-0">check_circle</span><span class="font-body-md text-body-md text-on-surface truncate">${escapeHtml(item)}</span></li>`).join('');
@@ -1600,6 +1718,7 @@ async function setupProjectSaveButton(projectId) {
 
 async function setupProjectFollowButton(projectId) {
     const button = document.getElementById('detail-follow-btn'); if (!button) return;
+    const registrationStepsLink = document.getElementById('detail-registration-steps-link');
     let user = null; try { user = JSON.parse(localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser') || 'null'); user = user && (user.user || user); } catch (_) {}
     if (!user) { button.onclick = showLoginRequiredModal; return; }
     if (!window.SupabaseService) return;
@@ -1611,6 +1730,10 @@ async function setupProjectFollowButton(projectId) {
         button.classList.toggle('text-primary', !followed);
         button.classList.toggle('bg-surface-container-lowest', !followed);
         button.innerHTML = `<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' ${followed ? 1 : 0}">edit_document</span><span>${followed ? 'Đang đăng ký' : 'Đăng ký dự án'}</span>`;
+        if (registrationStepsLink) {
+            registrationStepsLink.href = `register_steps.html?id=${encodeURIComponent(projectId)}`;
+            registrationStepsLink.classList.toggle('hidden', !followed);
+        }
     };
     let followed = await window.SupabaseService.isProjectFollowed(user.id, projectId); setState(followed);
     button.onclick = async () => { button.disabled = true; const next = !followed; if (await window.SupabaseService.setProjectFollowed(user.id, projectId, next)) { followed = next; setState(followed); } else alert('Không thể cập nhật trạng thái đăng ký. Vui lòng thử lại.'); button.disabled = false; };
@@ -1949,8 +2072,12 @@ async function loadFollowedProjects() {
 function renderProjectsList(container, list) {
     if (!container) return;
     const isHomepageGrid = container.id === 'homepage-projects-grid';
+    const isWorkingProjectsGrid = container.id === 'working-projects-grid';
     let html = '';
     list.forEach(p => {
+        if (isWorkingProjectsGrid && p.id) {
+            try { localStorage.setItem(`noxh_registration_project_${p.id}`, JSON.stringify(p)); } catch (_) {}
+        }
         let statusClass = 'status-cho-xay-dung';
         if (p.status && p.status.includes('xây dựng')) statusClass = 'status-dang-xay-dung';
         if (p.status === 'Sắp nhận hồ sơ') statusClass = 'status-sap-nhan-ho-so';
@@ -1960,14 +2087,15 @@ function renderProjectsList(container, list) {
         const compactPrice = value => value.replace(/^\s*(khoảng|từ)\s*/i, '').replace(/triệu(?:\s*đồng)?/gi, 'tr').replace(/\s+/g, ' ').trim();
         const priceLabel = estimatedPrice ? `~${compactPrice(estimatedPrice)}/m²` : (p.price || 'Đang cập nhật');
         const detailUrl = `details.html?id=${p.id}`;
+        const cardUrl = isWorkingProjectsGrid ? `register_steps.html?id=${p.id}` : detailUrl;
 
         html += `
             <div class="project-card-item bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/60 shadow-sm hover:shadow-md transition-all flex flex-col justify-between" data-status="${p.status || ''}" data-date="${p.created_at || p.date || ''}" data-price="${p.price || p.price_per_sqm || ''}">
                 <div>
-                    <a href="${detailUrl}" class="project-card-thumbnail relative w-full rounded-lg overflow-hidden mb-3 bg-surface-container block">
+                    <a href="${cardUrl}" class="project-card-thumbnail relative w-full rounded-lg overflow-hidden mb-3 bg-surface-container block">
                         <img src="${p.imageUrl || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80'}" alt="${p.name || p.title}" class="w-full h-full object-cover">
                     </a>
-                    <a href="${detailUrl}" class="block font-bold text-lg text-on-surface mb-1 hover:text-primary transition-colors"><h3>${p.name || p.title}</h3></a>
+                    <a href="${cardUrl}" class="block font-bold text-lg text-on-surface mb-1 hover:text-primary transition-colors"><h3>${p.name || p.title}</h3></a>
                     <p class="text-sm text-on-surface-variant flex items-center gap-1 mb-3">
                         <span class="material-symbols-outlined text-base">location_on</span> ${p.location}
                     </p>
@@ -1983,7 +2111,7 @@ function renderProjectsList(container, list) {
                         </div>
                     </div>
                 </div>
-                <a href="${detailUrl}" class="mt-1 w-full text-center px-4 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg text-sm font-semibold transition-colors">Xem chi tiết</a>
+                <a href="${cardUrl}" class="mt-1 w-full text-center px-4 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg text-sm font-semibold transition-colors">${isWorkingProjectsGrid ? 'Trình tự đăng ký' : 'Xem chi tiết'}</a>
             </div>
         `;
     });
@@ -2004,19 +2132,85 @@ function updateLegalDocumentsUpdateLabel() {
     });
 }
 
-function getDocumentDownloadName(document) {
-    const docType = String(document.doc_type || document.docType || 'PDF').toLowerCase();
+function getDocumentDownloadName(document, format) {
+    const docType = String(format || document.doc_type || document.docType || 'PDF').toLowerCase();
     const extension = docType === 'docx' ? '.docx' : '.pdf';
     let name = String(document.name || document.title || 'tai-lieu').trim();
     name = name.replace(/[\\/:*?"<>|]/g, '-');
     return name.toLowerCase().endsWith(extension) ? name : `${name}${extension}`;
 }
 
-function getDocumentDownloadUrl(document) {
-    const fileUrl = document.fileUrl || document.file || '';
+function getDocumentDownloadUrl(document, format) {
+    const normalizedFormat = String(format || '').toUpperCase();
+    const fileUrl = normalizedFormat === 'PDF' ? document.pdfUrl : (normalizedFormat === 'DOCX' ? document.docxUrl : (document.fileUrl || document.file || ''));
     if (!fileUrl) return '#';
     const separator = fileUrl.includes('?') ? '&' : '?';
-    return `${fileUrl}${separator}download=${encodeURIComponent(getDocumentDownloadName(document))}`;
+    return `${fileUrl}${separator}download=${encodeURIComponent(getDocumentDownloadName(document, format))}`;
+}
+
+async function loadDocumentGuide() {
+    const nameElement = document.getElementById('document-guide-name');
+    if (!nameElement || !window.SupabaseService) return;
+    const nameSkeleton = document.getElementById('document-guide-name-skeleton');
+    const documentId = new URLSearchParams(window.location.search).get('id');
+    const stepsElement = document.getElementById('document-guide-steps');
+    try {
+        const documents = await window.SupabaseService.getDocuments();
+        if (!nameElement.isConnected) return;
+        const selectedDocument = (documents || []).find(item => String(item.id) === String(documentId));
+        if (!selectedDocument) throw new Error('Không tìm thấy tài liệu được yêu cầu.');
+        nameElement.textContent = selectedDocument.name;
+        nameElement.classList.remove('hidden');
+        if (nameSkeleton) nameSkeleton.classList.add('hidden');
+        document.title = `Hướng dẫn điền ${selectedDocument.name} - Vietnam Housing`;
+        const guide = selectedDocument.guide;
+        if (!guide || guide.status !== 'published') {
+            if (stepsElement) stepsElement.innerHTML = '<div class="py-12 text-center text-on-surface-variant"><span class="material-symbols-outlined text-5xl mb-2">pending_actions</span><p>Hướng dẫn điền cho tài liệu này chưa được xuất bản.</p></div>';
+            const notesSection = document.getElementById('document-guide-notes-section');
+            if (notesSection) notesSection.classList.add('hidden');
+        } else {
+            if (stepsElement) {
+                stepsElement.innerHTML = (guide.steps || []).map((step, index) => `<div class="flex gap-3 items-start"><div class="w-8 h-8 shrink-0 bg-primary-container text-primary rounded-full flex items-center justify-center font-bold font-label-md">${index + 1}</div><div class="flex flex-col"><h3 class="text-lg font-bold text-on-surface leading-snug mb-0.5">${escapeHtml(step.title)}</h3><p class="text-sm leading-relaxed text-on-surface-variant whitespace-pre-line">${escapeHtml(step.content)}</p></div></div>`).join('') || '<p class="text-sm text-on-surface-variant">Chưa có nội dung hướng dẫn.</p>';
+            }
+            const notesSection = document.getElementById('document-guide-notes-section');
+            const notesElement = document.getElementById('document-guide-notes');
+            if (notesElement && guide.notes && guide.notes.length) {
+                notesElement.innerHTML = guide.notes.map(note => `<li class="flex items-start gap-3"><div class="w-[20px] h-[20px] mt-0.5 rounded-full bg-white border border-red-400 shrink-0 shadow-sm flex items-center justify-center"><span class="material-symbols-outlined text-[14px] text-red-500 font-bold">check</span></div><span class="text-sm text-red-900/80">${escapeHtml(note)}</span></li>`).join('');
+                if (notesSection) notesSection.classList.remove('hidden');
+            } else if (notesSection) {
+                notesSection.classList.add('hidden');
+            }
+        }
+        const image = document.getElementById('document-guide-image');
+        const imageSkeleton = document.getElementById('document-guide-image-skeleton');
+        const imageEmpty = document.getElementById('document-guide-image-empty');
+        if (imageSkeleton) imageSkeleton.classList.add('hidden');
+        if (image && guide && guide.imageUrl) {
+            image.src = guide.imageUrl;
+            image.alt = `Ảnh hướng dẫn ${selectedDocument.name}`;
+            image.classList.remove('hidden');
+            if (imageEmpty) imageEmpty.classList.add('hidden');
+        } else if (imageEmpty) {
+            imageEmpty.classList.remove('hidden');
+            imageEmpty.classList.add('flex');
+        }
+        const pdfLink = document.getElementById('document-guide-pdf');
+        const docxLink = document.getElementById('document-guide-docx');
+        if (pdfLink) {
+            if (selectedDocument.pdfUrl) pdfLink.href = getDocumentDownloadUrl(selectedDocument, 'PDF');
+            else pdfLink.classList.add('hidden');
+        }
+        if (docxLink) {
+            if (selectedDocument.docxUrl) docxLink.href = getDocumentDownloadUrl(selectedDocument, 'DOCX');
+            else docxLink.classList.add('hidden');
+        }
+    } catch (error) {
+        console.error('Error loading document guide:', error);
+        if (nameSkeleton) nameSkeleton.classList.add('hidden');
+        nameElement.textContent = error.message || 'Không thể tải hướng dẫn';
+        nameElement.classList.remove('hidden');
+        if (stepsElement) stepsElement.innerHTML = '<p class="py-10 text-center text-on-surface-variant">Vui lòng quay lại trang tài liệu và thử lại.</p>';
+    }
 }
 
 async function loadLiveDocuments() {
@@ -2143,7 +2337,18 @@ async function loadDocumentSections() {
             const content = findContent(title);
             if (!content) return;
             const items = (documents || []).filter(document => !document.isDraft && categories.includes(document.type));
-            content.innerHTML = items.length ? `<div class="flex flex-col gap-3">${items.map(document => `<a href="${getDocumentDownloadUrl(document)}" class="p-4 rounded-lg border border-outline-variant/60 hover:border-primary hover:bg-primary/5 transition-colors flex items-center justify-between gap-3"><div class="min-w-0"><p class="font-label-md text-label-md text-on-surface truncate">${escapeHtml(document.name)}</p><p class="mt-1 text-xs text-on-surface-variant">${escapeHtml(document.docType || 'PDF')} · ${escapeHtml(document.date || '')}</p></div><span class="material-symbols-outlined text-primary">download</span></a>`).join('')}</div>` : '<div class="py-8 text-center text-sm text-on-surface-variant">Chưa có tài liệu</div>';
+            const renderFormDocument = document => {
+                const pdfButton = document.pdfUrl
+                    ? `<a data-login-required href="${getDocumentDownloadUrl(document, 'PDF')}" class="flex-1 min-w-0 px-3 py-1.5 border-2 border-orange-500 text-orange-600 bg-white hover:bg-orange-500 hover:text-white rounded-md text-xs font-semibold leading-none whitespace-nowrap flex items-center justify-center gap-1 transition-colors"><span class="material-symbols-outlined text-sm">picture_as_pdf</span>Tải PDF</a>`
+                    : '<span class="flex-1 min-w-0 px-3 py-1.5 border-2 border-outline-variant text-outline bg-surface-container rounded-md text-xs font-semibold leading-none whitespace-nowrap text-center cursor-not-allowed">Chưa có PDF</span>';
+                const docxButton = document.docxUrl
+                    ? `<a data-login-required href="${getDocumentDownloadUrl(document, 'DOCX')}" class="flex-1 min-w-0 px-3 py-1.5 border-2 border-sky-600 text-sky-700 bg-white hover:bg-sky-600 hover:text-white rounded-md text-xs font-semibold leading-none whitespace-nowrap flex items-center justify-center gap-1 transition-colors"><span class="material-symbols-outlined text-sm">description</span>Tải DOCX</a>`
+                    : '<span class="flex-1 min-w-0 px-3 py-1.5 border-2 border-outline-variant text-outline bg-surface-container rounded-md text-xs font-semibold leading-none whitespace-nowrap text-center cursor-not-allowed">Chưa có DOCX</span>';
+                return `<div class="p-4 rounded-lg border border-outline-variant/60 bg-white flex flex-col md:flex-row md:items-center justify-between gap-4"><div class="min-w-0"><p class="font-label-md text-label-md text-on-surface font-semibold">${escapeHtml(document.name)}</p><p class="mt-1 text-xs leading-relaxed text-on-surface-variant line-clamp-2">${escapeHtml(document.desc || 'Chưa có thông tin bổ sung.')}</p></div><div class="w-full md:w-[270px] shrink-0 flex flex-col gap-1.5"><div class="flex gap-1.5">${pdfButton}${docxButton}</div><a data-login-required href="docs-guide.html?id=${encodeURIComponent(document.id)}" class="w-full px-3 py-1.5 border-2 border-blue-600 text-blue-700 bg-white hover:bg-blue-600 hover:text-white rounded-md text-xs font-semibold leading-none whitespace-nowrap flex items-center justify-center gap-1 transition-colors"><span class="material-symbols-outlined text-sm">menu_book</span>Xem hướng dẫn điền</a></div></div>`;
+            };
+            const renderOtherDocument = document => `<a href="${getDocumentDownloadUrl(document)}" class="p-4 rounded-lg border border-outline-variant/60 hover:border-primary hover:bg-primary/5 transition-colors flex items-center justify-between gap-3"><div class="min-w-0"><p class="font-label-md text-label-md text-on-surface truncate">${escapeHtml(document.name)}</p><p class="mt-1 text-xs text-on-surface-variant">${escapeHtml(document.docType || 'PDF')} · ${escapeHtml(document.date || '')}</p></div><span class="material-symbols-outlined text-primary">download</span></a>`;
+            content.innerHTML = items.length ? `<div class="flex flex-col gap-3">${items.map(document => (document.type === 'Đơn mua' || document.type === 'Đơn thuê') ? renderFormDocument(document) : renderOtherDocument(document)).join('')}</div>` : '<div class="py-8 text-center text-sm text-on-surface-variant">Chưa có tài liệu</div>';
+            setupDocumentAccessGuard(content);
         };
         renderList('Mua Nhà ở xã hội', ['Đơn mua', 'Bộ tài liệu - Mua Nhà ở xã hội']);
         renderList('Thuê Nhà ở xã hội', ['Đơn thuê', 'Bộ tài liệu - Thuê Nhà ở xã hội']);

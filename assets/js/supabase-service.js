@@ -13,6 +13,7 @@
     const AUTH_SESSION_KEY = 'noxh_auth_session';
     const ADMIN_AUTH_SESSION_KEY = 'noxh_admin_auth_session';
     let authContext = 'user';
+    let refreshInFlight = null;
     const isAdminContext = () => authContext === 'admin';
     const getSessionKey = () => isAdminContext() ? ADMIN_AUTH_SESSION_KEY : AUTH_SESSION_KEY;
     const getAuthSession = () => {
@@ -26,6 +27,54 @@
         'Content-Type': 'application/json',
         'Prefer': 'return=representation'
     });
+    const clearInvalidUserSession = () => {
+        if (isAdminContext()) return;
+        [localStorage, sessionStorage].forEach(store => {
+            store.removeItem(AUTH_SESSION_KEY);
+            store.removeItem('isLoggedIn');
+            store.removeItem('currentUser');
+        });
+    };
+    const refreshStoredSession = async () => {
+        const session = getAuthSession();
+        if (!session?.refresh_token) return null;
+        if (refreshInFlight) return refreshInFlight;
+        refreshInFlight = (async () => {
+            try {
+                const res = await fetch(`${config.url}/auth/v1/token?grant_type=refresh_token`, {
+                    method: 'POST',
+                    headers: { apikey: config.anonKey, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refresh_token: session.refresh_token })
+                });
+                if (!res.ok) return null;
+                const refreshed = await res.json();
+                localStorage.setItem(getSessionKey(), JSON.stringify(refreshed));
+                return refreshed;
+            } catch (_) { return null; }
+            finally { refreshInFlight = null; }
+        })();
+        return refreshInFlight;
+    };
+    const fetchReadWithRetry = async (url, options = {}) => {
+        let lastError;
+        for (let attempt = 0; attempt < 3; attempt += 1) {
+            try {
+                const headers = { ...(options.headers || {}), ...getHeaders() };
+                const response = await fetch(url, { ...options, headers, cache: 'no-store' });
+                if (response.ok || attempt === 2) return response;
+                if ((response.status === 401 || response.status === 403) && getAuthSession()) {
+                    const refreshed = await refreshStoredSession();
+                    if (!refreshed) clearInvalidUserSession();
+                    continue;
+                }
+                lastError = new Error(`Request failed with status ${response.status}`);
+            } catch (error) {
+                lastError = error;
+            }
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+        throw lastError || new Error('Không thể kết nối máy chủ dữ liệu.');
+    };
     const translateAuthError = message => {
         const text = String(message || '');
         const rateLimit = text.match(/For security purposes, you can only request this after\s+(\d+)\s+seconds/i);
@@ -34,6 +83,95 @@
         if (/Invalid login credentials/i.test(text)) return 'Email hoặc mật khẩu không chính xác.';
         if (/Email not confirmed/i.test(text)) return 'Email chưa được xác thực.';
         return text;
+    };
+
+    const FORM_CATEGORIES = ['Đơn mua', 'Đơn thuê'];
+    const DOCUMENT_META_VERSION = 2;
+    const readDocumentContent = value => {
+        const fallback = { description: String(value || ''), attachments: {}, guide: null };
+        if (!value || typeof value !== 'string' || value.trim().charAt(0) !== '{') return fallback;
+        try {
+            const parsed = JSON.parse(value);
+            if (!parsed || parsed._noxhDocument !== DOCUMENT_META_VERSION) return fallback;
+            return {
+                description: String(parsed.description || ''),
+                attachments: parsed.attachments && typeof parsed.attachments === 'object' ? parsed.attachments : {},
+                guide: parsed.guide && typeof parsed.guide === 'object' ? parsed.guide : null
+            };
+        } catch (_) {
+            return fallback;
+        }
+    };
+    const writeDocumentContent = docData => JSON.stringify({
+        _noxhDocument: DOCUMENT_META_VERSION,
+        description: docData.desc || '',
+        attachments: {
+            pdf: docData.pdfUrl || '',
+            docx: docData.docxUrl || ''
+        },
+        guide: docData.guide || null
+    });
+    const cleanDocumentTitle = title => String(title || '')
+        .replace(/\s*\((?:PDF|DOCX)\)\s*$/i, '')
+        .replace(/\.(?:pdf|docx?)$/i, '')
+        .trim();
+    const mapDocumentRecord = db => {
+        const meta = readDocumentContent(db.content);
+        const legacyType = String(db.doc_type || 'PDF').toUpperCase();
+        const pdfUrl = meta.attachments.pdf || (legacyType === 'PDF' ? db.file_url : '');
+        const docxUrl = meta.attachments.docx || (legacyType === 'DOCX' ? db.file_url : '');
+        const availableTypes = [pdfUrl && 'PDF', docxUrl && 'DOCX'].filter(Boolean);
+        return {
+            id: db.id,
+            sourceIds: [db.id],
+            name: db.title,
+            type: db.category,
+            file: db.file_url,
+            fileUrl: db.file_url,
+            pdfUrl,
+            docxUrl,
+            docType: availableTypes.join(', ') || legacyType,
+            desc: meta.description,
+            guide: meta.guide,
+            guideStatus: meta.guide && meta.guide.status || '',
+            isDraft: !!db.is_draft,
+            draftKey: db.draft_key || '',
+            createdAt: db.created_at,
+            date: new Date(db.created_at).toLocaleDateString('vi-VN'),
+            notes: meta.guide && Array.isArray(meta.guide.notes) ? meta.guide.notes : []
+        };
+    };
+    const mergeFormDocuments = records => {
+        const output = [];
+        const grouped = new Map();
+        records.forEach(record => {
+            if (!FORM_CATEGORIES.includes(record.type)) {
+                output.push(record);
+                return;
+            }
+            const groupKey = record.isDraft && record.draftKey
+                ? `draft:${record.draftKey}`
+                : `${record.type}:${cleanDocumentTitle(record.name).toLocaleLowerCase('vi')}`;
+            const existing = grouped.get(groupKey);
+            if (!existing) {
+                record.name = cleanDocumentTitle(record.name);
+                grouped.set(groupKey, record);
+                output.push(record);
+                return;
+            }
+            existing.sourceIds = [...new Set(existing.sourceIds.concat(record.sourceIds))];
+            existing.pdfUrl = existing.pdfUrl || record.pdfUrl;
+            existing.docxUrl = existing.docxUrl || record.docxUrl;
+            existing.file = existing.pdfUrl || existing.docxUrl || existing.file;
+            existing.fileUrl = existing.file;
+            existing.docType = [existing.pdfUrl && 'PDF', existing.docxUrl && 'DOCX'].filter(Boolean).join(', ') || existing.docType;
+            if (!existing.desc && record.desc) existing.desc = record.desc;
+            if (!existing.guide && record.guide) {
+                existing.guide = record.guide;
+                existing.guideStatus = record.guideStatus;
+            }
+        });
+        return output;
     };
 
     const SupabaseService = {
@@ -118,19 +256,7 @@
             }
         },
         async refreshAuthSession() {
-            const session = getAuthSession();
-            if (!session?.refresh_token) return null;
-            try {
-                const res = await fetch(`${config.url}/auth/v1/token?grant_type=refresh_token`, {
-                    method: 'POST',
-                    headers: { apikey: config.anonKey, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ refresh_token: session.refresh_token })
-                });
-                if (!res.ok) return null;
-                const refreshed = await res.json();
-                localStorage.setItem(getSessionKey(), JSON.stringify(refreshed));
-                return refreshed;
-            } catch (_) { return null; }
+            return refreshStoredSession();
         },
         async requestPasswordReset(email) {
             try {
@@ -172,8 +298,9 @@
                 const res = await fetch(`${config.url}/auth/v1/user`, {
                     method: 'PUT', headers: getHeaders(), body: JSON.stringify({ password })
                 });
-                return res.ok;
-            } catch (_) { return false; }
+                const data = await res.json().catch(() => ({}));
+                return { success: res.ok, error: translateAuthError(data?.error_description || data?.msg || 'Không thể đổi mật khẩu. Vui lòng thử lại.') };
+            } catch (_) { return { success: false, error: 'Không thể kết nối dịch vụ đổi mật khẩu. Vui lòng thử lại.' }; }
         },
         async getCurrentProfile() {
             const authId = getAuthSession()?.user?.id;
@@ -187,7 +314,7 @@
         // --- Projects ---
         async getProject(id) {
             try {
-                const res = await fetch(`${BASE_URL}/projects?id=eq.${id}&select=*`, { headers: getHeaders() });
+                const res = await fetchReadWithRetry(`${BASE_URL}/projects?id=eq.${id}&select=*`, { headers: getHeaders() });
                 if (!res.ok) throw new Error('Failed to fetch project');
                 const data = await res.json();
                 if (data && data.length > 0) {
@@ -218,7 +345,7 @@
 
         async getProjects() {
             try {
-                const res = await fetch(`${BASE_URL}/projects?select=*`, { headers: getHeaders() });
+                const res = await fetchReadWithRetry(`${BASE_URL}/projects?select=*`, { headers: getHeaders() });
                 if (!res.ok) throw new Error('Failed to fetch projects');
                 const data = await res.json();
                 return data.map(db => ({
@@ -652,23 +779,10 @@
         // --- Documents ---
         async getDocuments() {
             try {
-                const res = await fetch(`${BASE_URL}/documents?select=*`, { headers: getHeaders() });
+                const res = await fetchReadWithRetry(`${BASE_URL}/documents?select=*`, { headers: getHeaders() });
                 if (!res.ok) throw new Error('Failed to fetch documents');
                 const data = await res.json();
-                return data.map(db => ({
-                    id: db.id,
-                    name: db.title,
-                    type: db.category,
-                    file: db.file_url,
-                    fileUrl: db.file_url,
-                    docType: db.doc_type || 'PDF',
-                    desc: db.content,
-                    isDraft: !!db.is_draft,
-                    draftKey: db.draft_key || '',
-                    createdAt: db.created_at,
-                    date: new Date(db.created_at).toLocaleDateString('vi-VN'),
-                    notes: [] // Notes not in schema natively, could use separate table or JSON
-                }));
+                return mergeFormDocuments(data.map(mapDocumentRecord));
             } catch (err) {
                 console.error(err);
                 return [];
@@ -677,12 +791,15 @@
 
         async addDocument(docData) {
             try {
+                const usesCombinedPayload = FORM_CATEGORIES.includes(docData.type) || docData.guide || docData.pdfUrl || docData.docxUrl;
+                const fileUrl = docData.pdfUrl || docData.docxUrl || docData.file || '';
+                const combinedType = [docData.pdfUrl && 'PDF', docData.docxUrl && 'DOCX'].filter(Boolean).join(', ');
                 const payload = {
                     title: docData.name,
                     category: docData.type,
-                    doc_type: docData.docType || 'PDF',
-                    file_url: docData.file || '',
-                    content: docData.desc || '',
+                    doc_type: combinedType || docData.docType || (docData.isDraft ? 'DRAFT' : 'PDF'),
+                    file_url: fileUrl,
+                    content: usesCombinedPayload ? writeDocumentContent({ ...docData, pdfUrl: docData.pdfUrl || '', docxUrl: docData.docxUrl || '' }) : (docData.desc || ''),
                     is_draft: !!docData.isDraft,
                     draft_key: docData.draftKey || null
                 };
@@ -753,12 +870,15 @@
 
         async updateDocument(id, docData) {
             try {
+                const usesCombinedPayload = FORM_CATEGORIES.includes(docData.type) || docData.guide || docData.pdfUrl || docData.docxUrl;
+                const fileUrl = docData.pdfUrl || docData.docxUrl || docData.file || '';
+                const combinedType = [docData.pdfUrl && 'PDF', docData.docxUrl && 'DOCX'].filter(Boolean).join(', ');
                 const payload = {
                     title: docData.name,
                     category: docData.type,
-                    doc_type: docData.docType || 'PDF',
-                    file_url: docData.file || '',
-                    content: docData.desc || '',
+                    doc_type: combinedType || docData.docType || (docData.isDraft ? 'DRAFT' : 'PDF'),
+                    file_url: fileUrl,
+                    content: usesCombinedPayload ? writeDocumentContent({ ...docData, pdfUrl: docData.pdfUrl || '', docxUrl: docData.docxUrl || '' }) : (docData.desc || ''),
                     is_draft: !!docData.isDraft,
                     draft_key: docData.draftKey || null
                 };
@@ -778,19 +898,23 @@
 
         async deleteDocument(id, options = {}) {
             try {
-                const lookup = await fetch(`${BASE_URL}/documents?id=eq.${id}&select=file_url`, { headers: getHeaders() });
+                const lookup = await fetch(`${BASE_URL}/documents?id=eq.${id}&select=file_url,content`, { headers: getHeaders() });
                 if (!lookup.ok) throw new Error('Failed to read document before deletion');
                 const records = await lookup.json();
-                const fileUrl = records[0] && records[0].file_url;
-                if (fileUrl && !options.keepFile) {
+                const record = records[0] || {};
+                const meta = readDocumentContent(record.content);
+                const fileUrls = [...new Set([record.file_url, meta.attachments.pdf, meta.attachments.docx, meta.guide && meta.guide.imageUrl].filter(Boolean))];
+                if (fileUrls.length && !options.keepFile) {
                     const marker = '/storage/v1/object/public/project-images/';
-                    const pathIndex = fileUrl.indexOf(marker);
-                    if (pathIndex !== -1) {
-                        const path = fileUrl.slice(pathIndex + marker.length);
-                        const storageRes = await fetch(`${config.url}/storage/v1/object/project-images/${path}`, {
-                            method: 'DELETE', headers: getHeaders()
-                        });
-                        if (!storageRes.ok) throw new Error('Failed to delete document file from storage');
+                    for (const fileUrl of fileUrls) {
+                        const pathIndex = fileUrl.indexOf(marker);
+                        if (pathIndex !== -1) {
+                            const path = fileUrl.slice(pathIndex + marker.length);
+                            const storageRes = await fetch(`${config.url}/storage/v1/object/project-images/${path}`, {
+                                method: 'DELETE', headers: getHeaders()
+                            });
+                            if (!storageRes.ok) throw new Error('Failed to delete document file from storage');
+                        }
                     }
                 }
                 const res = await fetch(`${BASE_URL}/documents?id=eq.${id}`, {
