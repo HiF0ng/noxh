@@ -849,3 +849,106 @@ body:not(:has(.homepage-hero-section)) [class*="mt-[80px]"] {
     transform: translate(-50%, 0) !important;
     pointer-events: auto !important;
 }
+
+/* Desktop authentication cards: scale the complete login/signup experience by 20%. */
+@media (min-width: 768px) {
+    .signup-cityscape {
+        background-size: auto 760px;
+    }
+
+    .auth-login-card { max-width: 1120px; }
+    .auth-login-card > div:last-child { padding: 2rem; }
+
+    .auth-login-card h1,
+    .auth-signup-card h1 {
+        font-size: 26px !important;
+        line-height: 1.25;
+    }
+
+    .auth-login-card p,
+    .auth-signup-card p,
+    .auth-login-card label,
+    .auth-signup-card label,
+    .auth-login-card a,
+    .auth-signup-card a { font-size: 14px !important; }
+
+    .auth-login-card #login-form,
+    .auth-signup-card #signup-form { gap: .9rem; }
+
+    .auth-login-card input:not([type="checkbox"]),
+    .auth-signup-card input:not([type="checkbox"]) {
+        min-height: 48px;
+        padding-top: .65rem;
+        padding-bottom: .65rem;
+        font-size: 15px !important;
+    }
+
+    .auth-login-card .material-symbols-outlined,
+    .auth-signup-card .material-symbols-outlined { font-size: 21px !important; }
+
+    .auth-login-card button[type="submit"],
+    .auth-signup-card button[type="submit"] {
+        min-height: 48px;
+        font-size: 15px !important;
+    }
+
+    .auth-login-card input[type="checkbox"],
+    .auth-signup-card input[type="checkbox"] { width: 1rem; height: 1rem; }
+
+    .auth-signup-card { max-width: 560px; }
+    .auth-signup-card > div:first-child,
+    .auth-signup-card #signup-form { padding-left: 1.5rem; padding-right: 1.5rem; }
+    .auth-signup-card > div:first-child { padding-top: 1.5rem; }
+    .auth-signup-card #signup-form { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+}
+
+/* Compact breadcrumb spacing is intentionally desktop-only. Keep the original
+   navbar clearance on tablet/mobile so breadcrumbs never sit under the nav. */
+@media (min-width: 1024px) {
+    .project-page-compact-spacing {
+        padding-top: 5rem !important;
+    }
+
+    .project-page-compact-spacing .project-page-breadcrumb {
+        margin-top: 0.75rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+}
+
+#detail-registration-steps-link:not(.hidden) {
+    display: block;
+}
+
+#register-investor,
+#register-scale,
+#register-handover {
+    font-size: 1.125rem;
+    line-height: 1.5rem;
+}
+
+.footer-social-link {
+    display: inline-flex;
+    width: 2.25rem;
+    height: 2.25rem;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+    background: #ffffff;
+    transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.footer-social-link:hover {
+    border-color: #2563eb;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.14);
+    transform: translateY(-1px);
+}
+
+.footer-social-link img {
+    display: block;
+    width: 1.35rem;
+    height: 1.35rem;
+    object-fit: cover;
+    border-radius: 0.25rem;
+}

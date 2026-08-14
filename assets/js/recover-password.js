@@ -2,162 +2,79 @@ document.addEventListener('DOMContentLoaded', () => {
     const emailForm = document.getElementById('recovery-email-form');
     const codeForm = document.getElementById('recovery-code-form');
     const passwordForm = document.getElementById('recovery-password-form');
-    const success = document.getElementById('recovery-success');
     const message = document.getElementById('recovery-message');
     const title = document.getElementById('recovery-title');
     const description = document.getElementById('recovery-description');
-    const otpEntry = document.getElementById('recovery-otp-entry');
-    const otpSuccess = document.getElementById('recovery-otp-success');
-    const otpNotice = document.getElementById('recovery-otp-notice');
-    const otpInputsWrap = document.getElementById('recovery-otp-inputs');
-    const otpInputs = [...document.querySelectorAll('.otp-cell')];
+    const success = document.getElementById('recovery-success');
+    const sendButton = document.getElementById('recovery-send-button');
     const resendButton = document.getElementById('recovery-resend-button');
-    const backLink = document.getElementById('recovery-back-link');
+    const otpWrap = document.getElementById('recovery-otp-inputs');
+    const otpInputs = [...document.querySelectorAll('.otp-cell')];
     let recoveryEmail = '';
-    let resendTimer = null;
+    let resendTimer;
 
-    const showMessage = (text) => {
-        message.textContent = text;
-        message.className = 'mb-sm rounded-lg px-3 py-2 text-sm bg-error-container text-error';
-    };
+    const showMessage = html => { message.innerHTML = html; message.className = 'mb-sm rounded-lg px-3 py-2 text-sm bg-error-container text-error'; };
     const clearMessage = () => message.classList.add('hidden');
-    const showStep = (form) => {
-        [emailForm, codeForm, passwordForm, success].forEach(item => item.classList.add('hidden'));
-        form.classList.remove('hidden');
+    const showOnly = form => { [emailForm, codeForm, passwordForm, success].forEach(item => item.classList.add('hidden')); form.classList.remove('hidden'); };
+    const setSending = sending => {
+        sendButton.disabled = sending;
+        sendButton.innerHTML = sending ? '<span class="recovery-spinner" aria-label="Đang gửi"></span>' : '<span class="material-symbols-outlined text-[18px]">send</span><span>Gửi mã xác nhận</span>';
     };
-    const resetOtpNotice = () => {
-        otpNotice.className = 'recovery-notice rounded-lg px-3 py-2 text-sm leading-relaxed mt-sm';
-        otpNotice.textContent = 'Mã xác thực đã được gửi tới bạn thành công. Vui lòng kiểm tra mục Thư đến và Thư rác nếu bạn không thấy email.';
+    const cooldown = (seconds = 60) => {
+        clearInterval(resendTimer); let left = seconds; resendButton.disabled = true;
+        const render = () => { resendButton.textContent = `Gửi lại mã sau ${left}s`; };
+        render(); resendTimer = setInterval(() => { left--; if (left <= 0) { clearInterval(resendTimer); resendButton.disabled = false; resendButton.textContent = 'Gửi lại mã xác thực'; } else render(); }, 1000);
     };
-    const getOtp = () => otpInputs.map(input => input.value).join('');
-    const clearOtpError = () => otpInputsWrap.classList.remove('is-invalid');
-    const showOtpError = (text) => {
-        otpInputsWrap.classList.remove('is-invalid');
-        void otpInputsWrap.offsetWidth;
-        otpInputsWrap.classList.add('is-invalid');
-        otpNotice.className = 'recovery-notice is-error rounded-lg px-3 py-2 text-sm leading-relaxed mt-sm';
-        otpNotice.textContent = text;
-    };
-    const startResendCooldown = (seconds = 60) => {
-        clearInterval(resendTimer);
-        let remaining = seconds;
-        resendButton.disabled = true;
-        resendButton.textContent = `Gửi lại mã sau ${remaining}s`;
-        resendTimer = setInterval(() => {
-            remaining -= 1;
-            if (remaining <= 0) {
-                clearInterval(resendTimer);
-                resendButton.disabled = false;
-                resendButton.textContent = 'Gửi lại mã xác thực';
-                return;
-            }
-            resendButton.textContent = `Gửi lại mã sau ${remaining}s`;
-        }, 1000);
-    };
-    const showOtpVerified = () => {
-        otpEntry.classList.add('recovery-collapse');
-        window.setTimeout(() => {
-            otpEntry.classList.add('hidden');
-            otpSuccess.classList.remove('hidden');
-            window.setTimeout(() => {
-                title.textContent = 'Đặt mật khẩu mới';
-                description.textContent = 'Nhập và xác nhận mật khẩu mới của bạn.';
-                otpSuccess.classList.add('hidden');
-                showStep(passwordForm);
-                passwordForm.classList.add('recovery-expand');
-                window.setTimeout(() => passwordForm.classList.remove('recovery-expand'), 400);
-            }, 900);
-        }, 260);
-    };
+    const code = () => otpInputs.map(item => item.value).join('');
+    const showOtpError = text => { otpWrap.classList.remove('is-invalid'); void otpWrap.offsetWidth; otpWrap.classList.add('is-invalid'); showMessage(text); };
 
     otpInputs.forEach((input, index) => {
-        input.addEventListener('input', event => {
-            const digits = event.target.value.replace(/\D/g, '');
-            event.target.value = digits.slice(-1);
-            clearOtpError();
-            if (digits && index < otpInputs.length - 1) otpInputs[index + 1].focus();
-        });
-        input.addEventListener('keydown', event => {
-            if (event.key === 'Backspace' && !input.value && index > 0) {
-                otpInputs[index - 1].focus();
-                otpInputs[index - 1].value = '';
-            }
-            if (event.key === 'ArrowLeft' && index > 0) otpInputs[index - 1].focus();
-            if (event.key === 'ArrowRight' && index < otpInputs.length - 1) otpInputs[index + 1].focus();
-        });
-        input.addEventListener('paste', event => {
-            event.preventDefault();
-            const digits = event.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-            digits.split('').forEach((digit, digitIndex) => { if (otpInputs[digitIndex]) otpInputs[digitIndex].value = digit; });
-            otpInputs[Math.min(digits.length, 5)].focus();
-            clearOtpError();
-        });
+        input.addEventListener('input', e => { const digit = e.target.value.replace(/\D/g, '').slice(-1); e.target.value = digit; otpWrap.classList.remove('is-invalid'); if (digit && index < 5) otpInputs[index + 1].focus(); });
+        input.addEventListener('keydown', e => { if (e.key === 'Backspace' && !input.value && index) otpInputs[index - 1].focus(); });
+        input.addEventListener('paste', e => { e.preventDefault(); const digits = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6); [...digits].forEach((digit, i) => otpInputs[i].value = digit); otpInputs[Math.min(digits.length, 5)].focus(); });
     });
+    document.querySelectorAll('.password-visibility-toggle').forEach(button => button.addEventListener('click', () => {
+        const input = button.previousElementSibling; const reveal = input.type === 'password'; input.type = reveal ? 'text' : 'password'; button.querySelector('span').textContent = reveal ? 'visibility' : 'visibility_off'; button.setAttribute('aria-label', reveal ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
+    }));
 
-    emailForm.addEventListener('submit', async event => {
-        event.preventDefault();
-        clearMessage();
+    emailForm.addEventListener('submit', async e => {
+        e.preventDefault(); clearMessage();
         const email = document.getElementById('recovery-email').value.trim().toLowerCase();
+        if (!email || !document.getElementById('recovery-email').checkValidity()) return showMessage('Vui lòng nhập địa chỉ email hợp lệ.');
         if (!window.SupabaseService) return showMessage('Không thể kết nối dịch vụ xác thực.');
-        const sent = await window.SupabaseService.requestPasswordReset(email);
-        if (!sent.success) return showMessage(sent.error);
-        recoveryEmail = email;
-        title.textContent = 'Nhập mã xác thực';
-        description.textContent = 'Nhập mã gồm 6 chữ số được gửi đến email của bạn.';
-        otpEntry.classList.remove('hidden', 'recovery-collapse');
-        otpSuccess.classList.add('hidden');
-        otpInputs.forEach(input => { input.value = ''; });
-        resetOtpNotice();
-        showStep(codeForm);
-        startResendCooldown();
-        otpInputs[0].focus();
+        setSending(true);
+        try {
+            const sent = await window.SupabaseService.requestPasswordReset(email);
+            if (!sent.success) return showMessage(sent.error);
+            recoveryEmail = email; title.textContent = 'Nhập mã xác thực'; description.textContent = 'Nhập mã gồm 6 chữ số được gửi đến email của bạn.';
+            otpInputs.forEach(input => input.value = ''); showOnly(codeForm); cooldown(); otpInputs[0].focus();
+        } catch (_) { showMessage('Không thể gửi mã xác thực. Vui lòng thử lại.'); }
+        finally { setSending(false); }
     });
-
     resendButton.addEventListener('click', async () => {
-        if (!recoveryEmail || resendButton.disabled) return;
-        clearMessage();
-        resendButton.disabled = true;
-        resendButton.textContent = 'Đang gửi lại mã...';
+        if (!recoveryEmail || resendButton.disabled) return; resendButton.disabled = true; resendButton.textContent = 'Đang gửi lại mã...'; clearMessage();
         const sent = await window.SupabaseService.requestPasswordReset(recoveryEmail);
-        if (!sent.success) {
-            resendButton.disabled = false;
-            resendButton.textContent = 'Gửi lại mã xác thực';
-            return showMessage(sent.error);
-        }
-        otpInputs.forEach(input => { input.value = ''; });
-        resetOtpNotice();
-        startResendCooldown();
-        otpInputs[0].focus();
+        if (!sent.success) { resendButton.disabled = false; resendButton.textContent = 'Gửi lại mã xác thực'; return showMessage(sent.error); }
+        otpInputs.forEach(input => input.value = ''); cooldown(); otpInputs[0].focus();
     });
-
-    codeForm.addEventListener('submit', async event => {
-        event.preventDefault();
-        clearMessage();
-        const code = getOtp();
-        if (!/^\d{6}$/.test(code)) return showOtpError('Vui lòng nhập đúng mã xác thực gồm 6 chữ số.');
-        if (!recoveryEmail || !window.SupabaseService) return showOtpError('Phiên xác thực đã hết hạn. Vui lòng gửi lại mã.');
-        const verified = await window.SupabaseService.verifyRecoveryOtp(recoveryEmail, code);
+    codeForm.addEventListener('submit', async e => {
+        e.preventDefault(); clearMessage(); const token = code();
+        if (!/^\d{6}$/.test(token)) return showOtpError('Vui lòng nhập đúng mã xác thực gồm 6 chữ số.');
+        const verified = await window.SupabaseService.verifyRecoveryOtp(recoveryEmail, token);
         if (!verified.success) return showOtpError(verified.error);
-        showOtpVerified();
+        title.textContent = 'Đặt mật khẩu mới'; description.textContent = 'Nhập và xác nhận mật khẩu mới của bạn.'; showOnly(passwordForm); document.getElementById('recovery-new-password').focus();
     });
-
-    passwordForm.addEventListener('submit', async event => {
-        event.preventDefault();
-        clearMessage();
-        const password = document.getElementById('recovery-new-password').value;
-        const confirmation = document.getElementById('recovery-confirm-password').value;
+    passwordForm.addEventListener('submit', async e => {
+        e.preventDefault(); clearMessage(); const password = document.getElementById('recovery-new-password').value; const confirmation = document.getElementById('recovery-confirm-password').value;
         if (password.length < 6) return showMessage('Mật khẩu mới cần có ít nhất 6 ký tự.');
         if (password !== confirmation) return showMessage('Mật khẩu xác nhận không khớp.');
         const updated = await window.SupabaseService.updateAuthPassword(password);
-        if (!updated) return showMessage('Không thể đổi mật khẩu. Vui lòng thử lại.');
-        passwordForm.classList.add('recovery-collapse');
-        window.setTimeout(() => {
-            passwordForm.classList.add('hidden');
-            title.textContent = 'Hoàn tất';
-            description.textContent = '';
-            backLink.classList.add('hidden');
-            success.classList.remove('hidden');
-            window.setTimeout(() => { window.location.href = 'homepage.html'; }, 2200);
-        }, 260);
+        if (!updated.success) {
+            const isSamePassword = /same|different|trùng|hiện tại/i.test(updated.error || '');
+            return showMessage(isSamePassword
+                ? 'Mật khẩu trùng với mật khẩu hiện tại. Vui lòng thử <a class="font-semibold underline" href="login.html">đăng nhập</a>.'
+                : updated.error);
+        }
+        title.textContent = 'Hoàn tất đổi mật khẩu'; description.textContent = 'Mật khẩu của bạn đã được cập nhật. Đang điều hướng về trang chủ'; document.getElementById('recovery-heading-icon').classList.add('hidden'); document.getElementById('recovery-back-link').classList.add('hidden'); showOnly(success); window.setTimeout(() => window.location.href = 'homepage.html', 2200);
     });
 });
