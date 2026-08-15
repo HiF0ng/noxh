@@ -584,6 +584,25 @@ body.homepage-page #homepage-testimonials .slider-item > div {
     transition: box-shadow 180ms ease, border-color 180ms ease, transform 180ms ease;
 }
 
+/* Homepage feature cards: make text sizing independent of Tailwind's runtime
+   class generation when the page is inserted by the SPA router. */
+.feature-subtext {
+    font-size: 11px;
+    line-height: 1.375;
+}
+
+@media (min-width: 640px) {
+    .feature-subtext { font-size: 12px; }
+}
+
+@media (min-width: 768px) {
+    .feature-subtext {
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        white-space: nowrap;
+    }
+}
+
 body.homepage-page #homepage-projects-grid > div:hover,
 body.homepage-page #homepage-features > div:hover,
 body.homepage-page #homepage-testimonials .slider-item > div:hover {

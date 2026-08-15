@@ -903,7 +903,8 @@
                 const records = await lookup.json();
                 const record = records[0] || {};
                 const meta = readDocumentContent(record.content);
-                const fileUrls = [...new Set([record.file_url, meta.attachments.pdf, meta.attachments.docx, meta.guide && meta.guide.imageUrl].filter(Boolean))];
+                const guideImageUrls = meta.guide && Array.isArray(meta.guide.imageUrls) ? meta.guide.imageUrls : [];
+                const fileUrls = [...new Set([record.file_url, meta.attachments.pdf, meta.attachments.docx, meta.guide && meta.guide.imageUrl, ...guideImageUrls].filter(Boolean))];
                 if (fileUrls.length && !options.keepFile) {
                     const marker = '/storage/v1/object/public/project-images/';
                     for (const fileUrl of fileUrls) {
