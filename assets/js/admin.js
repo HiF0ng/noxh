@@ -2314,6 +2314,44 @@ window.handleAdminLogout = function() {
     var isGuideDocument = function(doc) {
         return doc && !doc.isDraft && (doc.type === 'Hướng dẫn' || isAutomaticGuideDocument(doc));
     };
+    var getGuideImageUrls = function(guideData) {
+        var imageUrls = guideData && Array.isArray(guideData.imageUrls) ? guideData.imageUrls.filter(Boolean) : [];
+        return imageUrls.length ? imageUrls : (guideData && guideData.imageUrl ? [guideData.imageUrl] : []);
+    };
+    var guideImageItems = [];
+    var guideImageDragIndex = null;
+    var setGuideImageItems = function(imageItems) {
+        guideImageItems = (imageItems || []).map(function(item) {
+            return typeof item === 'string' ? { url: item } : item;
+        }).filter(function(item) { return item && item.url; });
+    };
+    var renderGuideImagePreviews = function() {
+        var previews = document.getElementById('guide-image-previews');
+        var placeholder = document.getElementById('guide-image-placeholder');
+        if (!previews) return;
+        if (!guideImageItems.length) {
+            previews.innerHTML = '';
+            previews.classList.add('hidden');
+            if (placeholder) placeholder.classList.remove('hidden');
+            return;
+        }
+        previews.innerHTML = guideImageItems.map(function(item, index) {
+            return '<div class="guide-image-preview-item relative w-full rounded-xl border border-outline-variant/50 bg-surface-container p-3 shadow-sm cursor-grab active:cursor-grabbing" draggable="true" data-image-index="' + index + '">' +
+                '<div class="mb-2 flex items-center justify-between text-sm font-semibold text-on-surface-variant">' +
+                    '<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[18px]">drag_indicator</span>Trang ' + (index + 1) + '</span>' +
+                    '<button type="button" class="w-8 h-8 shrink-0 rounded-full bg-error-container text-error hover:bg-error hover:text-on-error flex items-center justify-center transition-colors" title="Xóa ảnh trang ' + (index + 1) + '" onclick="event.stopPropagation(); removeGuideImage(' + index + ')"><span class="material-symbols-outlined text-[18px]">close</span></button>' +
+                '</div>' +
+                '<img src="' + escapeHtml(item.url) + '" alt="Trang ' + (index + 1) + ' của tài liệu" class="w-full max-h-[440px] object-contain rounded-lg bg-white">' +
+            '</div>';
+        }).join('');
+        previews.classList.remove('hidden');
+        previews.classList.add('flex');
+        if (placeholder) placeholder.classList.add('hidden');
+    };
+    window.removeGuideImage = function(index) {
+        guideImageItems.splice(index, 1);
+        renderGuideImagePreviews();
+    };
 
     window.openGuideForm = function() {
         var listEl = document.getElementById('docs-guide-list-view');
@@ -2321,6 +2359,11 @@ window.handleAdminLogout = function() {
         if (listEl && formEl) {
             listEl.classList.add('hidden');
             formEl.classList.remove('hidden');
+            requestAnimationFrame(function() {
+                document.querySelectorAll('#guide-notes-container .guide-note textarea').forEach(function(textarea) {
+                    window.autoResizeGuideNote(textarea);
+                });
+            });
         }
     };
 
@@ -2330,14 +2373,12 @@ window.handleAdminLogout = function() {
         var title = document.getElementById('guide-form-title');
         var documentName = document.getElementById('guide-form-document-name');
         var imageInput = document.getElementById('guide-image-input');
-        var imagePreview = document.getElementById('guide-image-preview');
-        var imagePlaceholder = document.getElementById('guide-image-placeholder');
         if (nameInput) nameInput.value = '';
         if (title) title.textContent = 'Tạo hướng dẫn';
         if (documentName) { documentName.textContent = ''; documentName.classList.add('hidden'); }
         if (imageInput) imageInput.value = '';
-        if (imagePreview) { imagePreview.src = ''; imagePreview.classList.add('hidden'); }
-        if (imagePlaceholder) imagePlaceholder.classList.remove('hidden');
+        setGuideImageItems([]);
+        renderGuideImagePreviews();
         var stepsContainer = document.getElementById('guide-steps-container');
         if (stepsContainer) stepsContainer.innerHTML = '';
         window.addGuideStep();
@@ -2386,17 +2427,25 @@ window.handleAdminLogout = function() {
         }
 
         try {
-            var currentGuide = activeGuideDocument && activeGuideDocument.guide || {};
-            var imageUrl = currentGuide.imageUrl || '';
-            var imageInput = document.getElementById('guide-image-input');
-            var imageFile = imageInput && imageInput.files && imageInput.files[0];
-            if (imageFile) {
-                if (!/^image\/(?:png|jpe?g)$/i.test(imageFile.type)) throw new Error('Ảnh hướng dẫn chỉ nhận PNG hoặc JPG.');
-                if (imageFile.size > 10 * 1024 * 1024) throw new Error('Ảnh hướng dẫn vượt quá giới hạn 10 MB.');
-                imageUrl = await window.SupabaseService.uploadDocumentFile(imageFile, 'guides');
-                if (!imageUrl) throw new Error('Không thể tải ảnh hướng dẫn lên.');
+            var imageUrls = [];
+            guideImageItems.forEach(function(imageItem) {
+                if (imageItem.file) {
+                    var imageFile = imageItem.file;
+                    if (!/^image\/(?:png|jpe?g)$/i.test(imageFile.type)) throw new Error('Ảnh hướng dẫn chỉ nhận PNG hoặc JPG.');
+                    if (imageFile.size > 10 * 1024 * 1024) throw new Error('Mỗi ảnh hướng dẫn không được vượt quá 10 MB.');
+                }
+            });
+            for (var imageIndex = 0; imageIndex < guideImageItems.length; imageIndex++) {
+                var imageItem = guideImageItems[imageIndex];
+                if (imageItem.file) {
+                    var uploadedImageUrl = await window.SupabaseService.uploadDocumentFile(imageItem.file, 'guides');
+                    if (!uploadedImageUrl) throw new Error('Không thể tải ảnh hướng dẫn lên.');
+                    imageUrls.push(uploadedImageUrl);
+                } else if (imageItem.url) {
+                    imageUrls.push(imageItem.url);
+                }
             }
-            var guideData = { status: status, imageUrl: imageUrl, steps: steps, notes: notes, updatedAt: new Date().toISOString() };
+            var guideData = { status: status, imageUrl: imageUrls[0] || '', imageUrls: imageUrls, steps: steps, notes: notes, updatedAt: new Date().toISOString() };
             var saved;
             if (activeGuideDocument) {
                 saved = await window.SupabaseService.updateDocument(activeGuideDocument.id, {
@@ -2442,6 +2491,8 @@ window.handleAdminLogout = function() {
                 documentName.classList.remove('hidden');
             }
             var guideData = guide.guide || {};
+            var imageInput = document.getElementById('guide-image-input');
+            if (imageInput) imageInput.value = '';
             var stepsContainer = document.getElementById('guide-steps-container');
             if (stepsContainer) stepsContainer.innerHTML = '';
             (guideData.steps || []).forEach(function(step) {
@@ -2452,17 +2503,8 @@ window.handleAdminLogout = function() {
             if (notesContainer) notesContainer.innerHTML = '';
             (guideData.notes || []).forEach(function(note) { window.addGuideNote(note); });
             if (notesContainer && !notesContainer.children.length) window.addGuideNote();
-            var imagePreview = document.getElementById('guide-image-preview');
-            var imagePlaceholder = document.getElementById('guide-image-placeholder');
-            if (imagePreview && guideData.imageUrl) {
-                imagePreview.src = guideData.imageUrl;
-                imagePreview.classList.remove('hidden');
-                if (imagePlaceholder) imagePlaceholder.classList.add('hidden');
-            } else if (imagePreview) {
-                imagePreview.src = '';
-                imagePreview.classList.add('hidden');
-                if (imagePlaceholder) imagePlaceholder.classList.remove('hidden');
-            }
+            setGuideImageItems(getGuideImageUrls(guideData));
+            renderGuideImagePreviews();
             window.openGuideForm();
         }
     };
@@ -2562,14 +2604,37 @@ window.handleAdminLogout = function() {
         }
         var guideImageInput = document.getElementById('guide-image-input');
         if (guideImageInput) guideImageInput.onchange = function() {
-            var file = this.files && this.files[0];
-            var preview = document.getElementById('guide-image-preview');
-            var placeholder = document.getElementById('guide-image-placeholder');
-            if (!file || !preview) return;
-            preview.src = URL.createObjectURL(file);
-            preview.classList.remove('hidden');
-            if (placeholder) placeholder.classList.add('hidden');
+            var files = Array.from(this.files || []);
+            var newImageItems = files.map(function(file) {
+                return { url: URL.createObjectURL(file), file: file };
+            });
+            guideImageItems = guideImageItems.concat(newImageItems);
+            this.value = '';
+            renderGuideImagePreviews();
         };
+        var guideImagePreviews = document.getElementById('guide-image-previews');
+        if (guideImagePreviews) {
+            guideImagePreviews.addEventListener('dragstart', function(event) {
+                var item = event.target.closest('.guide-image-preview-item');
+                if (!item) return;
+                guideImageDragIndex = Number(item.getAttribute('data-image-index'));
+                event.dataTransfer.effectAllowed = 'move';
+            });
+            guideImagePreviews.addEventListener('dragover', function(event) {
+                if (event.target.closest('.guide-image-preview-item')) event.preventDefault();
+            });
+            guideImagePreviews.addEventListener('drop', function(event) {
+                event.preventDefault();
+                var item = event.target.closest('.guide-image-preview-item');
+                var targetIndex = item && Number(item.getAttribute('data-image-index'));
+                if (guideImageDragIndex === null || !Number.isInteger(targetIndex) || guideImageDragIndex === targetIndex) return;
+                var movedItem = guideImageItems.splice(guideImageDragIndex, 1)[0];
+                guideImageItems.splice(targetIndex, 0, movedItem);
+                guideImageDragIndex = null;
+                renderGuideImagePreviews();
+            });
+            guideImagePreviews.addEventListener('dragend', function() { guideImageDragIndex = null; });
+        }
         
         if (window.targetGuideToEdit) {
             var gId = window.targetGuideToEdit;
@@ -2599,7 +2664,7 @@ window.handleAdminLogout = function() {
         data = data || {};
         var html = 
             '<div class="guide-step relative bg-surface border border-outline-variant/60 rounded-xl p-5 pt-6 shadow-sm group hover:border-primary/50 transition-colors">' +
-                '<button type="button" class="absolute top-2 right-2 p-1 text-on-surface-variant hover:text-error hover:bg-error-container rounded-full transition-colors opacity-0 group-hover:opacity-100" title="Xóa bước này" onclick="removeGuideStep(this)">' +
+                '<button type="button" class="absolute top-2 right-2 w-8 h-8 p-0 shrink-0 bg-error-container text-error hover:bg-error hover:text-on-error rounded-full transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center" title="Xóa bước này" onclick="removeGuideStep(this)">' +
                     '<span class="material-symbols-outlined text-[20px]">close</span>' +
                 '</button>' +
                 '<div class="flex gap-4 items-start">' +
@@ -2640,14 +2705,21 @@ window.handleAdminLogout = function() {
         var container = document.getElementById('guide-notes-container');
         if (!container) return;
         var html = 
-            '<div class="guide-note relative bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm group hover:border-primary/50 transition-colors flex gap-3 items-start">' +
-                '<span class="material-symbols-outlined text-primary mt-1 text-[22px]">info</span>' +
-                '<textarea class="flex-1 p-2 bg-transparent border-none focus:ring-0 outline-none resize-y text-[15px] text-on-surface" rows="2" placeholder="Nhập nội dung lưu ý...">' + escapeHtml(value || '') + '</textarea>' +
-                '<button type="button" class="p-1.5 mt-0.5 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-full transition-colors opacity-0 group-hover:opacity-100" title="Xóa lưu ý" onclick="window.requestRemoveGuideNote(this)">' +
+            '<div class="guide-note relative bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm group hover:border-primary/50 transition-colors flex gap-3 items-stretch">' +
+                '<div class="w-10 shrink-0 flex items-center justify-center self-center"><span class="material-symbols-outlined text-primary text-[22px]">info</span></div>' +
+                '<textarea class="flex-1 p-2 bg-transparent border-none focus:ring-0 outline-none resize-none overflow-hidden text-[15px] text-on-surface" rows="1" placeholder="Nhập nội dung lưu ý..." oninput="autoResizeGuideNote(this)">' + escapeHtml(value || '') + '</textarea>' +
+                '<button type="button" class="w-9 h-9 p-0 shrink-0 self-center bg-error-container text-error hover:bg-error hover:text-on-error rounded-full transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center" title="Xóa lưu ý" onclick="window.requestRemoveGuideNote(this)">' +
                     '<span class="material-symbols-outlined text-[18px]">close</span>' +
                 '</button>' +
             '</div>';
         container.insertAdjacentHTML('beforeend', html);
+        window.autoResizeGuideNote(container.lastElementChild.querySelector('textarea'));
+    };
+
+    window.autoResizeGuideNote = function(textarea) {
+        if (!textarea) return;
+        textarea.style.height = 'auto';
+        textarea.style.height = Math.max(textarea.scrollHeight, 40) + 'px';
     };
 
     window.noteToDelete = null;

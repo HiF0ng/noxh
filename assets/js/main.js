@@ -375,7 +375,7 @@ async function initSettingsForm() {
                         <div><h2 class="text-lg font-bold text-on-surface">Đăng xuất tài khoản</h2><p class="mt-2 text-on-surface-variant">Bạn muốn đăng xuất tài khoản?</p></div>
                     </div>
                     <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                        <button type="button" data-cancel class="rounded-lg border border-outline-variant px-5 py-2.5 font-semibold text-on-surface hover:bg-surface-container transition-colors">Hủy</button>
+                        <button type="button" data-cancel class="rounded-lg border border-outline-variant px-5 py-2.5 font-semibold text-on-surface hover:bg-surface-container transition-colors">Quay lại</button>
                         <button type="button" data-confirm class="rounded-lg bg-error px-5 py-2.5 font-semibold text-white hover:opacity-90 transition-opacity">Đăng xuất</button>
                     </div>
                 </div>`;
@@ -387,10 +387,15 @@ async function initSettingsForm() {
                 const confirmButton = logoutModal.querySelector('[data-confirm]');
                 confirmButton.disabled = true;
                 confirmButton.textContent = 'Đang đăng xuất...';
-                if (window.SupabaseService) await window.SupabaseService.signOut();
-                localStorage.removeItem('currentUser');
-                sessionStorage.removeItem('currentUser');
-                window.location.href = 'homepage.html';
+                try {
+                    if (window.SupabaseService) await window.SupabaseService.signOut();
+                } catch (error) {
+                    console.error('Không thể đăng xuất phiên từ xa:', error);
+                } finally {
+                    localStorage.removeItem('currentUser');
+                    sessionStorage.removeItem('currentUser');
+                    window.location.href = 'homepage.html';
+                }
             };
         }
         settingsLogoutButton.onclick = () => {
@@ -804,45 +809,11 @@ function setupSPARouter() {
 function adjustFeatureSubtext() {
     const elements = document.querySelectorAll('.feature-subtext');
     if (elements.length === 0) return;
-    
-    // Reset to measure natural size
-    elements.forEach(el => {
-        el.style.fontSize = '';
-    });
-    
-    let minFontSize = Infinity;
-    
-    elements.forEach(el => {
-        const parent = el.parentElement;
-        if (!parent) return;
-        
-        const computedPaddingLeft = parseFloat(window.getComputedStyle(parent).paddingLeft) || 0;
-        const computedPaddingRight = parseFloat(window.getComputedStyle(parent).paddingRight) || 0;
-        const parentWidth = parent.clientWidth - (computedPaddingLeft + computedPaddingRight);
-        const textWidth = el.scrollWidth;
-        
-        const computedFontSize = parseFloat(window.getComputedStyle(el).fontSize) || 16;
-        
-        if (textWidth > parentWidth && parentWidth > 0) {
-            const ratio = parentWidth / textWidth;
-            const targetSize = computedFontSize * ratio;
-            if (targetSize < minFontSize) {
-                minFontSize = targetSize;
-            }
-        } else if (computedFontSize < minFontSize) {
-            minFontSize = computedFontSize; // Keep track of the minimum natural size
-        }
-    });
-    
-    // Don't shrink below a readable size
-    if (minFontSize !== Infinity) {
-        if (minFontSize < 6) minFontSize = 6;
-        
-        // Apply the same minimum size to all 4 cards
-        elements.forEach(el => {
-            el.style.fontSize = `${minFontSize}px`;
-        });
-    }
+
+    // Keep the responsive font size in CSS. Measuring during SPA navigation can
+    // happen before the new cards have their final width, which previously left
+    // a tiny inline font size on all four cards until the next full reload.
+    elements.forEach(el => el.style.removeProperty('font-size'));
 }
 
 
@@ -1215,7 +1186,7 @@ function highlightActiveLink() {
         if (link.textContent.includes('Gửi phản hồi') || link.textContent.includes('Đăng xuất')) return;
         
         // Base classes
-        const baseClasses = 'flex items-center px-4 py-3 rounded-lg transition-all duration-200 scale-95 active:scale-90 text-[17px] font-bold truncate whitespace-nowrap';
+        const baseClasses = 'flex items-center px-4 py-3 rounded-lg transition-all duration-200 scale-95 active:scale-90 text-[18px] font-bold truncate whitespace-nowrap';
         
         if (href === activeNavPage) {
             link.className = `${baseClasses} bg-primary text-white font-bold shadow-md`;
@@ -2181,16 +2152,19 @@ async function loadDocumentGuide() {
                 notesSection.classList.add('hidden');
             }
         }
-        const image = document.getElementById('document-guide-image');
+        const images = document.getElementById('document-guide-images');
         const imageSkeleton = document.getElementById('document-guide-image-skeleton');
         const imageEmpty = document.getElementById('document-guide-image-empty');
         if (imageSkeleton) imageSkeleton.classList.add('hidden');
-        if (image && guide && guide.imageUrl) {
-            image.src = guide.imageUrl;
-            image.alt = `Ảnh hướng dẫn ${selectedDocument.name}`;
-            image.classList.remove('hidden');
+        const imageUrls = guide && Array.isArray(guide.imageUrls) && guide.imageUrls.length
+            ? guide.imageUrls.filter(Boolean)
+            : (guide && guide.imageUrl ? [guide.imageUrl] : []);
+        if (images && imageUrls.length) {
+            images.innerHTML = imageUrls.map((imageUrl, index) => `<figure><img src="${escapeHtml(imageUrl)}" alt="Trang ${index + 1} của ${escapeHtml(selectedDocument.name)}" class="w-full h-auto rounded shadow-sm border border-outline-variant/30"><figcaption class="mt-2 text-center text-xs font-medium text-on-surface-variant">Trang ${index + 1}</figcaption></figure>`).join('');
+            images.classList.remove('hidden');
             if (imageEmpty) imageEmpty.classList.add('hidden');
         } else if (imageEmpty) {
+            if (images) { images.innerHTML = ''; images.classList.add('hidden'); }
             imageEmpty.classList.remove('hidden');
             imageEmpty.classList.add('flex');
         }
@@ -2344,7 +2318,7 @@ async function loadDocumentSections() {
                 const docxButton = document.docxUrl
                     ? `<a data-login-required href="${getDocumentDownloadUrl(document, 'DOCX')}" class="flex-1 min-w-0 px-3 py-1.5 border-2 border-sky-600 text-sky-700 bg-white hover:bg-sky-600 hover:text-white rounded-md text-xs font-semibold leading-none whitespace-nowrap flex items-center justify-center gap-1 transition-colors"><span class="material-symbols-outlined text-sm">description</span>Tải DOCX</a>`
                     : '<span class="flex-1 min-w-0 px-3 py-1.5 border-2 border-outline-variant text-outline bg-surface-container rounded-md text-xs font-semibold leading-none whitespace-nowrap text-center cursor-not-allowed">Chưa có DOCX</span>';
-                return `<div class="p-4 rounded-lg border border-outline-variant/60 bg-white flex flex-col md:flex-row md:items-center justify-between gap-4"><div class="min-w-0"><p class="font-label-md text-label-md text-on-surface font-semibold">${escapeHtml(document.name)}</p><p class="mt-1 text-xs leading-relaxed text-on-surface-variant line-clamp-2">${escapeHtml(document.desc || 'Chưa có thông tin bổ sung.')}</p></div><div class="w-full md:w-[270px] shrink-0 flex flex-col gap-1.5"><div class="flex gap-1.5">${pdfButton}${docxButton}</div><a data-login-required href="docs-guide.html?id=${encodeURIComponent(document.id)}" class="w-full px-3 py-1.5 border-2 border-blue-600 text-blue-700 bg-white hover:bg-blue-600 hover:text-white rounded-md text-xs font-semibold leading-none whitespace-nowrap flex items-center justify-center gap-1 transition-colors"><span class="material-symbols-outlined text-sm">menu_book</span>Xem hướng dẫn điền</a></div></div>`;
+                return `<div class="p-4 rounded-lg border border-outline-variant/60 bg-white flex flex-col md:flex-row md:items-center justify-between gap-4"><div class="min-w-0"><p class="font-label-md text-label-md text-on-surface font-semibold">${escapeHtml(document.name)}</p><p class="mt-1 text-xs leading-relaxed whitespace-pre-line text-on-surface-variant">${escapeHtml(document.desc || 'Chưa có thông tin bổ sung.')}</p></div><div class="w-full md:w-[270px] shrink-0 flex flex-col gap-1.5"><div class="flex gap-1.5">${pdfButton}${docxButton}</div><a data-login-required href="docs-guide.html?id=${encodeURIComponent(document.id)}" class="w-full px-3 py-1.5 border-2 border-blue-600 text-blue-700 bg-white hover:bg-blue-600 hover:text-white rounded-md text-xs font-semibold leading-none whitespace-nowrap flex items-center justify-center gap-1 transition-colors"><span class="material-symbols-outlined text-sm">menu_book</span>Xem hướng dẫn điền</a></div></div>`;
             };
             const renderOtherDocument = document => `<a href="${getDocumentDownloadUrl(document)}" class="p-4 rounded-lg border border-outline-variant/60 hover:border-primary hover:bg-primary/5 transition-colors flex items-center justify-between gap-3"><div class="min-w-0"><p class="font-label-md text-label-md text-on-surface truncate">${escapeHtml(document.name)}</p><p class="mt-1 text-xs text-on-surface-variant">${escapeHtml(document.docType || 'PDF')} · ${escapeHtml(document.date || '')}</p></div><span class="material-symbols-outlined text-primary">download</span></a>`;
             content.innerHTML = items.length ? `<div class="flex flex-col gap-3">${items.map(document => (document.type === 'Đơn mua' || document.type === 'Đơn thuê') ? renderFormDocument(document) : renderOtherDocument(document)).join('')}</div>` : '<div class="py-8 text-center text-sm text-on-surface-variant">Chưa có tài liệu</div>';

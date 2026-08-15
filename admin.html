@@ -937,19 +937,19 @@
                         <!-- Left Column: Upload -->
                         <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm sticky top-0">
                             <h3 class="font-headline-md text-[20px] font-bold text-on-background mb-2">Hình ảnh tài liệu mẫu</h3>
-                            <p class="font-body-sm text-[14px] text-on-surface-variant mb-4">Tải lên hình ảnh tài liệu để người dùng dễ dàng đối chiếu.</p>
+                            <p class="font-body-sm text-[14px] text-on-surface-variant mb-4">Tải lên một hoặc nhiều ảnh, tương ứng với các trang của tài liệu.</p>
                             
-                            <div class="border-2 border-dashed border-outline-variant rounded-xl p-8 flex flex-col items-center justify-center text-center bg-surface transition-all duration-200 cursor-pointer group min-h-[400px] hover:border-primary hover:bg-surface-container-low relative overflow-hidden" id="guide-image-dropzone" onclick="document.getElementById('guide-image-input').click()">
-                                <img id="guide-image-preview" class="hidden absolute inset-4 w-[calc(100%-2rem)] h-[calc(100%-2rem)] object-contain rounded-lg" alt="Ảnh tài liệu hướng dẫn">
-                                <div id="guide-image-placeholder" class="flex flex-col items-center">
+                            <div class="border-2 border-dashed border-outline-variant rounded-xl p-4 text-center bg-surface transition-all duration-200 cursor-pointer group min-h-[400px] hover:border-primary hover:bg-surface-container-low" id="guide-image-dropzone" onclick="document.getElementById('guide-image-input').click()">
+                                <div id="guide-image-previews" class="hidden flex-col gap-4"></div>
+                                <div id="guide-image-placeholder" class="min-h-[360px] flex flex-col items-center justify-center">
                                     <div class="w-16 h-16 bg-primary-container/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                                         <span class="material-symbols-outlined text-primary text-[32px]">add_photo_alternate</span>
                                     </div>
                                     <h4 class="font-label-md text-[16px] font-semibold text-on-surface mb-1">Tải ảnh lên</h4>
-                                    <p class="font-body-md text-[14px] text-on-surface-variant mb-4">PNG hoặc JPG, tối đa 10 MB</p>
+                                    <p class="font-body-md text-[14px] text-on-surface-variant mb-4">PNG hoặc JPG, tối đa 10 MB mỗi ảnh</p>
                                     <span class="px-4 py-2 border border-outline text-on-surface font-semibold text-[14px] rounded-full group-hover:bg-surface-container transition-colors">Chọn tệp</span>
                                 </div>
-                                <input accept="image/png, image/jpeg, image/jpg" class="hidden" id="guide-image-input" type="file"/>
+                                <input accept="image/png, image/jpeg, image/jpg" class="hidden" id="guide-image-input" type="file" multiple/>
                             </div>
                         </div>
 
