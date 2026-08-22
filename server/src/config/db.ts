@@ -26,7 +26,7 @@ export interface Project {
 export interface Document {
   id: string;
   title: string;
-  category: 'Đơn mua' | 'Đơn thuê';
+  category: 'Đơn đăng ký' | 'Xác nhận nhà ở' | 'Đối tượng & Thu nhập';
   docType: 'PDF' | 'DOCX';
   fileUrl: string;
   content: string;
@@ -69,11 +69,19 @@ let dbData: DatabaseSchema = {
   news: []
 };
 
+export function normalizeProjectStatus(status: string): string {
+  return status === 'Chờ bàn giao' || status === 'Đã bàn giao' ? 'Bàn giao' : status;
+}
+
 export function loadDatabase(): DatabaseSchema {
   if (fs.existsSync(DB_FILE)) {
     try {
       const raw = fs.readFileSync(DB_FILE, 'utf-8');
       dbData = JSON.parse(raw);
+      dbData.projects = (dbData.projects || []).map(project => ({
+        ...project,
+        status: normalizeProjectStatus(project.status)
+      }));
       return dbData;
     } catch (e) {
       console.error('Failed to parse database.json, re-initializing...', e);
@@ -126,7 +134,7 @@ export function loadDatabase(): DatabaseSchema {
       {
         id: 'doc-1',
         title: 'Mẫu đơn đăng ký mua Nhà ở xã hội (Mẫu số 01)',
-        category: 'Đơn mua',
+        category: 'Đơn đăng ký',
         docType: 'PDF',
         fileUrl: '/uploads/mau-01-dang-ky-mua-noxh.pdf',
         content: 'Mẫu đơn đăng ký mua nhà ở xã hội chuẩn ban hành kèm theo Thông tư mới nhất của Bộ Xây dựng.',
@@ -135,7 +143,7 @@ export function loadDatabase(): DatabaseSchema {
       {
         id: 'doc-2',
         title: 'Mẫu giấy xác nhận đối tượng và điều kiện nhà ở (Mẫu số 03)',
-        category: 'Đơn mua',
+        category: 'Xác nhận nhà ở',
         docType: 'DOCX',
         fileUrl: '/uploads/mau-03-xac-nhan-dieu-kien.docx',
         content: 'Giấy xác nhận thực trạng nhà ở dùng cho người thu nhập thấp đăng ký mua nhà ở xã hội.',
@@ -144,7 +152,7 @@ export function loadDatabase(): DatabaseSchema {
       {
         id: 'doc-3',
         title: 'Mẫu đơn đăng ký thuê Nhà ở xã hội (Mẫu số 02)',
-        category: 'Đơn thuê',
+        category: 'Đơn đăng ký',
         docType: 'PDF',
         fileUrl: '/uploads/mau-02-dang-ky-thue-noxh.pdf',
         content: 'Mẫu đơn chuẩn dành cho đối tượng có nhu cầu thuê nhà ở xã hội do Nhà nước hoặc chủ đầu tư phát triển.',

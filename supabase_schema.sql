@@ -30,6 +30,11 @@ CREATE TABLE IF NOT EXISTS public.projects (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Normalize the legacy final-stage labels to the current project status contract.
+UPDATE public.projects
+SET status = 'Bàn giao'
+WHERE status IN ('Chờ bàn giao', 'Đã bàn giao');
+
 -- Dự án mà mỗi người dùng đã lưu.
 CREATE TABLE IF NOT EXISTS public.user_saved_projects (
     user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
@@ -63,7 +68,7 @@ CREATE POLICY "Anon project image delete" ON storage.objects FOR DELETE USING (b
 CREATE TABLE IF NOT EXISTS public.documents (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title VARCHAR(255) NOT NULL,
-    category VARCHAR(100) DEFAULT 'Đơn mua',
+    category VARCHAR(100) DEFAULT 'Đơn đăng ký',
     doc_type VARCHAR(50) DEFAULT 'PDF',
     file_url TEXT,
     content TEXT,

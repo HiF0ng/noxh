@@ -16,7 +16,7 @@
                       {
                           "id":  "doc-1",
                           "title":  "Mẫu đơn đăng ký mua Nhà ở xã hội (Mẫu số 01)",
-                          "category":  "Đơn mua",
+                          "category":  "Đơn đăng ký",
                           "docType":  "PDF",
                           "fileUrl":  "/uploads/mau-01-dang-ky-mua-noxh.pdf",
                           "content":  "Mẫu đơn đăng ký mua nhà ở xã hội chuẩn Bộ Xây dựng."
@@ -24,7 +24,7 @@
                       {
                           "id":  "doc-2",
                           "title":  "Mẫu giấy xác nhận đối tượng và điều kiện nhà ở (Mẫu số 03)",
-                          "category":  "Đơn mua",
+                          "category":  "Xác nhận nhà ở",
                           "docType":  "DOCX",
                           "fileUrl":  "/uploads/mau-03-xac-nhan-dieu-kien.docx",
                           "content":  "Giấy xác nhận thực trạng nhà ở cho người thu nhập thấp."
@@ -32,7 +32,7 @@
                       {
                           "id":  "doc-3",
                           "title":  "Mẫu đơn đăng ký thuê Nhà ở xã hội (Mẫu số 02)",
-                          "category":  "Đơn thuê",
+                          "category":  "Đơn đăng ký",
                           "docType":  "PDF",
                           "fileUrl":  "/uploads/mau-02-dang-ky-thue-noxh.pdf",
                           "content":  "Mẫu đơn chuẩn dành cho đối tượng có nhu cầu thuê NOXH."

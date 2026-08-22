@@ -81,6 +81,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 });
 
+// Keep the protected guide out of reach when its URL is opened directly.
+// The destination page displays the same login dialog used by its action link.
+document.addEventListener('DOMContentLoaded', () => {
+    const pageName = window.location.pathname.split('/').pop().toLowerCase();
+    if (pageName === 'docs-guide.html' && !hasAuthenticatedUserSession()) {
+        window.location.replace('documents.html?loginRequired=1');
+        return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    if (pageName === 'documents.html' && params.get('loginRequired') === '1' && !hasAuthenticatedUserSession()) {
+        window.history.replaceState({}, '', `${window.location.pathname}${window.location.hash}`);
+        showLoginRequiredModal();
+    }
+});
+
 // A page restored from the browser's back/forward cache can retain inline
 // styles from an interrupted SPA navigation. Always restore the main canvas.
 window.addEventListener('pageshow', () => {
@@ -300,6 +316,7 @@ window.addEventListener('resize', fitFooterDesc);
 
 
 function initPageScripts() {
+    setupDocumentAccessGuard(document.body);
     highlightActiveLink();
     adjustFeatureSubtext();
     setupLocationDropdowns();
@@ -722,6 +739,11 @@ function setupSPARouter() {
     let isNavigating = false;
 
     document.addEventListener('click', async (e) => {
+        // A feature-specific handler may intentionally cancel a link (for
+        // example, to show the login-required modal). Do not let the SPA
+        // router turn that cancelled click into a page navigation.
+        if (e.defaultPrevented) return;
+
         const link = e.target.closest('a');
         if (!link) return;
         
@@ -1550,7 +1572,7 @@ function showLoginRequiredModal() {
                 </div>
                 <div class="mt-6 flex flex-col-reverse justify-center gap-3 sm:flex-row">
                     <button type="button" data-close class="rounded-lg border border-outline-variant px-5 py-2.5 font-label-md text-label-md text-on-surface hover:bg-slate-500 hover:text-white transition-colors">Quay lại</button>
-                    <button type="button" data-login class="rounded-lg border border-blue-600 bg-white px-5 py-2.5 font-label-md text-label-md text-blue-700 hover:bg-blue-600 hover:text-white transition-colors">Đăng nhập</button>
+                    <button type="button" data-login class="rounded-lg border border-blue-600 bg-blue-600 px-5 py-2.5 font-label-md text-label-md text-white shadow-sm transition duration-200 hover:scale-105 hover:bg-blue-700 active:scale-100">Đăng nhập</button>
                 </div>
             </div>`;
         document.body.appendChild(modal);
@@ -1577,10 +1599,20 @@ function hasAuthenticatedUserSession() {
     return Boolean(session?.access_token && (!session.expires_at || session.expires_at * 1000 > Date.now()));
 }
 
+// Used directly on protected links as a final navigation barrier.  This does
+// not rely on a parent listener having already been initialized.
+window.requireDocumentLogin = function(event) {
+    if (hasAuthenticatedUserSession()) return true;
+    if (event) event.preventDefault();
+    showLoginRequiredModal();
+    return false;
+};
+
 function setupDocumentAccessGuard(container) {
     if (!container || container.dataset.documentAccessGuardBound === 'true') return;
     container.dataset.documentAccessGuardBound = 'true';
     container.addEventListener('click', event => {
+        if (event.defaultPrevented) return;
         const action = event.target.closest('[data-login-required]');
         if (!action || !container.contains(action) || hasAuthenticatedUserSession()) return;
         event.preventDefault();
@@ -1603,16 +1635,21 @@ async function loadProjectDetails() {
     setQuickField('area', details.area); setQuickField('scale', details.scale); setQuickField('handover', details.handover);
     const desc = document.getElementById('detail-desc'); if (desc) desc.textContent = project.desc || 'Đang cập nhật thông tin dự án.';
 
+    const showFloorplans = details.showFloorplans !== false;
+    const showLocation = details.showLocation !== false;
+    const floorplanSection = document.getElementById('detail-floorplans-section');
+    const locationSection = document.getElementById('detail-location-section');
+    if (floorplanSection) floorplanSection.classList.toggle('hidden', !showFloorplans);
+    if (locationSection) locationSection.classList.toggle('hidden', !showLocation);
+
     const images = [project.imageUrl, ...(details.gallery || [])].filter(Boolean);
     const setDetailImage = (imageId, url) => { const image = document.getElementById(imageId); const skeleton = document.getElementById(imageId + '-skeleton'); if (!image || !url) return; image.onload = () => { image.classList.remove('opacity-0'); if (skeleton) skeleton.classList.add('hidden'); }; image.src = url; };
     setDetailImage('detail-hero-image', images[0]);
     ['detail-gallery-thumb-0', 'detail-gallery-thumb-1'].forEach((thumbId, index) => setDetailImage(thumbId, images[index + 1]));
     setupProjectGallery(images);
 
-    const headings = Array.from(document.querySelectorAll('h2'));
-    const floorplanHeading = headings.find(heading => heading.textContent.trim() === 'Mặt bằng căn hộ');
-    const floorplanPanel = floorplanHeading && floorplanHeading.nextElementSibling;
-    if (floorplanPanel && details.floorplans && details.floorplans.length) {
+    const floorplanPanel = document.getElementById('detail-floorplan-panel');
+    if (showFloorplans && floorplanPanel && details.floorplans && details.floorplans.length) {
         const plans = details.floorplans;
         floorplanPanel.innerHTML = `<div class="relative min-h-[360px] md:min-h-[560px] bg-surface-container"><div id="detail-floorplan-skeleton" class="absolute inset-0 skeleton-shimmer"></div><img id="detail-floorplan-image" data-floorplan-zoom class="w-full h-auto max-h-[620px] min-h-[360px] md:min-h-[560px] object-contain bg-white cursor-zoom-in opacity-0 transition-opacity duration-200" src="${plans[0].url}" alt="Mặt bằng căn hộ"></div><p id="detail-floorplan-note" class="mt-3 text-center font-body-md text-body-md text-on-surface-variant">${plans[0].note || ''}</p><div id="detail-floorplan-tabs" class="flex flex-wrap justify-center gap-sm mt-sm"></div>`;
         const image = document.getElementById('detail-floorplan-image'); const note = document.getElementById('detail-floorplan-note'); const tabs = document.getElementById('detail-floorplan-tabs');
@@ -1626,12 +1663,12 @@ async function loadProjectDetails() {
 
     const mapContainer = document.getElementById('detail-map-container'); const address = details.address || project.location;
     setText('detail-address', address, '');
-    if (mapContainer) { const marker = mapContainer.querySelector('.relative.z-10'); if (marker) marker.remove(); const mapImage = mapContainer.querySelector('[data-location]'); if (mapImage && details.locationMapUrl) mapImage.style.backgroundImage = `url("${details.locationMapUrl}")`; if (details.mapsUrl) mapContainer.onclick = () => window.open(details.mapsUrl, '_blank', 'noopener'); }
+    if (showLocation && mapContainer) { const marker = mapContainer.querySelector('.relative.z-10'); if (marker) marker.remove(); const mapImage = mapContainer.querySelector('[data-location]'); if (mapImage && details.locationMapUrl) mapImage.style.backgroundImage = `url("${details.locationMapUrl}")`; if (details.mapsUrl) mapContainer.onclick = () => window.open(details.mapsUrl, '_blank', 'noopener'); }
 
     const escapeHtml = value => String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
     const progressCard = document.getElementById('detail-progress-card');
     if (progressCard) {
-        const milestones = ['Chờ xây dựng', 'Đang xây dựng', 'Sắp nhận hồ sơ', 'Đang nhận đơn', 'Chờ bàn giao'];
+        const milestones = ['Chờ xây dựng', 'Đang xây dựng', 'Sắp nhận hồ sơ', 'Đang nhận đơn', 'Bàn giao'];
         const stored = details.statusTimeline || []; const lastReached = stored.reduce((last, item, index) => item.checked ? index : last, -1);
         progressCard.innerHTML = `<h3 class="font-title-lg text-title-lg font-bold text-on-surface mb-5">Tiến độ Dự án</h3><div class="flex flex-col">${milestones.map((label, index) => { const item = stored[index] || {}; const reached = index <= lastReached; const current = index === lastReached; return `<div class="detail-timeline-item relative flex items-center gap-4 ${index < milestones.length - 1 ? 'pb-7' : ''}">${index < milestones.length - 1 ? `<span class="detail-timeline-connector absolute left-4 -translate-x-1/2 top-8 -bottom-7 w-0.5 ${index < lastReached ? 'bg-primary' : 'border-l-2 border-dashed border-outline-variant'}"></span>` : ''}<span class="detail-timeline-point relative z-10 w-8 h-8 shrink-0 rounded-full flex items-center justify-center ${reached ? 'bg-primary text-white' : 'border-2 border-outline-variant bg-surface-container-lowest text-outline'}">${reached ? '<span class="material-symbols-outlined text-[17px]">check</span>' : '<span class="w-2.5 h-2.5 rounded-full bg-outline-variant"></span>'}</span><div class="detail-timeline-content min-w-0"><p class="detail-timeline-title font-label-md text-label-md ${current ? 'text-primary font-bold' : reached ? 'text-on-surface' : 'text-outline'}">${label}</p>${item.note ? `<p class="detail-timeline-note font-body-md text-sm text-on-surface-variant mt-0.5">${escapeHtml(item.note)}</p>` : ''}</div></div>`; }).join('')}</div>`;
         progressCard.innerHTML += '<button id="detail-follow-btn" type="button" class="mt-5 w-full border border-primary text-primary bg-surface-container-lowest font-label-md text-label-md py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"><span class="material-symbols-outlined text-[20px]">edit_document</span><span>Đăng ký dự án</span></button><a id="detail-registration-steps-link" href="#" class="hidden mt-3 w-full text-center text-sm font-semibold text-primary hover:underline">Đến trang Quy trình đăng ký</a>';
@@ -1823,39 +1860,78 @@ function setupFAQSearch() {
 }
 
 function setupProjectFilterSort() {
+    if (typeof setupProjectFilterSort.cleanup === 'function') {
+        setupProjectFilterSort.cleanup();
+        setupProjectFilterSort.cleanup = null;
+    }
+
     const sortSelect = document.getElementById('project-filter-sort-select');
     const statusSelect = document.getElementById('sidebar-status-filter');
     const grid = document.getElementById('projects-grid');
+    const pagination = document.getElementById('projects-pagination');
     if (!sortSelect || !grid) return;
-    
+
     // Get all project card items
     const cards = Array.from(grid.querySelectorAll('.project-card-item'));
     if (cards.length === 0) return;
-    
-    function updateGrid() {
-        let visibleCount = 0;
+
+    let currentPage = 1;
+    let itemsPerPage = getProjectsPerPage();
+
+    function renderPagination(totalPages) {
+        if (!pagination) return;
+
+        if (totalPages <= 1) {
+            pagination.innerHTML = '';
+            pagination.classList.add('hidden');
+            return;
+        }
+
+        pagination.classList.remove('hidden');
+        const pageButtons = Array.from({ length: totalPages }, (_, index) => {
+            const page = index + 1;
+            const activeClasses = page === currentPage
+                ? 'bg-primary text-on-primary border-primary'
+                : 'bg-surface-container-lowest text-on-surface border-outline-variant hover:border-primary hover:text-primary';
+            return `<button type="button" data-project-page="${page}" class="min-w-10 h-10 px-3 rounded-lg border font-semibold transition-colors ${activeClasses}" aria-label="Trang ${page}" aria-current="${page === currentPage ? 'page' : 'false'}">${page}</button>`;
+        }).join('');
+
+        pagination.innerHTML = `
+            <button type="button" data-project-page="prev" class="h-10 px-3 rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface transition-colors hover:border-primary hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed" aria-label="Trang trước" ${currentPage === 1 ? 'disabled' : ''}>
+                <span class="material-symbols-outlined text-[20px] block">chevron_left</span>
+            </button>
+            ${pageButtons}
+            <button type="button" data-project-page="next" class="h-10 px-3 rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface transition-colors hover:border-primary hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed" aria-label="Trang sau" ${currentPage === totalPages ? 'disabled' : ''}>
+                <span class="material-symbols-outlined text-[20px] block">chevron_right</span>
+            </button>
+        `;
+
+        pagination.querySelectorAll('[data-project-page]').forEach(button => {
+            button.addEventListener('click', () => {
+                const target = button.dataset.projectPage;
+                if (target === 'prev') currentPage--;
+                else if (target === 'next') currentPage++;
+                else currentPage = Number(target);
+                updateGrid();
+                grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+    }
+
+    function updateGrid(resetPage = false) {
+        if (resetPage) currentPage = 1;
         const sortVal = sortSelect.value;
         const statusFilters = {
             'status-waiting-construction': 'Chờ xây dựng',
             'status-under-construction': 'Đang xây dựng',
             'status-upcoming-applications': 'Sắp nhận hồ sơ',
             'status-accepting-applications': 'Đang nhận đơn',
-            'status-waiting-handover': 'Chờ bàn giao'
+            'status-handover': 'Bàn giao',
+            'status-waiting-handover': 'Bàn giao'
         };
         const statusVal = statusFilters[sortVal] || (statusSelect ? statusSelect.value : 'all');
-        
-        // 1. Filter
-        cards.forEach(card => {
-            const status = (card.dataset.status || '').trim();
-            if (statusVal === 'all' || status === statusVal) {
-                card.style.display = '';
-                visibleCount++;
-            } else {
-                card.style.display = 'none';
-            }
-        });
-        
-        // 2. Sort
+
+        // 1. Sort
         if (sortVal === 'latest' || statusFilters[sortVal]) {
             cards.sort((a, b) => (b.dataset.date || '').localeCompare(a.dataset.date || ''));
         } else if (sortVal === 'price-asc') {
@@ -1871,26 +1947,59 @@ function setupProjectFilterSort() {
                 return pB - pA;
             });
         }
+
+        // 2. Filter the sorted cards so pagination keeps the selected order.
+        const filteredCards = cards.filter(card => {
+            const status = (card.dataset.status || '').trim();
+            return statusVal === 'all' || status === statusVal;
+        });
         
         // Re-append sorted cards
         cards.forEach(card => grid.appendChild(card));
-        
+
+        // 3. Paginate the filtered list
+        itemsPerPage = getProjectsPerPage();
+        const totalPages = Math.max(1, Math.ceil(filteredCards.length / itemsPerPage));
+        currentPage = Math.min(Math.max(currentPage, 1), totalPages);
+        const pageStart = (currentPage - 1) * itemsPerPage;
+        const pageEnd = Math.min(pageStart + itemsPerPage, filteredCards.length);
+        const visibleCards = new Set(filteredCards.slice(pageStart, pageEnd));
+
+        cards.forEach(card => {
+            card.style.display = visibleCards.has(card) ? '' : 'none';
+        });
+
         // Update Counter
         const visText = document.getElementById('visible-count-text');
         const totText = document.getElementById('total-count-text');
-        if (visText) visText.textContent = visibleCount > 0 ? `1 - ${visibleCount}` : '0';
-        if (totText) totText.textContent = visibleCount;
+        if (visText) visText.textContent = filteredCards.length > 0 ? `${pageStart + 1} - ${pageEnd}` : '0';
+        if (totText) totText.textContent = filteredCards.length;
+        renderPagination(filteredCards.length > 0 ? totalPages : 0);
     }
-    
-    const newSortSelect = sortSelect.cloneNode(true);
-    sortSelect.parentNode.replaceChild(newSortSelect, sortSelect);
-    newSortSelect.addEventListener('change', updateGrid);
-    
+
+    const handleFilterChange = () => updateGrid(true);
+    const handleResize = () => {
+        const nextItemsPerPage = getProjectsPerPage();
+        if (nextItemsPerPage !== itemsPerPage) updateGrid(true);
+    };
+
+    sortSelect.addEventListener('change', handleFilterChange);
     if (statusSelect) {
-        const newStatusSelect = statusSelect.cloneNode(true);
-        statusSelect.parentNode.replaceChild(newStatusSelect, statusSelect);
-        newStatusSelect.addEventListener('change', updateGrid);
+        statusSelect.addEventListener('change', handleFilterChange);
     }
+    window.addEventListener('resize', handleResize);
+
+    setupProjectFilterSort.cleanup = () => {
+        sortSelect.removeEventListener('change', handleFilterChange);
+        if (statusSelect) statusSelect.removeEventListener('change', handleFilterChange);
+        window.removeEventListener('resize', handleResize);
+    };
+
+    updateGrid();
+}
+
+function getProjectsPerPage() {
+    return window.matchMedia('(min-width: 1024px)').matches ? 9 : 8;
 }
 
 
@@ -1966,13 +2075,13 @@ function renderEmptyState(container, title = "Chưa có dữ liệu", desc = "H�
     `;
 }
 
-// 4. Fetch and Render Live Projects with 4 (Homepage) and 6 (All Projects) Skeleton Cards
+// 4. Fetch and Render Live Projects
 async function loadLiveProjects() {
     const hpGrid = document.getElementById('homepage-projects-grid');
     const apGrid = document.getElementById('projects-grid') || document.getElementById('all-projects-list');
 
     if (hpGrid) renderProjectsSkeleton(hpGrid, 4);
-    if (apGrid) renderProjectsSkeleton(apGrid, 6);
+    if (apGrid) renderProjectsSkeleton(apGrid, getProjectsPerPage());
 
     try {
         let projects = [];
@@ -1995,15 +2104,15 @@ async function loadLiveProjects() {
 
         if (apGrid) {
             if (!projects || projects.length === 0) {
-                renderProjectsSkeleton(apGrid, 6);
+                renderProjectsSkeleton(apGrid, getProjectsPerPage());
             } else {
-                renderProjectsList(apGrid, projects.slice(0, 6));
+                renderProjectsList(apGrid, projects);
             }
         }
     } catch (err) {
         console.error('Error loading live projects:', err);
         if (hpGrid) renderProjectsSkeleton(hpGrid, 4);
-        if (apGrid) renderProjectsSkeleton(apGrid, 6);
+        if (apGrid) renderProjectsSkeleton(apGrid, getProjectsPerPage());
     }
 }
 
@@ -2050,10 +2159,11 @@ function renderProjectsList(container, list) {
             try { localStorage.setItem(`noxh_registration_project_${p.id}`, JSON.stringify(p)); } catch (_) {}
         }
         let statusClass = 'status-cho-xay-dung';
-        if (p.status && p.status.includes('xây dựng')) statusClass = 'status-dang-xay-dung';
+        const normalizedStatus = String(p.status || '').toLocaleLowerCase('vi-VN');
+        if (p.status === 'Đang xây dựng') statusClass = 'status-dang-xay-dung';
         if (p.status === 'Sắp nhận hồ sơ') statusClass = 'status-sap-nhan-ho-so';
         if (p.status && (p.status.includes('mở bán') || p.status.includes('nhận đơn'))) statusClass = 'status-dang-nhan-don';
-        if (p.status && (p.status.includes('bàn giao') || p.status.includes('hoàn thành'))) statusClass = 'status-cho-ban-giao';
+        if (normalizedStatus.includes('bàn giao') || normalizedStatus.includes('hoàn thành')) statusClass = 'status-ban-giao';
         const estimatedPrice = (p.details && p.details.estimatedPrice) ? p.details.estimatedPrice.trim().replace(/\s*\/?\s*m(?:2|²)?\s*$/i, '') : '';
         const compactPrice = value => value.replace(/^\s*(khoảng|từ)\s*/i, '').replace(/triệu(?:\s*đồng)?/gi, 'tr').replace(/\s+/g, ' ').trim();
         const priceLabel = estimatedPrice ? `~${compactPrice(estimatedPrice)}/m²` : (p.price || 'Đang cập nhật');
@@ -2122,6 +2232,7 @@ function getDocumentDownloadUrl(document, format) {
 async function loadDocumentGuide() {
     const nameElement = document.getElementById('document-guide-name');
     if (!nameElement || !window.SupabaseService) return;
+    if (!hasAuthenticatedUserSession()) return;
     const nameSkeleton = document.getElementById('document-guide-name-skeleton');
     const documentId = new URLSearchParams(window.location.search).get('id');
     const stepsElement = document.getElementById('document-guide-steps');
@@ -2171,11 +2282,17 @@ async function loadDocumentGuide() {
         const pdfLink = document.getElementById('document-guide-pdf');
         const docxLink = document.getElementById('document-guide-docx');
         if (pdfLink) {
-            if (selectedDocument.pdfUrl) pdfLink.href = getDocumentDownloadUrl(selectedDocument, 'PDF');
+            if (selectedDocument.pdfUrl) {
+                pdfLink.href = getDocumentDownloadUrl(selectedDocument, 'PDF');
+                pdfLink.setAttribute('data-login-required', '');
+            }
             else pdfLink.classList.add('hidden');
         }
         if (docxLink) {
-            if (selectedDocument.docxUrl) docxLink.href = getDocumentDownloadUrl(selectedDocument, 'DOCX');
+            if (selectedDocument.docxUrl) {
+                docxLink.href = getDocumentDownloadUrl(selectedDocument, 'DOCX');
+                docxLink.setAttribute('data-login-required', '');
+            }
             else docxLink.classList.add('hidden');
         }
     } catch (error) {
@@ -2233,13 +2350,14 @@ async function loadLiveDocuments() {
                                 </div>
                             </div>
                         </div>
-                        <a href="${getDocumentDownloadUrl(d)}" class="px-2 md:px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 justify-center transition-colors">
+                        <a data-login-required href="${getDocumentDownloadUrl(d)}" class="px-2 md:px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 justify-center transition-colors">
                             <span class="material-symbols-outlined text-base">download</span> Tải xuống
                         </a>
                     </div>
                 `;
             });
             container.innerHTML = html;
+            setupDocumentAccessGuard(document.body);
         });
     } catch (err) {
         console.error('Error loading live documents:', err);
@@ -2295,7 +2413,8 @@ async function loadLegalDocuments() {
             container.innerHTML = '<div class="py-10 text-center flex flex-col items-center justify-center gap-2"><span class="material-symbols-outlined text-4xl text-outline-variant/60">gavel</span><span class="font-body-md text-on-surface-variant text-sm">Chưa có văn bản pháp luật</span></div>';
             return;
         }
-        container.innerHTML = legalDocuments.map(document => `<a href="${getDocumentDownloadUrl(document)}" class="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant/60 hover:border-primary hover:bg-primary/5 transition-colors flex items-center justify-between gap-4"><div class="flex items-center gap-3 min-w-0"><span class="material-symbols-outlined text-red-500 text-2xl">picture_as_pdf</span><div class="min-w-0"><p class="font-label-md text-label-md text-on-surface truncate">${escapeHtml(document.name)}</p>${document.desc ? `<p class="mt-1 text-sm text-on-surface-variant">${escapeHtml(document.desc)}</p>` : ''}</div></div><span class="material-symbols-outlined text-primary">download</span></a>`).join('');
+        container.innerHTML = legalDocuments.map(document => `<a data-login-required href="${getDocumentDownloadUrl(document)}" class="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant/60 hover:border-primary hover:bg-primary/5 transition-colors flex items-center justify-between gap-4"><div class="flex items-center gap-3 min-w-0"><span class="material-symbols-outlined text-red-500 text-2xl">picture_as_pdf</span><div class="min-w-0"><p class="font-label-md text-label-md text-on-surface truncate">${escapeHtml(document.name)}</p>${document.desc ? `<p class="mt-1 text-sm text-on-surface-variant">${escapeHtml(document.desc)}</p>` : ''}</div></div><span class="material-symbols-outlined text-primary">download</span></a>`).join('');
+        setupDocumentAccessGuard(document.body);
     } catch (error) {
         console.error('Error loading legal documents:', error);
         container.innerHTML = '<p class="py-6 text-center text-sm text-on-surface-variant">Không thể tải văn bản pháp luật.</p>';
@@ -2318,20 +2437,25 @@ async function loadDocumentSections() {
                 const docxButton = document.docxUrl
                     ? `<a data-login-required href="${getDocumentDownloadUrl(document, 'DOCX')}" class="flex-1 min-w-0 px-3 py-1.5 border-2 border-sky-600 text-sky-700 bg-white hover:bg-sky-600 hover:text-white rounded-md text-xs font-semibold leading-none whitespace-nowrap flex items-center justify-center gap-1 transition-colors"><span class="material-symbols-outlined text-sm">description</span>Tải DOCX</a>`
                     : '<span class="flex-1 min-w-0 px-3 py-1.5 border-2 border-outline-variant text-outline bg-surface-container rounded-md text-xs font-semibold leading-none whitespace-nowrap text-center cursor-not-allowed">Chưa có DOCX</span>';
-                return `<div class="p-4 rounded-lg border border-outline-variant/60 bg-white flex flex-col md:flex-row md:items-center justify-between gap-4"><div class="min-w-0"><p class="font-label-md text-label-md text-on-surface font-semibold">${escapeHtml(document.name)}</p><p class="mt-1 text-xs leading-relaxed whitespace-pre-line text-on-surface-variant">${escapeHtml(document.desc || 'Chưa có thông tin bổ sung.')}</p></div><div class="w-full md:w-[270px] shrink-0 flex flex-col gap-1.5"><div class="flex gap-1.5">${pdfButton}${docxButton}</div><a data-login-required href="docs-guide.html?id=${encodeURIComponent(document.id)}" class="w-full px-3 py-1.5 border-2 border-blue-600 text-blue-700 bg-white hover:bg-blue-600 hover:text-white rounded-md text-xs font-semibold leading-none whitespace-nowrap flex items-center justify-center gap-1 transition-colors"><span class="material-symbols-outlined text-sm">menu_book</span>Xem hướng dẫn điền</a></div></div>`;
+                return `<div class="p-4 rounded-lg border border-outline-variant/60 bg-white flex flex-col md:flex-row md:items-center justify-between gap-4"><div class="min-w-0"><p class="font-label-md text-label-md text-on-surface font-semibold">${escapeHtml(document.name)}</p><p class="mt-1 text-xs leading-relaxed whitespace-pre-line text-on-surface-variant">${escapeHtml(document.desc || 'Chưa có thông tin bổ sung.')}</p></div><div class="w-full md:w-[270px] shrink-0 flex flex-col gap-1.5"><div class="flex gap-1.5">${pdfButton}${docxButton}</div><a data-login-required onclick="return window.requireDocumentLogin(event)" href="docs-guide.html?id=${encodeURIComponent(document.id)}" class="w-full px-3 py-1.5 border-2 border-blue-600 text-blue-700 bg-white hover:bg-blue-600 hover:text-white rounded-md text-xs font-semibold leading-none whitespace-nowrap flex items-center justify-center gap-1 transition-colors"><span class="material-symbols-outlined text-sm">menu_book</span>Xem hướng dẫn điền</a></div></div>`;
             };
-            const renderOtherDocument = document => `<a href="${getDocumentDownloadUrl(document)}" class="p-4 rounded-lg border border-outline-variant/60 hover:border-primary hover:bg-primary/5 transition-colors flex items-center justify-between gap-3"><div class="min-w-0"><p class="font-label-md text-label-md text-on-surface truncate">${escapeHtml(document.name)}</p><p class="mt-1 text-xs text-on-surface-variant">${escapeHtml(document.docType || 'PDF')} · ${escapeHtml(document.date || '')}</p></div><span class="material-symbols-outlined text-primary">download</span></a>`;
-            content.innerHTML = items.length ? `<div class="flex flex-col gap-3">${items.map(document => (document.type === 'Đơn mua' || document.type === 'Đơn thuê') ? renderFormDocument(document) : renderOtherDocument(document)).join('')}</div>` : '<div class="py-8 text-center text-sm text-on-surface-variant">Chưa có tài liệu</div>';
+            const renderOtherDocument = document => `<a data-login-required href="${getDocumentDownloadUrl(document)}" class="p-4 rounded-lg border border-outline-variant/60 hover:border-primary hover:bg-primary/5 transition-colors flex items-center justify-between gap-3"><div class="min-w-0"><p class="font-label-md text-label-md text-on-surface truncate">${escapeHtml(document.name)}</p><p class="mt-1 text-xs text-on-surface-variant">${escapeHtml(document.docType || 'PDF')} · ${escapeHtml(document.date || '')}</p></div><span class="material-symbols-outlined text-primary">download</span></a>`;
+            content.innerHTML = items.length ? `<div class="flex flex-col gap-3">${items.map(document => ['Đơn đăng ký', 'Xác nhận nhà ở', 'Đối tượng & Thu nhập'].includes(document.type) ? renderFormDocument(document) : renderOtherDocument(document)).join('')}</div>` : '<div class="py-8 text-center text-sm text-on-surface-variant">Chưa có tài liệu</div>';
             setupDocumentAccessGuard(content);
         };
-        renderList('Mua Nhà ở xã hội', ['Đơn mua', 'Bộ tài liệu - Mua Nhà ở xã hội']);
-        renderList('Thuê Nhà ở xã hội', ['Đơn thuê', 'Bộ tài liệu - Thuê Nhà ở xã hội']);
+        renderList('Đơn đăng ký mua, thuê, thuê mua NOXH', ['Đơn đăng ký']);
+        renderList('Xác nhận thực trạng nhà ở', ['Xác nhận nhà ở']);
+        renderList('Xác nhận đối tượng & điều kiện thu nhập', ['Đối tượng & Thu nhập']);
         const packageCategories = ['Bộ tài liệu - Lao động tự do', 'Bộ tài liệu - Người đi làm', 'Bộ tài liệu - Người độc thân', 'Bộ tài liệu - Quân nhân/Công an'];
         document.querySelectorAll('.document-pack-button').forEach((button, index) => {
             const category = packageCategories[index];
             const packageFile = (documents || []).filter(document => !document.isDraft && document.type === category).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))[0];
             if (!packageFile) return;
             button.onclick = () => {
+                if (!hasAuthenticatedUserSession()) {
+                    showLoginRequiredModal();
+                    return;
+                }
                 const a = document.createElement('a');
                 a.href = getDocumentDownloadUrl(packageFile);
                 document.body.appendChild(a);
@@ -2487,6 +2611,7 @@ window.addProjectToCompareList = function(id, title, location, status, progress)
     const projectTitle = project.name || project.title || title || 'Dự án';
     const projectLocation = project.location || location || 'Đang cập nhật';
     const projectStatus = project.status || status || 'Đang cập nhật';
+    const normalizedProjectStatus = projectStatus.toLocaleLowerCase('vi-VN');
     const investor = project.owner || project.investor || 'Đang cập nhật';
     const projectDetails = project.details || {};
     const projectScale = project.scale || projectDetails.scale || 'Đang cập nhật';
@@ -2503,7 +2628,7 @@ window.addProjectToCompareList = function(id, title, location, status, progress)
     if (projectStatus === 'Đang xây dựng') statusClass = 'status-dang-xay-dung';
     if (projectStatus === 'Sắp nhận hồ sơ') statusClass = 'status-sap-nhan-ho-so';
     if (projectStatus.includes('nhận đơn')) statusClass = 'status-dang-nhan-don';
-    if (projectStatus.includes('bàn giao') || projectStatus.includes('hoàn thành')) statusClass = 'status-cho-ban-giao';
+    if (normalizedProjectStatus.includes('bàn giao') || normalizedProjectStatus.includes('hoàn thành')) statusClass = 'status-ban-giao';
 
     const card = document.createElement('div');
     card.className = 'compare-project-card project-card-item bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/60 shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative';
