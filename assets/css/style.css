@@ -274,8 +274,8 @@ body {
     color: #ffffff !important;
 }
 
-/* 4. Chờ bàn giao: Nền xanh lá, chữ trắng */
-.status-cho-ban-giao, .status-chobangiao, .status-hoanthien {
+/* 4. Bàn giao: Nền xanh lá, chữ trắng */
+.status-ban-giao, .status-cho-ban-giao, .status-chobangiao, .status-hoanthien {
     background-color: #10b981 !important;
     color: #ffffff !important;
 }
@@ -477,8 +477,8 @@ html {
     color: #ffffff !important;
 }
 
-/* 4. Chờ bàn giao: Nền xanh lá, chữ trắng */
-.status-cho-ban-giao, .status-chobangiao, .status-hoanthien {
+/* 4. Bàn giao: Nền xanh lá, chữ trắng */
+.status-ban-giao, .status-cho-ban-giao, .status-chobangiao, .status-hoanthien {
     background-color: #10b981 !important;
     color: #ffffff !important;
 }

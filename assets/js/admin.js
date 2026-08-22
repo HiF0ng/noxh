@@ -544,9 +544,7 @@ window.handleAdminLogout = function() {
         var activeDrafts = [];
 
         var syncAttachments = function() {
-            var isLegalDocument = category.value === 'Văn bản luật';
-            if (docxSection) docxSection.classList.toggle('hidden', isLegalDocument);
-            if (isLegalDocument && docxInput) docxInput.value = '';
+            if (docxSection) docxSection.classList.remove('hidden');
         };
         category.onchange = syncAttachments;
         syncAttachments();
@@ -590,7 +588,7 @@ window.handleAdminLogout = function() {
                 if (activeEditDoc) {
                     document.getElementById('doc-upload-name').value = activeEditDoc.name || '';
                     document.getElementById('doc-upload-content').value = activeEditDoc.desc || '';
-                    category.value = activeEditDoc.type || 'Đơn mua';
+                    category.value = activeEditDoc.type || 'Đơn đăng ký';
                     syncAttachments();
                     var titleEl = document.querySelector('#page-docs-new h2');
                     if (titleEl) titleEl.textContent = 'Chỉnh sửa tài liệu';
@@ -630,7 +628,7 @@ window.handleAdminLogout = function() {
                 if (draftButton) draftButton.classList.remove('hidden');
                 document.getElementById('doc-upload-name').value = '';
                 document.getElementById('doc-upload-content').value = '';
-                category.value = 'Đơn mua';
+                category.value = 'Đơn đăng ký';
                 syncAttachments();
             }
 
@@ -641,7 +639,7 @@ window.handleAdminLogout = function() {
             var draft = activeDrafts[0];
             document.getElementById('doc-upload-name').value = draft.name || '';
             document.getElementById('doc-upload-content').value = draft.desc || '';
-            category.value = draft.type || 'Đơn mua';
+            category.value = draft.type || 'Đơn đăng ký';
             syncAttachments();
             var showDraftAttachment = function(kind, url) {
                 if (!url) return;
@@ -672,8 +670,8 @@ window.handleAdminLogout = function() {
             var pdfInput = document.getElementById('pdf-input');
             var pdfFile = pdfInput && pdfInput.files[0];
             var wordFile = docxInput && docxInput.files[0];
-            var isLegalDocument = category.value === 'Văn bản luật';
-            var isCombinedForm = category.value === 'Đơn mua' || category.value === 'Đơn thuê';
+            var isLegalDocument = false;
+            var isCombinedForm = ['Đơn đăng ký', 'Xác nhận nhà ở', 'Đối tượng & Thu nhập'].includes(category.value);
 
             if (!isDraft && !name) { alert('Vui lòng nhập tên tài liệu.'); return; }
             var activeDraft = activeDrafts[0] || null;
@@ -681,7 +679,6 @@ window.handleAdminLogout = function() {
             var existingDocxUrl = activeEditDoc && !activeEditDocxDeleted ? (activeEditDoc.docxUrl || (activeEditDoc.docType === 'DOCX' ? activeEditDoc.file : '')) : '';
             var draftPdfUrl = activeDraft && activeDraft.pdfUrl || '';
             var draftDocxUrl = activeDraft && activeDraft.docxUrl || '';
-            if (!isDraft && isLegalDocument && !pdfFile && !draftPdfUrl && !existingPdfUrl) { alert('Văn bản luật cần đính kèm một tệp PDF.'); return; }
             if (pdfFile && !/\.pdf$/i.test(pdfFile.name)) { alert('Tệp PDF phải có định dạng .pdf.'); return; }
             if (wordFile && !/\.docx?$/i.test(wordFile.name)) { alert('Tệp Word phải có định dạng .doc hoặc .docx.'); return; }
             if ((pdfFile && pdfFile.size > 50 * 1024 * 1024) || (wordFile && wordFile.size > 50 * 1024 * 1024)) { alert('Tệp đính kèm vượt quá giới hạn 50 MB.'); return; }
@@ -702,7 +699,7 @@ window.handleAdminLogout = function() {
                     docxUrl = await window.SupabaseService.uploadDocumentFile(wordFile, 'forms');
                     if (!docxUrl) throw new Error('Không thể tải tệp Word lên.');
                 }
-                if (!isDraft && isCombinedForm && (!pdfUrl || !docxUrl)) throw new Error('Đơn mua và đơn thuê cần đính kèm đồng thời cả tệp PDF và DOCX.');
+                if (!isDraft && isCombinedForm && (!pdfUrl || !docxUrl)) throw new Error('Tài liệu biểu mẫu cần đính kèm đồng thời cả tệp PDF và DOCX.');
                 if (!isDraft && !isCombinedForm && !pdfUrl && !docxUrl) throw new Error('Vui lòng chọn ít nhất một tệp đính kèm.');
                 if (isDraft) {
                     await removeDrafts(true);
@@ -1127,6 +1124,8 @@ window.handleAdminLogout = function() {
         var descTxt = document.getElementById('prj-textarea-desc');
         var addressInp = document.getElementById('prj-input-address');
         var mapsInp = document.getElementById('prj-input-maps-url');
+        var floorplansToggle = document.getElementById('prj-toggle-floorplans');
+        var locationToggle = document.getElementById('prj-toggle-location');
         var mainImagePreview = document.getElementById('prj-main-image-preview');
         var locationMapPreview = document.getElementById('location-map-img-preview');
         var locationMapPlaceholder = document.getElementById('location-map-placeholder');
@@ -1139,6 +1138,8 @@ window.handleAdminLogout = function() {
         if (descTxt) descTxt.value = '';
         if (addressInp) addressInp.value = '';
         if (mapsInp) mapsInp.value = '';
+        if (floorplansToggle) floorplansToggle.checked = true;
+        if (locationToggle) locationToggle.checked = true;
         quickInputIds.forEach(function(id) { var input = document.getElementById(id); if (input) input.value = ''; });
         if (mainImagePreview) mainImagePreview.src = 'https://placehold.co/600x400/e5eeff/004ac6?text=Ảnh+đại+diện';
         if (locationMapPreview) {
@@ -1160,7 +1161,7 @@ window.handleAdminLogout = function() {
         if (status === 'Đang xây dựng') return 'status-dang-xay-dung';
         if (status === 'Sắp nhận hồ sơ') return 'status-sap-nhan-ho-so';
         if (status === 'Đang nhận đơn') return 'status-dang-nhan-don';
-        if (status === 'Chờ bàn giao') return 'status-cho-ban-giao';
+        if (status === 'Bàn giao' || status === 'Chờ bàn giao' || status === 'Đã bàn giao') return 'status-ban-giao';
         return 'status-dang-xay-dung';
     }
 
@@ -1231,6 +1232,8 @@ window.handleAdminLogout = function() {
         var descTxt = document.getElementById('prj-textarea-desc');
         var addressInp = document.getElementById('prj-input-address');
         var mapsInp = document.getElementById('prj-input-maps-url');
+        var floorplansToggle = document.getElementById('prj-toggle-floorplans');
+        var locationToggle = document.getElementById('prj-toggle-location');
         var mainImagePreview = document.getElementById('prj-main-image-preview');
         var locationMapPreview = document.getElementById('location-map-img-preview');
         var locationMapPlaceholder = document.getElementById('location-map-placeholder');
@@ -1246,6 +1249,8 @@ window.handleAdminLogout = function() {
         if (descTxt) descTxt.value = prj.desc || '';
         if (addressInp) addressInp.value = (prj.details && prj.details.address) || prj.location || '';
         if (mapsInp) mapsInp.value = (prj.details && prj.details.mapsUrl) || '';
+        if (floorplansToggle) floorplansToggle.checked = !prj.details || prj.details.showFloorplans !== false;
+        if (locationToggle) locationToggle.checked = !prj.details || prj.details.showLocation !== false;
         if (areaInp) areaInp.value = (prj.details && prj.details.area) || '';
         if (scaleInp) scaleInp.value = (prj.details && prj.details.scale) || '';
         if (handoverInp) handoverInp.value = (prj.details && prj.details.handover) || '';
@@ -1495,6 +1500,8 @@ window.handleAdminLogout = function() {
                 var descTxt = document.getElementById('prj-textarea-desc');
                 var addressInp = document.getElementById('prj-input-address');
                 var mapsInp = document.getElementById('prj-input-maps-url');
+                var floorplansToggle = document.getElementById('prj-toggle-floorplans');
+                var locationToggle = document.getElementById('prj-toggle-location');
                 var areaInp = document.getElementById('prj-input-area');
                 var scaleInp = document.getElementById('prj-input-scale');
                 var handoverInp = document.getElementById('prj-input-handover');
@@ -1516,7 +1523,7 @@ window.handleAdminLogout = function() {
 
                 // Show loading state on button
                 var originalText = activeButton.innerHTML;
-                activeButton.innerHTML = '<span class="material-symbols-outlined animate-spin mr-2">progress_activity</span> Đang lưu...';
+                activeButton.innerHTML = '<span class="material-symbols-outlined animate-spin mr-2 relative top-[2px]">progress_activity</span> Đang lưu...';
                 activeButton.disabled = true;
 
                 try {
@@ -1528,7 +1535,7 @@ window.handleAdminLogout = function() {
                         status: statusSel ? statusSel.value : 'Chờ xây dựng',
                         location: addressInp && addressInp.value.trim() ? addressInp.value.trim() : 'Hà Nội',
                         desc: descTxt ? descTxt.value : '',
-                        details: Object.assign({}, existingDetails, { desc: descTxt ? descTxt.value : '', address: addressInp ? addressInp.value.trim() : '', mapsUrl: mapsInp ? mapsInp.value.trim() : '', area: areaInp ? areaInp.value.trim() : '', scale: scaleInp ? scaleInp.value.trim() : '', handover: handoverInp ? handoverInp.value.trim() : '', estimatedPrice: estimatedPriceInp ? estimatedPriceInp.value.trim() : '', amenities: Array.from(document.querySelectorAll('#page-projects-new input[placeholder="Thêm tiện ích..."]')).filter(input => input.previousElementSibling && input.previousElementSibling.checked && input.value.trim()).map(input => input.value.trim()), statusTimeline: Array.from(document.querySelectorAll('#project-status-notes > div')).map(function(item) { return { label: item.querySelector('label span').textContent.trim(), checked: item.querySelector('input[type="checkbox"]').checked, note: item.querySelector('input[type="text"]').value.trim() }; }), isDraft: !!isDraft })
+                        details: Object.assign({}, existingDetails, { desc: descTxt ? descTxt.value : '', address: addressInp ? addressInp.value.trim() : '', mapsUrl: mapsInp ? mapsInp.value.trim() : '', showFloorplans: floorplansToggle ? floorplansToggle.checked : true, showLocation: locationToggle ? locationToggle.checked : true, area: areaInp ? areaInp.value.trim() : '', scale: scaleInp ? scaleInp.value.trim() : '', handover: handoverInp ? handoverInp.value.trim() : '', estimatedPrice: estimatedPriceInp ? estimatedPriceInp.value.trim() : '', amenities: Array.from(document.querySelectorAll('#page-projects-new input[placeholder="Thêm tiện ích..."]')).filter(input => input.previousElementSibling && input.previousElementSibling.checked && input.value.trim()).map(input => input.value.trim()), statusTimeline: Array.from(document.querySelectorAll('#project-status-notes > div')).map(function(item) { return { label: item.querySelector('label span').textContent.trim(), checked: item.querySelector('input[type="checkbox"]').checked, note: item.querySelector('input[type="text"]').value.trim() }; }), isDraft: !!isDraft })
                     };
 
                     var savedProject;
@@ -2309,7 +2316,7 @@ window.handleAdminLogout = function() {
     var guidesList = [];
     var activeGuideDocument = null;
     var isAutomaticGuideDocument = function(doc) {
-        return doc && !doc.isDraft && (doc.type === 'Đơn mua' || doc.type === 'Đơn thuê');
+        return doc && !doc.isDraft && ['Đơn đăng ký', 'Xác nhận nhà ở', 'Đối tượng & Thu nhập'].includes(doc.type);
     };
     var isGuideDocument = function(doc) {
         return doc && !doc.isDraft && (doc.type === 'Hướng dẫn' || isAutomaticGuideDocument(doc));

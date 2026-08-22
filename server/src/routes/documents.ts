@@ -21,7 +21,7 @@ router.post('/', requireAdmin, (req: Request, res: Response) => {
   const newDoc: DocItem = {
     id: 'doc-' + Date.now(),
     title: title.trim(),
-    category: category === 'Đơn thuê' ? 'Đơn thuê' : 'Đơn mua',
+    category: ['Đơn đăng ký', 'Xác nhận nhà ở', 'Đối tượng & Thu nhập'].includes(category) ? category : 'Đơn đăng ký',
     docType: docType === 'DOCX' ? 'DOCX' : 'PDF',
     fileUrl: fileUrl || '',
     content: content || '',

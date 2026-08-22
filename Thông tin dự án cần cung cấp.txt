@@ -1,0 +1,13 @@
+Thông tin dự án cần cung cấp
+1. Tên dự án
+2. Vị trí, địa chỉ
+3. Chủ đầu tư
+4. Khoảng giá
+5. Tổng quan mô tả nhanh về dự án
+6. Quy mô bao nhiêu căn nhà ở xã hội
+7. Dự kiến bàn giao
+8. Một số tiện ích nổi bật (nêu 4-6 tiện ích)
+9. Tiến độ dự án đến hiện tại
+- Thời gian duyệt dự án khi nào
+- Khi nào khởi công
+- Dự kiến mở nhận đơn

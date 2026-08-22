@@ -9,6 +9,7 @@
     }
 
     const BASE_URL = `${config.url}/rest/v1`;
+    const normalizeProjectStatus = status => (status === 'Chờ bàn giao' || status === 'Đã bàn giao') ? 'Bàn giao' : status;
 
     const AUTH_SESSION_KEY = 'noxh_auth_session';
     const ADMIN_AUTH_SESSION_KEY = 'noxh_admin_auth_session';
@@ -85,7 +86,13 @@
         return text;
     };
 
-    const FORM_CATEGORIES = ['Đơn mua', 'Đơn thuê'];
+    const FORM_CATEGORIES = ['Đơn đăng ký', 'Xác nhận nhà ở', 'Đối tượng & Thu nhập'];
+    const normalizeDocumentCategory = (category, title) => {
+        if (category === 'Đơn mua' || category === 'Đơn thuê') {
+            return /xác nhận/i.test(String(title || '')) ? 'Xác nhận nhà ở' : 'Đơn đăng ký';
+        }
+        return category;
+    };
     const DOCUMENT_META_VERSION = 2;
     const readDocumentContent = value => {
         const fallback = { description: String(value || ''), attachments: {}, guide: null };
@@ -125,7 +132,7 @@
             id: db.id,
             sourceIds: [db.id],
             name: db.title,
-            type: db.category,
+            type: normalizeDocumentCategory(db.category, db.title),
             file: db.file_url,
             fileUrl: db.file_url,
             pdfUrl,
@@ -324,7 +331,7 @@
                         name: db.title,
                         location: db.location,
                         owner: db.investor,
-                        status: db.status,
+                        status: normalizeProjectStatus(db.status),
                         progress: db.progress,
                         desc: db.details_json?.desc || '',
                         imageUrl: db.details_json?.mainImageUrl || db.details_json?.imageUrl || db.details_json?.image_url || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80',
@@ -353,7 +360,7 @@
                     name: db.title,
                     location: db.location,
                     owner: db.investor,
-                    status: db.status,
+                    status: normalizeProjectStatus(db.status),
                     progress: db.progress,
                     desc: db.details_json?.desc || '',
                     imageUrl: db.details_json?.mainImageUrl || '',
@@ -385,7 +392,7 @@
                     title: projectData.name,
                     location: projectData.location || 'Hà Nội',
                     investor: projectData.owner || '',
-                    status: projectData.status || 'Chờ xây dựng',
+                    status: normalizeProjectStatus(projectData.status || 'Chờ xây dựng'),
                     details_json: projectData.details || { desc: projectData.desc || '' }
                 };
                 const res = await fetch(`${BASE_URL}/projects`, {
@@ -408,7 +415,7 @@
                     title: projectData.name,
                     location: projectData.location || 'Hà Nội',
                     investor: projectData.owner || '',
-                    status: projectData.status || 'Chờ xây dựng',
+                    status: normalizeProjectStatus(projectData.status || 'Chờ xây dựng'),
                     details_json: projectData.details || { desc: projectData.desc || '' }
                 };
                 const res = await fetch(`${BASE_URL}/projects?id=eq.${id}`, {
@@ -471,7 +478,7 @@
                 return (await res.json()).map(row => {
                     const db = row.projects;
                     if (!db) return null;
-                    return { id: db.id, name: db.title, location: db.location, owner: db.investor, status: db.status, progress: db.progress, desc: db.details_json?.desc || '', imageUrl: db.details_json?.mainImageUrl || '', details: db.details_json || {}, created_at: db.created_at };
+                    return { id: db.id, name: db.title, location: db.location, owner: db.investor, status: normalizeProjectStatus(db.status), progress: db.progress, desc: db.details_json?.desc || '', imageUrl: db.details_json?.mainImageUrl || '', details: db.details_json || {}, created_at: db.created_at };
                 }).filter(Boolean);
             } catch (err) {
                 console.error('Fetch saved projects error:', err);
@@ -511,7 +518,7 @@
                 return (await res.json()).map(row => {
                     const db = row.projects;
                     if (!db) return null;
-                    return { id: db.id, name: db.title, location: db.location, owner: db.investor, status: db.status, progress: db.progress, desc: db.details_json?.desc || '', imageUrl: db.details_json?.mainImageUrl || '', details: db.details_json || {}, created_at: db.created_at };
+                    return { id: db.id, name: db.title, location: db.location, owner: db.investor, status: normalizeProjectStatus(db.status), progress: db.progress, desc: db.details_json?.desc || '', imageUrl: db.details_json?.mainImageUrl || '', details: db.details_json || {}, created_at: db.created_at };
                 }).filter(Boolean);
             } catch (err) {
                 console.error('Fetch followed projects error:', err);

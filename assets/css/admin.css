@@ -704,8 +704,8 @@ body.admin-body {
     color: #ffffff !important;
 }
 
-/* 4. Chờ bàn giao: Nền xanh lá, chữ trắng */
-.status-cho-ban-giao, .status-chobangiao, .status-hoanthien, .bg-status-cho-ban-giao {
+/* 4. Bàn giao: Nền xanh lá, chữ trắng */
+.status-ban-giao, .status-cho-ban-giao, .status-chobangiao, .status-hoanthien, .bg-status-ban-giao, .bg-status-cho-ban-giao {
     background-color: #10b981 !important;
     color: #ffffff !important;
 }

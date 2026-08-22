@@ -11,7 +11,7 @@ Tất cả các thẻ dự án, bảng danh sách dự án trên toàn bộ webs
 | 1 | **Chờ xây dựng** | Nền đỏ nhạt (`#ef4444` / `#f87171`) | Chữ trắng (`#ffffff`) | `bg-red-500 text-white` | Dự án đã có quy hoạch, chuẩn bị khởi công hoặc đang làm thủ tục mặt bằng |
 | 2 | **Đang xây dựng** | Nền cam biển (`#f97316` / `#ea580c`) | Chữ trắng (`#ffffff`) | `bg-orange-500 text-white` | Dự án đang trong quá trình thi công xây dựng phần móng/phần thân |
 | 3 | **Đang nhận đơn** | Nền xanh biển (`#2563eb` / `#1d4ed8`) | Chữ trắng (`#ffffff`) | `bg-blue-600 text-white` | Dự án chính thức mở cổng thu nộp hồ sơ đăng ký mua/thuê NOXH |
-| 4 | **Chờ bàn giao** | Nền xanh lá (`#10b981` / `#059669`) | Chữ trắng (`#ffffff`) | `bg-emerald-600 text-white` | Dự án đã cất nóc/hoàn thiện, chuẩn bị nghiệm thu bàn giao căn hộ |
+| 4 | **Bàn giao** | Nền xanh lá (`#10b981` / `#059669`) | Chữ trắng (`#ffffff`) | `bg-emerald-600 text-white` | Dự án đã hoàn thiện và bước vào giai đoạn bàn giao căn hộ |
 
 ---
 

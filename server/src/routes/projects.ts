@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { getDb, saveDatabase, Project } from '../config/db';
+import { getDb, saveDatabase, Project, normalizeProjectStatus } from '../config/db';
 import { requireAdmin } from './auth';
 
 const router = Router();
@@ -34,7 +34,7 @@ router.post('/', requireAdmin, (req: Request, res: Response) => {
     location: location.trim(),
     investor: (investor || '').trim(),
     progress: Number(progress) || 0,
-    status: status || 'Đang cập nhật',
+    status: normalizeProjectStatus(status || 'Đang cập nhật'),
     detailsJson: detailsJson || {},
     createdAt: new Date().toISOString()
   };
@@ -56,6 +56,7 @@ router.put('/:id', requireAdmin, (req: Request, res: Response) => {
   db.projects[idx] = {
     ...current,
     ...req.body,
+    status: normalizeProjectStatus(req.body.status || current.status),
     id: current.id
   };
 

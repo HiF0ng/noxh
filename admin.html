@@ -7,15 +7,15 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css?v=25">
     
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script src="assets/js/admin-pages/admin-1.js"></script>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="assets/js/supabase-config.js"></script>
-    <script src="assets/js/supabase-service.js?v=11"></script>
-    <link rel="stylesheet" href="assets/css/admin.css?v=3">
+    <script src="assets/js/supabase-service.js?v=14"></script>
+    <link rel="stylesheet" href="assets/css/admin.css?v=4">
     <link rel="stylesheet" href="assets/css/icon-utilities.css">
 </head>
 <body class="admin-body flex h-screen overflow-hidden antialiased bg-background">
@@ -371,7 +371,7 @@
                                 <option value="Đang xây dựng">Đang xây dựng</option>
                                 <option value="Sắp nhận hồ sơ">Sắp nhận hồ sơ</option>
                                 <option value="Đang nhận đơn">Đang nhận đơn</option>
-                                <option value="Chờ bàn giao">Chờ bàn giao</option>
+                                <option value="Bàn giao">Bàn giao</option>
                             </select>
                         </div>
                     </div>
@@ -442,7 +442,7 @@
                                             <option>Đang xây dựng</option>
                                             <option>Sắp nhận hồ sơ</option>
                                             <option>Đang nhận đơn</option>
-                                            <option>Chờ bàn giao</option>
+                                            <option>Bàn giao</option>
                                         </select>
                                 </div>
                                 <div>
@@ -501,7 +501,7 @@
                                 <h3 class="text-lg font-semibold text-on-surface">Mặt bằng căn hộ</h3>
                                 <!-- Toggle Switch ON/OFF -->
                                 <label class="relative inline-flex items-center cursor-pointer" title="Bật/Tắt hiển thị Mặt bằng căn hộ">
-                                    <input type="checkbox" checked class="sr-only peer">
+                                    <input id="prj-toggle-floorplans" type="checkbox" checked class="sr-only peer" aria-label="Hiển thị Mặt bằng căn hộ trên trang chi tiết dự án">
                                     <div class="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                                 </label>
                             </div>
@@ -535,7 +535,7 @@
                                 <h3 class="text-lg font-semibold text-on-surface">Vị trí Dự án</h3>
                                 <!-- Toggle Switch ON/OFF -->
                                 <label class="relative inline-flex items-center cursor-pointer" title="Bật/Tắt hiển thị Vị trí Dự án">
-                                    <input type="checkbox" checked class="sr-only peer">
+                                    <input id="prj-toggle-location" type="checkbox" checked class="sr-only peer" aria-label="Hiển thị Vị trí Dự án trên trang chi tiết dự án">
                                     <div class="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                                 </label>
                             </div>
@@ -664,7 +664,7 @@
                                 <div class="space-y-2">
                                     <label class="flex items-center gap-2 cursor-pointer select-none">
                                         <input type="checkbox" class="text-primary rounded border-outline focus:ring-primary h-4.5 w-4.5 cursor-pointer">
-                                        <span class="font-bold text-sm text-on-surface">Chờ bàn giao</span>
+                                        <span class="font-bold text-sm text-on-surface">Bàn giao</span>
                                     </label>
                                     <input type="text" placeholder="Nhập ghi chú / thông tin chi tiết..." value="" class="w-full px-3.5 py-2 bg-surface-container-low border border-outline-variant rounded-lg text-sm text-on-surface focus:outline-none focus:border-primary transition-all">
                                 </div>
@@ -707,24 +707,24 @@
                                     <span>Tất cả</span>
                                     <span class="material-symbols-outlined text-primary text-sm check-icon">check</span>
                                 </button>
-                                <button type="button" class="docs-filter-option w-full px-4 py-2.5 text-left text-sm text-on-surface hover:bg-surface-container-low transition-colors flex items-center justify-between font-medium" data-value="Đơn mua">
+                                <button type="button" class="docs-filter-option w-full px-4 py-2.5 text-left text-sm text-on-surface hover:bg-surface-container-low transition-colors flex items-center justify-between font-medium" data-value="Đơn đăng ký">
                                     <div class="flex items-center gap-2">
                                         <span class="w-2 h-2 rounded-full bg-primary"></span>
-                                        <span>Đơn mua</span>
+                                        <span>Đơn đăng ký</span>
                                     </div>
                                     <span class="material-symbols-outlined text-primary text-sm check-icon hidden">check</span>
                                 </button>
-                                <button type="button" class="docs-filter-option w-full px-4 py-2.5 text-left text-sm text-on-surface hover:bg-surface-container-low transition-colors flex items-center justify-between font-medium" data-value="Đơn thuê">
+                                <button type="button" class="docs-filter-option w-full px-4 py-2.5 text-left text-sm text-on-surface hover:bg-surface-container-low transition-colors flex items-center justify-between font-medium" data-value="Xác nhận nhà ở">
                                     <div class="flex items-center gap-2">
                                         <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                                        <span>Đơn thuê</span>
+                                        <span>Xác nhận nhà ở</span>
                                     </div>
                                     <span class="material-symbols-outlined text-primary text-sm check-icon hidden">check</span>
                                 </button>
-                                <button type="button" class="docs-filter-option w-full px-4 py-2.5 text-left text-sm text-on-surface hover:bg-surface-container-low transition-colors flex items-center justify-between font-medium" data-value="Văn bản luật">
+                                <button type="button" class="docs-filter-option w-full px-4 py-2.5 text-left text-sm text-on-surface hover:bg-surface-container-low transition-colors flex items-center justify-between font-medium" data-value="Đối tượng &amp; Thu nhập">
                                     <div class="flex items-center gap-2">
                                         <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                                        <span>Văn bản luật</span>
+                                        <span>Đối tượng &amp; Thu nhập</span>
                                     </div>
                                     <span class="material-symbols-outlined text-primary text-sm check-icon hidden">check</span>
                                 </button>
@@ -817,9 +817,9 @@
                                 <div>
                                     <label class="block text-sm font-medium text-on-surface mb-1">Danh mục</label>
                                     <select id="doc-upload-category" class="w-full px-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg focus:outline-none focus:border-primary">
-                                        <option value="Đơn mua">Đơn mua</option>
-                                        <option value="Đơn thuê">Đơn thuê</option>
-                                        <option value="Văn bản luật">Văn bản luật</option>
+                                        <option value="Đơn đăng ký">Đơn đăng ký</option>
+                                        <option value="Xác nhận nhà ở">Xác nhận nhà ở</option>
+                                        <option value="Đối tượng &amp; Thu nhập">Đối tượng &amp; Thu nhập</option>
                                     </select>
                                 </div>
                                 <div>
@@ -1220,6 +1220,6 @@
         </div>
     </div>
 
-    <script src="assets/js/admin.js?v=27"></script>
+    <script src="assets/js/admin.js?v=30"></script>
 </body>
 </html>
