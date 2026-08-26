@@ -1328,6 +1328,13 @@ function setupLocationDropdowns() {
     if (!provinceInput || typeof locationData === 'undefined') return;
 
     // Populate Provinces
+    const allProvincesButton = document.createElement('button');
+    allProvincesButton.type = 'button';
+    allProvincesButton.className = 'px-2 md:px-4 py-2 text-left hover:bg-surface-container hover:text-primary transition-colors text-sm font-semibold text-on-surface province-item';
+    allProvincesButton.textContent = 'Tất cả';
+    allProvincesButton.addEventListener('click', () => selectProvince(''));
+    provinceOptions.appendChild(allProvincesButton);
+
     const provinces = Object.keys(locationData).sort((a, b) => a.localeCompare(b, 'vi'));
     provinces.forEach(prov => {
         const btn = document.createElement('button');
@@ -1376,13 +1383,28 @@ function setupLocationDropdowns() {
         
         // Reset District Input
         districtInput.value = '';
-        districtInput.removeAttribute('disabled');
-        districtDropdownContainer.classList.remove('opacity-50');
         districtSearch.value = '';
-        
+
         // Populate Districts
         districtOptions.innerHTML = '';
-        const districts = locationData[provName].sort((a, b) => a.localeCompare(b, 'vi'));
+        provinceInput.dispatchEvent(new Event('change', { bubbles: true }));
+        districtInput.dispatchEvent(new Event('change', { bubbles: true }));
+        if (!provName) {
+            districtInput.setAttribute('disabled', '');
+            districtDropdownContainer.classList.add('opacity-50');
+            return;
+        }
+
+        districtInput.removeAttribute('disabled');
+        districtDropdownContainer.classList.remove('opacity-50');
+        const allDistrictsButton = document.createElement('button');
+        allDistrictsButton.type = 'button';
+        allDistrictsButton.className = 'px-2 md:px-4 py-2 text-left hover:bg-surface-container hover:text-primary transition-colors text-sm font-semibold text-on-surface district-item';
+        allDistrictsButton.textContent = 'Tất cả';
+        allDistrictsButton.addEventListener('click', () => selectDistrict(''));
+        districtOptions.appendChild(allDistrictsButton);
+
+        const districts = [...locationData[provName]].sort((a, b) => a.localeCompare(b, 'vi'));
         districts.forEach(dist => {
             const btn = document.createElement('button');
             btn.type = 'button';
@@ -1429,6 +1451,7 @@ function setupLocationDropdowns() {
     function selectDistrict(distName) {
         districtInput.value = distName;
         closeAllLocationDropdowns();
+        districtInput.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     function closeAllLocationDropdowns() {
@@ -1668,7 +1691,7 @@ async function loadProjectDetails() {
     const escapeHtml = value => String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
     const progressCard = document.getElementById('detail-progress-card');
     if (progressCard) {
-        const milestones = ['Chờ xây dựng', 'Đang xây dựng', 'Sắp nhận hồ sơ', 'Đang nhận đơn', 'Bàn giao'];
+        const milestones = ['Chờ xây dựng', 'Đang xây dựng', 'Sắp nhận hồ sơ', 'Đang nhận hồ sơ', 'Bàn giao'];
         const stored = details.statusTimeline || []; const lastReached = stored.reduce((last, item, index) => item.checked ? index : last, -1);
         progressCard.innerHTML = `<h3 class="font-title-lg text-title-lg font-bold text-on-surface mb-5">Tiến độ Dự án</h3><div class="flex flex-col">${milestones.map((label, index) => { const item = stored[index] || {}; const reached = index <= lastReached; const current = index === lastReached; return `<div class="detail-timeline-item relative flex items-center gap-4 ${index < milestones.length - 1 ? 'pb-7' : ''}">${index < milestones.length - 1 ? `<span class="detail-timeline-connector absolute left-4 -translate-x-1/2 top-8 -bottom-7 w-0.5 ${index < lastReached ? 'bg-primary' : 'border-l-2 border-dashed border-outline-variant'}"></span>` : ''}<span class="detail-timeline-point relative z-10 w-8 h-8 shrink-0 rounded-full flex items-center justify-center ${reached ? 'bg-primary text-white' : 'border-2 border-outline-variant bg-surface-container-lowest text-outline'}">${reached ? '<span class="material-symbols-outlined text-[17px]">check</span>' : '<span class="w-2.5 h-2.5 rounded-full bg-outline-variant"></span>'}</span><div class="detail-timeline-content min-w-0"><p class="detail-timeline-title font-label-md text-label-md ${current ? 'text-primary font-bold' : reached ? 'text-on-surface' : 'text-outline'}">${label}</p>${item.note ? `<p class="detail-timeline-note font-body-md text-sm text-on-surface-variant mt-0.5">${escapeHtml(item.note)}</p>` : ''}</div></div>`; }).join('')}</div>`;
         progressCard.innerHTML += '<button id="detail-follow-btn" type="button" class="mt-5 w-full border border-primary text-primary bg-surface-container-lowest font-label-md text-label-md py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"><span class="material-symbols-outlined text-[20px]">edit_document</span><span>Đăng ký dự án</span></button><a id="detail-registration-steps-link" href="#" class="hidden mt-3 w-full text-center text-sm font-semibold text-primary hover:underline">Đến trang Quy trình đăng ký</a>';
@@ -1859,6 +1882,63 @@ function setupFAQSearch() {
     }
 }
 
+function normalizeProjectFilterText(value) {
+    return String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D')
+        .toLocaleLowerCase('vi-VN')
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function parseProjectPriceRange(value) {
+    const rawValue = String(value || '').trim();
+    if (!rawValue) return { min: null, max: null };
+
+    const normalizedValue = rawValue
+        .toLocaleLowerCase('vi-VN')
+        .replace(/m\s*(?:2|²)/g, '')
+        .replace(/mét vuông/g, '');
+    const matches = normalizedValue.match(/\d+(?:[.,]\d+)*/g) || [];
+    const numbers = matches.map(rawNumber => {
+        const separatorCount = (rawNumber.match(/[.,]/g) || []).length;
+        const usesThousandsGrouping = separatorCount > 1 || /[.,]\d{3}(?:[.,]\d{3})*$/.test(rawNumber);
+        const parsed = Number(usesThousandsGrouping
+            ? rawNumber.replace(/[.,]/g, '')
+            : rawNumber.replace(',', '.'));
+        if (!Number.isFinite(parsed)) return null;
+        if (parsed >= 100000) return parsed / 1000000;
+        if (normalizedValue.includes('tỷ') || normalizedValue.includes('ty')) return parsed * 1000;
+        return parsed;
+    }).filter(number => number !== null);
+
+    if (numbers.length === 0) return { min: null, max: null };
+    return { min: Math.min(...numbers), max: Math.max(...numbers) };
+}
+
+function projectLocationMatches(address, selectedLocation, matchAtEnd = false) {
+    const normalizedAddress = normalizeProjectFilterText(address)
+        .replace(/\bq\s*(\d+)\b/g, 'quan $1')
+        .replace(/\bh\s+(?=[a-z])/g, 'huyen ')
+        .replace(/\s+viet nam$/, '');
+    const normalizedSelection = normalizeProjectFilterText(selectedLocation);
+    if (!normalizedSelection) return true;
+    const paddedAddress = ` ${normalizedAddress} `;
+    const matchesSelection = matchAtEnd
+        ? normalizedAddress === normalizedSelection || normalizedAddress.endsWith(` ${normalizedSelection}`)
+        : paddedAddress.includes(` ${normalizedSelection} `);
+    if (matchesSelection) return true;
+
+    const locationCore = normalizedSelection.replace(/^(?:tp|thanh pho|tinh|quan|huyen|thi xa)\s+/, '');
+    if (locationCore.length < 3) return false;
+    return matchAtEnd
+        ? normalizedAddress === locationCore || normalizedAddress.endsWith(` ${locationCore}`)
+        : paddedAddress.includes(` ${locationCore} `);
+}
+
 function setupProjectFilterSort() {
     if (typeof setupProjectFilterSort.cleanup === 'function') {
         setupProjectFilterSort.cleanup();
@@ -1867,8 +1947,14 @@ function setupProjectFilterSort() {
 
     const sortSelect = document.getElementById('project-filter-sort-select');
     const statusSelect = document.getElementById('sidebar-status-filter');
+    const searchInput = document.getElementById('project-search-input');
+    const provinceInput = document.getElementById('province-input');
+    const districtInput = document.getElementById('district-input');
+    const priceSelect = document.getElementById('sidebar-price-filter');
+    const resetButton = document.getElementById('project-filter-reset');
     const grid = document.getElementById('projects-grid');
     const pagination = document.getElementById('projects-pagination');
+    const emptyState = document.getElementById('project-filter-empty-state');
     if (!sortSelect || !grid) return;
 
     // Get all project card items
@@ -1925,33 +2011,54 @@ function setupProjectFilterSort() {
             'status-waiting-construction': 'Chờ xây dựng',
             'status-under-construction': 'Đang xây dựng',
             'status-upcoming-applications': 'Sắp nhận hồ sơ',
-            'status-accepting-applications': 'Đang nhận đơn',
+            'status-accepting-applications': 'Đang nhận hồ sơ',
             'status-handover': 'Bàn giao',
             'status-waiting-handover': 'Bàn giao'
         };
         const statusVal = statusFilters[sortVal] || (statusSelect ? statusSelect.value : 'all');
+        const normalizedStatusVal = normalizeProjectFilterText(statusVal);
+        const searchTerms = normalizeProjectFilterText(searchInput ? searchInput.value : '').split(' ').filter(Boolean);
+        const provinceVal = provinceInput ? provinceInput.value : '';
+        const districtVal = districtInput ? districtInput.value : '';
+        const priceVal = priceSelect ? priceSelect.value : 'all';
 
         // 1. Sort
         if (sortVal === 'latest' || statusFilters[sortVal]) {
             cards.sort((a, b) => (b.dataset.date || '').localeCompare(a.dataset.date || ''));
         } else if (sortVal === 'price-asc') {
             cards.sort((a, b) => {
-                const pA = parseFloat(a.dataset.price) || 999;
-                const pB = parseFloat(b.dataset.price) || 999;
+                const pA = Number(a.dataset.priceMin) || 999;
+                const pB = Number(b.dataset.priceMin) || 999;
                 return pA - pB;
             });
         } else if (sortVal === 'price-desc') {
             cards.sort((a, b) => {
-                const pA = parseFloat(a.dataset.price) || 0;
-                const pB = parseFloat(b.dataset.price) || 0;
+                const pA = Number(a.dataset.priceMin) || 0;
+                const pB = Number(b.dataset.priceMin) || 0;
                 return pB - pA;
             });
         }
 
         // 2. Filter the sorted cards so pagination keeps the selected order.
         const filteredCards = cards.filter(card => {
-            const status = (card.dataset.status || '').trim();
-            return statusVal === 'all' || status === statusVal;
+            const searchableText = normalizeProjectFilterText(`${card.dataset.name || ''} ${card.dataset.owner || ''} ${card.dataset.location || ''}`);
+            const matchesSearch = searchTerms.every(term => searchableText.includes(term));
+            const matchesProvince = projectLocationMatches(card.dataset.location || '', provinceVal, true);
+            const matchesDistrict = projectLocationMatches(card.dataset.location || '', districtVal);
+
+            const normalizedCardStatus = normalizeProjectFilterText(card.dataset.status || '')
+                .replace(/^cho ban giao$/, 'ban giao')
+                .replace(/^da ban giao$/, 'ban giao');
+            const matchesStatus = statusVal === 'all' || normalizedCardStatus === normalizedStatusVal;
+
+            const priceMin = Number(card.dataset.priceMin);
+            const hasPrice = card.dataset.priceMin !== '' && Number.isFinite(priceMin);
+            let matchesPrice = priceVal === 'all';
+            if (priceVal === 'under-15') matchesPrice = hasPrice && priceMin < 15;
+            if (priceVal === '15-20') matchesPrice = hasPrice && priceMin >= 15 && priceMin <= 20;
+            if (priceVal === 'over-20') matchesPrice = hasPrice && priceMin > 20;
+
+            return matchesSearch && matchesProvince && matchesDistrict && matchesStatus && matchesPrice;
         });
         
         // Re-append sorted cards
@@ -1974,16 +2081,38 @@ function setupProjectFilterSort() {
         const totText = document.getElementById('total-count-text');
         if (visText) visText.textContent = filteredCards.length > 0 ? `${pageStart + 1} - ${pageEnd}` : '0';
         if (totText) totText.textContent = filteredCards.length;
+        if (emptyState) emptyState.classList.toggle('hidden', filteredCards.length > 0);
         renderPagination(filteredCards.length > 0 ? totalPages : 0);
     }
 
     const handleFilterChange = () => updateGrid(true);
+    const handleFilterReset = () => {
+        if (searchInput) searchInput.value = '';
+        if (provinceInput) provinceInput.value = '';
+        if (districtInput) {
+            districtInput.value = '';
+            districtInput.setAttribute('disabled', '');
+        }
+        const districtDropdownContainer = document.getElementById('district-dropdown-container');
+        if (districtDropdownContainer) districtDropdownContainer.classList.add('opacity-50');
+        const districtOptions = document.getElementById('district-options');
+        if (districtOptions) districtOptions.innerHTML = '';
+        if (statusSelect) statusSelect.value = 'all';
+        if (priceSelect) priceSelect.value = 'all';
+        if (typeof window._closeAllLocationDropdowns === 'function') window._closeAllLocationDropdowns();
+        updateGrid(true);
+    };
     const handleResize = () => {
         const nextItemsPerPage = getProjectsPerPage();
         if (nextItemsPerPage !== itemsPerPage) updateGrid(true);
     };
 
     sortSelect.addEventListener('change', handleFilterChange);
+    if (searchInput) searchInput.addEventListener('input', handleFilterChange);
+    if (provinceInput) provinceInput.addEventListener('change', handleFilterChange);
+    if (districtInput) districtInput.addEventListener('change', handleFilterChange);
+    if (priceSelect) priceSelect.addEventListener('change', handleFilterChange);
+    if (resetButton) resetButton.addEventListener('click', handleFilterReset);
     if (statusSelect) {
         statusSelect.addEventListener('change', handleFilterChange);
     }
@@ -1991,6 +2120,11 @@ function setupProjectFilterSort() {
 
     setupProjectFilterSort.cleanup = () => {
         sortSelect.removeEventListener('change', handleFilterChange);
+        if (searchInput) searchInput.removeEventListener('input', handleFilterChange);
+        if (provinceInput) provinceInput.removeEventListener('change', handleFilterChange);
+        if (districtInput) districtInput.removeEventListener('change', handleFilterChange);
+        if (priceSelect) priceSelect.removeEventListener('change', handleFilterChange);
+        if (resetButton) resetButton.removeEventListener('click', handleFilterReset);
         if (statusSelect) statusSelect.removeEventListener('change', handleFilterChange);
         window.removeEventListener('resize', handleResize);
     };
@@ -2162,16 +2296,21 @@ function renderProjectsList(container, list) {
         const normalizedStatus = String(p.status || '').toLocaleLowerCase('vi-VN');
         if (p.status === 'Đang xây dựng') statusClass = 'status-dang-xay-dung';
         if (p.status === 'Sắp nhận hồ sơ') statusClass = 'status-sap-nhan-ho-so';
-        if (p.status && (p.status.includes('mở bán') || p.status.includes('nhận đơn'))) statusClass = 'status-dang-nhan-don';
+        if (p.status && (p.status.includes('mở bán') || p.status === 'Đang nhận hồ sơ' || p.status === 'Đang nhận đơn')) statusClass = 'status-dang-nhan-ho-so';
         if (normalizedStatus.includes('bàn giao') || normalizedStatus.includes('hoàn thành')) statusClass = 'status-ban-giao';
         const estimatedPrice = (p.details && p.details.estimatedPrice) ? p.details.estimatedPrice.trim().replace(/\s*\/?\s*m(?:2|²)?\s*$/i, '') : '';
         const compactPrice = value => value.replace(/^\s*(khoảng|từ)\s*/i, '').replace(/triệu(?:\s*đồng)?/gi, 'tr').replace(/\s+/g, ' ').trim();
         const priceLabel = estimatedPrice ? `~${compactPrice(estimatedPrice)}/m²` : (p.price || 'Đang cập nhật');
+        const filterPrice = estimatedPrice || p.price || p.price_per_sqm || '';
+        const priceRange = parseProjectPriceRange(filterPrice);
+        const projectName = p.name || p.title || '';
+        const projectOwner = p.owner || p.investor || '';
+        const projectLocation = (p.details && p.details.address) || p.location || '';
         const detailUrl = `details.html?id=${p.id}`;
         const cardUrl = isWorkingProjectsGrid ? `register_steps.html?id=${p.id}` : detailUrl;
 
         html += `
-            <div class="project-card-item bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/60 shadow-sm hover:shadow-md transition-all flex flex-col justify-between" data-status="${p.status || ''}" data-date="${p.created_at || p.date || ''}" data-price="${p.price || p.price_per_sqm || ''}">
+            <div class="project-card-item bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/60 shadow-sm hover:shadow-md transition-all flex flex-col justify-between" data-name="${escapeHtml(projectName)}" data-owner="${escapeHtml(projectOwner)}" data-location="${escapeHtml(projectLocation)}" data-status="${escapeHtml(p.status || '')}" data-date="${escapeHtml(p.created_at || p.date || '')}" data-price-min="${priceRange.min === null ? '' : priceRange.min}" data-price-max="${priceRange.max === null ? '' : priceRange.max}">
                 <div>
                     <a href="${cardUrl}" class="project-card-thumbnail relative w-full rounded-lg overflow-hidden mb-3 bg-surface-container block">
                         <img src="${p.imageUrl || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80'}" alt="${p.name || p.title}" class="w-full h-full object-cover">
@@ -2627,7 +2766,7 @@ window.addProjectToCompareList = function(id, title, location, status, progress)
     let statusClass = 'status-cho-xay-dung';
     if (projectStatus === 'Đang xây dựng') statusClass = 'status-dang-xay-dung';
     if (projectStatus === 'Sắp nhận hồ sơ') statusClass = 'status-sap-nhan-ho-so';
-    if (projectStatus.includes('nhận đơn')) statusClass = 'status-dang-nhan-don';
+    if (projectStatus === 'Đang nhận hồ sơ' || projectStatus === 'Đang nhận đơn') statusClass = 'status-dang-nhan-ho-so';
     if (normalizedProjectStatus.includes('bàn giao') || normalizedProjectStatus.includes('hoàn thành')) statusClass = 'status-ban-giao';
 
     const card = document.createElement('div');

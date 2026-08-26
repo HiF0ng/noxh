@@ -9,12 +9,17 @@
     }
 
     const BASE_URL = `${config.url}/rest/v1`;
-    const normalizeProjectStatus = status => (status === 'Chờ bàn giao' || status === 'Đã bàn giao') ? 'Bàn giao' : status;
+    const normalizeProjectStatus = status => {
+        if (status === 'Chờ bàn giao' || status === 'Đã bàn giao') return 'Bàn giao';
+        if (status === 'Đang nhận đơn') return 'Đang nhận hồ sơ';
+        return status;
+    };
 
     const AUTH_SESSION_KEY = 'noxh_auth_session';
     const ADMIN_AUTH_SESSION_KEY = 'noxh_admin_auth_session';
     let authContext = 'user';
     let refreshInFlight = null;
+    let legacyProjectStatusMigrationDone = false;
     const isAdminContext = () => authContext === 'admin';
     const getSessionKey = () => isAdminContext() ? ADMIN_AUTH_SESSION_KEY : AUTH_SESSION_KEY;
     const getAuthSession = () => {
@@ -333,6 +338,7 @@
                         owner: db.investor,
                         status: normalizeProjectStatus(db.status),
                         progress: db.progress,
+                        projectCode: db.details_json?.projectCode || '',
                         desc: db.details_json?.desc || '',
                         imageUrl: db.details_json?.mainImageUrl || db.details_json?.imageUrl || db.details_json?.image_url || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80',
                         price: db.details_json?.price || 'Từ 15tr/m²',
@@ -362,6 +368,7 @@
                     owner: db.investor,
                     status: normalizeProjectStatus(db.status),
                     progress: db.progress,
+                    projectCode: db.details_json?.projectCode || '',
                     desc: db.details_json?.desc || '',
                     imageUrl: db.details_json?.mainImageUrl || '',
                     details: db.details_json || {},
@@ -383,6 +390,24 @@
             } catch (err) {
                 console.error(err);
                 return 0;
+            }
+        },
+
+        async migrateLegacyProjectStatuses() {
+            if (legacyProjectStatusMigrationDone) return true;
+            try {
+                const legacyStatus = 'Đang nhận đơn';
+                const res = await fetch(`${BASE_URL}/projects?status=eq.${encodeURIComponent(legacyStatus)}`, {
+                    method: 'PATCH',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ status: 'Đang nhận hồ sơ' })
+                });
+                if (!res.ok) throw new Error('Failed to migrate legacy project statuses');
+                legacyProjectStatusMigrationDone = true;
+                return true;
+            } catch (err) {
+                console.error(err);
+                return false;
             }
         },
 
@@ -424,6 +449,22 @@
                     body: JSON.stringify(payload)
                 });
                 if (!res.ok) throw new Error('Failed to update project');
+                const data = await res.json();
+                return data[0] || data;
+            } catch (err) {
+                console.error(err);
+                return null;
+            }
+        },
+
+        async updateProjectDetails(id, details) {
+            try {
+                const res = await fetch(`${BASE_URL}/projects?id=eq.${encodeURIComponent(id)}`, {
+                    method: 'PATCH',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ details_json: details || {} })
+                });
+                if (!res.ok) throw new Error('Failed to update project details');
                 const data = await res.json();
                 return data[0] || data;
             } catch (err) {
@@ -478,7 +519,7 @@
                 return (await res.json()).map(row => {
                     const db = row.projects;
                     if (!db) return null;
-                    return { id: db.id, name: db.title, location: db.location, owner: db.investor, status: normalizeProjectStatus(db.status), progress: db.progress, desc: db.details_json?.desc || '', imageUrl: db.details_json?.mainImageUrl || '', details: db.details_json || {}, created_at: db.created_at };
+                    return { id: db.id, name: db.title, location: db.location, owner: db.investor, status: normalizeProjectStatus(db.status), progress: db.progress, projectCode: db.details_json?.projectCode || '', desc: db.details_json?.desc || '', imageUrl: db.details_json?.mainImageUrl || '', details: db.details_json || {}, created_at: db.created_at };
                 }).filter(Boolean);
             } catch (err) {
                 console.error('Fetch saved projects error:', err);
@@ -518,7 +559,7 @@
                 return (await res.json()).map(row => {
                     const db = row.projects;
                     if (!db) return null;
-                    return { id: db.id, name: db.title, location: db.location, owner: db.investor, status: normalizeProjectStatus(db.status), progress: db.progress, desc: db.details_json?.desc || '', imageUrl: db.details_json?.mainImageUrl || '', details: db.details_json || {}, created_at: db.created_at };
+                    return { id: db.id, name: db.title, location: db.location, owner: db.investor, status: normalizeProjectStatus(db.status), progress: db.progress, projectCode: db.details_json?.projectCode || '', desc: db.details_json?.desc || '', imageUrl: db.details_json?.mainImageUrl || '', details: db.details_json || {}, created_at: db.created_at };
                 }).filter(Boolean);
             } catch (err) {
                 console.error('Fetch followed projects error:', err);

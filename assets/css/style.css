@@ -268,8 +268,8 @@ body {
     color: #ffffff !important;
 }
 
-/* 3. Đang nhận đơn: Nền xanh biển, chữ trắng */
-.status-dang-nhan-don, .status-dangnhandon, .status-chuanbithuhoso {
+/* 3. Đang nhận hồ sơ: Nền xanh biển, chữ trắng */
+.status-dang-nhan-ho-so, .status-dang-nhan-don, .status-dangnhandon, .status-chuanbithuhoso {
     background-color: #2563eb !important;
     color: #ffffff !important;
 }
@@ -471,8 +471,8 @@ html {
     color: #ffffff !important;
 }
 
-/* 3. Đang nhận đơn: Nền xanh biển, chữ trắng */
-.status-dang-nhan-don, .status-dangnhandon, .status-chuanbithuhoso {
+/* 3. Đang nhận hồ sơ: Nền xanh biển, chữ trắng */
+.status-dang-nhan-ho-so, .status-dang-nhan-don, .status-dangnhandon, .status-chuanbithuhoso {
     background-color: #2563eb !important;
     color: #ffffff !important;
 }

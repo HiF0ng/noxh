@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>Danh sách Dự án - Vietnam Housing</title>
-<link rel="stylesheet" href="assets/css/style.css?v=25">
+<link rel="stylesheet" href="assets/css/style.css?v=26">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script src="assets/js/tailwind-config.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
@@ -44,7 +44,7 @@
 <!-- Search -->
 <div class="relative">
 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
-<input class="w-full pl-10 pr-3 py-1.5 md:py-2 bg-surface rounded-lg border border-outline-variant focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md text-on-surface outline-none transition-shadow" placeholder="Tên Dự án..." type="text">
+<input id="project-search-input" class="w-full pl-10 pr-3 py-1.5 md:py-2 bg-surface rounded-lg border border-outline-variant focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md text-on-surface outline-none transition-shadow" placeholder="Tên dự án, chủ đầu tư, địa chỉ..." type="search" autocomplete="off" aria-label="Tìm theo tên dự án, chủ đầu tư hoặc địa chỉ">
 </div>
 <!-- Tỉnh/Thành -->
 <div class="flex flex-col gap-1 md:gap-base">
@@ -84,20 +84,24 @@
 <option value="Chờ xây dựng">Chờ xây dựng</option>
 <option value="Đang xây dựng">Đang xây dựng</option>
 <option value="Sắp nhận hồ sơ">Sắp nhận hồ sơ</option>
-<option value="Đang nhận đơn">Đang nhận đơn</option>
+<option value="Đang nhận hồ sơ">Đang nhận hồ sơ</option>
 <option value="Bàn giao">Bàn giao</option>
 </select>
 </div>
 <!-- Mức giá -->
 <div class="flex flex-col gap-1 md:gap-base">
 <label class="font-label-sm text-label-sm text-on-surface-variant">Khoảng giá</label>
-<select class="w-full px-3 py-1.5 md:py-2 bg-surface rounded-lg border border-outline-variant focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md text-on-surface outline-none transition-shadow appearance-none">
-<option>Tất cả</option>
-<option>Dưới 15 triệu/m²</option>
-<option>15 - 20 triệu/m²</option>
-<option>Trên 20 triệu/m²</option>
+<select id="sidebar-price-filter" class="w-full px-3 py-1.5 md:py-2 bg-surface rounded-lg border border-outline-variant focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md text-on-surface outline-none transition-shadow appearance-none">
+<option value="all">Tất cả</option>
+<option value="under-15">Dưới 15 triệu/m²</option>
+<option value="15-20">15 - 20 triệu/m²</option>
+<option value="over-20">Trên 20 triệu/m²</option>
 </select>
 </div>
+<button id="project-filter-reset" type="button" class="w-full mt-1 px-4 py-2.5 rounded-lg border border-primary text-primary font-semibold text-sm hover:bg-primary hover:text-on-primary focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">restart_alt</span>
+Đặt lại bộ lọc
+</button>
 </div>
 </aside>
 <!-- Project Grid Area -->
@@ -167,6 +171,11 @@
         <div class="skeleton-shimmer h-8 w-full rounded-full mt-3"></div>
     </div>
 </div>
+<div id="project-filter-empty-state" class="hidden py-12 px-6 text-center bg-surface-container-low rounded-2xl border border-dashed border-outline-variant" role="status" aria-live="polite">
+<span class="material-symbols-outlined text-4xl text-outline mb-2">search_off</span>
+<h3 class="font-bold text-on-surface mb-1">Không tìm thấy dự án phù hợp</h3>
+<p class="text-sm text-on-surface-variant">Hãy thử từ khóa hoặc điều kiện lọc khác.</p>
+</div>
 <nav id="projects-pagination" class="hidden flex flex-wrap items-center justify-center gap-2 pt-4" aria-label="Phân trang dự án"></nav>
 </section>
 </main>
@@ -186,8 +195,8 @@
 
 <script src="assets/js/location-data.js"></script>
 <script src="assets/js/supabase-config.js"></script>
-<script src="assets/js/supabase-service.js?v=14"></script>
-<script src="assets/js/main.js?v=61"></script>
+<script src="assets/js/supabase-service.js?v=16"></script>
+<script src="assets/js/main.js?v=65"></script>
 </body></html>
 
 

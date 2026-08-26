@@ -1114,7 +1114,155 @@ window.handleAdminLogout = function() {
     var pendingDeleteProjectIndex = null;
     var holdTimer = null;
     var isEditingProjectSession = false;
-    var currentEditingProjectIndex = null;
+    var currentEditingProjectId = null;
+
+    function clearProjectFileInputs() {
+        var projectFormPage = document.getElementById('page-projects-new');
+        if (!projectFormPage) return;
+        projectFormPage.querySelectorAll('input[type="file"]').forEach(function(input) {
+            input.value = '';
+        });
+    }
+
+    function normalizeProjectCode(value) {
+        var match = String(value || '').trim().match(/^PRJ0*(\d+)$/i);
+        if (!match) return '';
+        var number = parseInt(match[1], 10);
+        return number > 0 ? 'PRJ' + number : '';
+    }
+
+    function getStoredProjectCode(project) {
+        return normalizeProjectCode((project && project.projectCode) || (project && project.details && project.details.projectCode));
+    }
+
+    function getProjectCodeNumber(project) {
+        var code = getStoredProjectCode(project);
+        return code ? parseInt(code.slice(3), 10) : Number.MAX_SAFE_INTEGER;
+    }
+
+    function sortProjectsByProjectCode(items) {
+        return (Array.isArray(items) ? items : []).sort(function(a, b) {
+            var codeDifference = getProjectCodeNumber(a) - getProjectCodeNumber(b);
+            if (codeDifference !== 0) return codeDifference;
+            return String(a.created_at || '').localeCompare(String(b.created_at || '')) || String(a.id || '').localeCompare(String(b.id || ''));
+        });
+    }
+
+    function getNextProjectCode() {
+        var highestCode = projectsList.reduce(function(highest, project) {
+            var codeNumber = getProjectCodeNumber(project);
+            return Number.isFinite(codeNumber) && codeNumber !== Number.MAX_SAFE_INTEGER ? Math.max(highest, codeNumber) : highest;
+        }, 0);
+        return 'PRJ' + (highestCode + 1);
+    }
+
+    async function ensurePersistentProjectCodes(items) {
+        var projectItems = Array.isArray(items) ? items : [];
+        var usedCodes = new Set();
+        var projectsWithoutCode = [];
+        var highestCode = 0;
+
+        projectItems.forEach(function(project) {
+            var code = getStoredProjectCode(project);
+            if (!code || usedCodes.has(code)) {
+                projectsWithoutCode.push(project);
+                return;
+            }
+            usedCodes.add(code);
+            highestCode = Math.max(highestCode, parseInt(code.slice(3), 10));
+            project.projectCode = code;
+            project.details = Object.assign({}, project.details || {}, { projectCode: code });
+        });
+
+        for (var i = 0; i < projectsWithoutCode.length; i++) {
+            var project = projectsWithoutCode[i];
+            var projectCode;
+            do {
+                highestCode += 1;
+                projectCode = 'PRJ' + highestCode;
+            } while (usedCodes.has(projectCode));
+
+            var details = Object.assign({}, project.details || {}, { projectCode: projectCode });
+            var savedProject = await window.SupabaseService.updateProjectDetails(project.id, details);
+            if (!savedProject) throw new Error('Không thể gán mã cố định cho dự án ' + (project.name || project.id));
+
+            usedCodes.add(projectCode);
+            project.projectCode = projectCode;
+            project.details = details;
+        }
+
+        return sortProjectsByProjectCode(projectItems);
+    }
+
+    async function uploadProjectImageOrThrow(projectId, file, group) {
+        if (!file) return '';
+        var uploadedUrl = await window.SupabaseService.uploadProjectImage(projectId, file, group);
+        if (!uploadedUrl) throw new Error('Không thể tải ảnh "' + (file.name || 'không rõ tên') + '" lên kho lưu trữ.');
+        return uploadedUrl;
+    }
+
+    function normalizeAdminProjectFilterText(value) {
+        return removeAccents(String(value || ''))
+            .replace(/đ/g, 'd')
+            .replace(/[^a-z0-9\s]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function getAdminProjectProvince(project) {
+        var location = String((project && project.details && project.details.address) || (project && project.location) || '').trim();
+        if (!location) return '';
+
+        var normalizedLocation = normalizeAdminProjectFilterText(location)
+            .replace(/\s+viet nam$/, '')
+            .replace(/(?:^|\s)(?:tp\s*hcm|tphcm|sai gon)$/, ' ho chi minh')
+            .trim();
+
+        if (typeof locationData !== 'undefined') {
+            var provinces = Object.keys(locationData).map(function(province) {
+                var normalizedProvince = normalizeAdminProjectFilterText(province);
+                var provinceCore = normalizedProvince.replace(/^(?:tp|thanh pho|tinh)\s+/, '');
+                return { name: province, normalized: normalizedProvince, core: provinceCore };
+            }).sort(function(a, b) { return b.core.length - a.core.length; });
+
+            var matchedProvince = provinces.find(function(province) {
+                return normalizedLocation === province.normalized ||
+                    normalizedLocation.endsWith(' ' + province.normalized) ||
+                    normalizedLocation === province.core ||
+                    normalizedLocation.endsWith(' ' + province.core);
+            });
+            if (matchedProvince) return matchedProvince.name;
+        }
+
+        var addressParts = location.split(',').map(function(part) { return part.trim(); }).filter(Boolean);
+        return (addressParts[addressParts.length - 1] || location)
+            .replace(/^(?:Tỉnh|Thành phố|TP\.?)\s+/i, '')
+            .trim();
+    }
+
+    function getAdminProjectStatus(project) {
+        if (isDraftProject(project)) return 'Bản nháp';
+        var status = String((project && project.status) || '').trim();
+        if (status === 'Đang nhận đơn') return 'Đang nhận hồ sơ';
+        return status === 'Chờ bàn giao' || status === 'Đã bàn giao' ? 'Bàn giao' : status;
+    }
+
+    function populateAdminProjectProvinceFilter() {
+        var locSelect = document.getElementById('admin-project-filter-location');
+        if (!locSelect) return;
+
+        var selectedProvince = locSelect.value;
+        var provinces = projectsList.map(getAdminProjectProvince).filter(Boolean).filter(function(province, index, list) {
+            return list.indexOf(province) === index;
+        }).sort(function(a, b) { return a.localeCompare(b, 'vi'); });
+
+        locSelect.innerHTML = '';
+        locSelect.appendChild(new Option('Tất cả Tỉnh/Thành phố', ''));
+        provinces.forEach(function(province) {
+            locSelect.appendChild(new Option(province, province));
+        });
+        locSelect.value = provinces.indexOf(selectedProvince) !== -1 ? selectedProvince : '';
+    }
 
     function resetProjectNewForm() {
         var titleEl = document.getElementById('prj-form-header-title');
@@ -1131,6 +1279,7 @@ window.handleAdminLogout = function() {
         var locationMapPlaceholder = document.getElementById('location-map-placeholder');
         var quickInputIds = ['prj-input-area', 'prj-input-scale', 'prj-input-handover', 'prj-input-estimated-price'];
 
+        clearProjectFileInputs();
         if (titleEl) titleEl.textContent = 'Thông tin chi tiết Dự án';
         if (nameInp) nameInp.value = '';
         if (ownerInp) ownerInp.value = '';
@@ -1153,14 +1302,14 @@ window.handleAdminLogout = function() {
         var floorplansContainer = document.getElementById('floorplans-container'); if (floorplansContainer) { floorplansContainer.innerHTML = ''; floorplansContainer.appendChild(createRestoredFloorplanItem({ url: '', note: '' })); }
 
         isEditingProjectSession = false;
-        currentEditingProjectIndex = null;
+        currentEditingProjectId = null;
     }
 
     function getStatusPillClass(status) {
         if (status === 'Chờ xây dựng') return 'status-cho-xay-dung';
         if (status === 'Đang xây dựng') return 'status-dang-xay-dung';
         if (status === 'Sắp nhận hồ sơ') return 'status-sap-nhan-ho-so';
-        if (status === 'Đang nhận đơn') return 'status-dang-nhan-don';
+        if (status === 'Đang nhận hồ sơ' || status === 'Đang nhận đơn') return 'status-dang-nhan-ho-so';
         if (status === 'Bàn giao' || status === 'Chờ bàn giao' || status === 'Đã bàn giao') return 'status-ban-giao';
         return 'status-dang-xay-dung';
     }
@@ -1170,11 +1319,7 @@ window.handleAdminLogout = function() {
     }
 
     function getProjectDisplayId(project) {
-        var regularProjects = projectsList.filter(function(item) { return !isDraftProject(item); });
-        var normalizedTitle = (project.name || '').trim().toLocaleLowerCase('vi-VN');
-        var matchingRegular = regularProjects.find(function(item) { return (item.name || '').trim().toLocaleLowerCase('vi-VN') === normalizedTitle; });
-        var baseIndex = matchingRegular ? regularProjects.indexOf(matchingRegular) + 1 : projectsList.indexOf(project) + 1;
-        return 'PRJ' + baseIndex + (isDraftProject(project) ? '-DEMO' : '');
+        return getStoredProjectCode(project) || 'Chưa gán';
     }
 
     function createRestoredGalleryItem(url) {
@@ -1206,12 +1351,10 @@ window.handleAdminLogout = function() {
 
     function openProjectEdit(idOrName) {
         var prj = null;
-        var idx = -1;
 
         for (var i = 0; i < projectsList.length; i++) {
             if (projectsList[i].id === idOrName || projectsList[i].name === idOrName) {
                 prj = projectsList[i];
-                idx = i;
                 break;
             }
         }
@@ -1223,7 +1366,8 @@ window.handleAdminLogout = function() {
         }
 
         isEditingProjectSession = true;
-        currentEditingProjectIndex = idx;
+        currentEditingProjectId = prj.id;
+        clearProjectFileInputs();
 
         var titleEl = document.getElementById('prj-form-header-title');
         var nameInp = document.getElementById('prj-input-name');
@@ -1281,14 +1425,19 @@ window.handleAdminLogout = function() {
         var tbody = document.getElementById('admin-projects-tbody');
         if (!tbody) return;
 
-        if (!items || items.length === 0) {
+        var renderedItems = Array.isArray(items) ? items : projectsList;
+        var countLabel = document.getElementById('admin-project-count');
+        if (countLabel) {
+            countLabel.textContent = 'Hiển thị ' + renderedItems.length + ' trong tổng số ' + projectsList.length + ' dự án';
+        }
+
+        if (renderedItems.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-on-surface-variant text-sm font-medium">Không tìm thấy dự án nào phù hợp.</td></tr>';
             return;
         }
 
         var html = '';
-        items.forEach(function(prj) {
-            var realIdx = projectsList.indexOf(prj);
+        renderedItems.forEach(function(prj) {
             var shortId = getProjectDisplayId(prj);
             var isDraft = isDraftProject(prj);
             var displayStatus = isDraft ? 'Bản nháp' : prj.status;
@@ -1355,34 +1504,15 @@ window.handleAdminLogout = function() {
         var locSelect = document.getElementById('admin-project-filter-location');
         var statusSelect = document.getElementById('admin-project-filter-status');
 
-        var query = searchInput ? removeAccents(searchInput.value.trim().toLowerCase()) : '';
+        var searchTerms = searchInput ? normalizeAdminProjectFilterText(searchInput.value).split(' ').filter(Boolean) : [];
         var locVal = locSelect ? locSelect.value.trim() : '';
         var statusVal = statusSelect ? statusSelect.value.trim() : '';
 
         var results = projectsList.filter(function(prj) {
-            var matchSearch = true;
-            if (query) {
-                var normID = removeAccents(prj.id.toLowerCase());
-                var normShortID = removeAccents(getProjectDisplayId(prj).toLowerCase());
-                var normName = removeAccents(prj.name.toLowerCase());
-                var normLoc = removeAccents(prj.location.toLowerCase());
-                var normOwner = removeAccents(prj.owner.toLowerCase());
-                matchSearch = normID.indexOf(query) !== -1 ||
-                              normShortID.indexOf(query) !== -1 ||
-                              normName.indexOf(query) !== -1 ||
-                              normLoc.indexOf(query) !== -1 ||
-                              normOwner.indexOf(query) !== -1;
-            }
-
-            var matchLoc = true;
-            if (locVal) {
-                matchLoc = (prj.location === locVal);
-            }
-
-            var matchStatus = true;
-            if (statusVal) {
-                matchStatus = (prj.status === statusVal);
-            }
+            var searchableText = normalizeAdminProjectFilterText((prj.name || '') + ' ' + (prj.owner || prj.investor || ''));
+            var matchSearch = searchTerms.every(function(term) { return searchableText.indexOf(term) !== -1; });
+            var matchLoc = !locVal || getAdminProjectProvince(prj) === locVal;
+            var matchStatus = !statusVal || getAdminProjectStatus(prj) === statusVal;
 
             return matchSearch && matchLoc && matchStatus;
         });
@@ -1439,7 +1569,8 @@ window.handleAdminLogout = function() {
                         await window.SupabaseService.deleteProject(pId);
                         
                         // Reload from Supabase
-                        projectsList = await window.SupabaseService.getProjects() || [];
+                        projectsList = sortProjectsByProjectCode(await window.SupabaseService.getProjects() || []);
+                        populateAdminProjectProvinceFilter();
                         closeModal();
                         handleProjectsFilterSearch();
                     } catch (err) {
@@ -1478,6 +1609,8 @@ window.handleAdminLogout = function() {
         var cancelBtn = document.getElementById('btn-cancel-project-form');
         var saveBtn = document.getElementById('btn-save-project-form');
         var draftBtn = document.getElementById('btn-save-project-draft');
+
+        populateAdminProjectProvinceFilter();
 
         if (searchInput) searchInput.oninput = handleProjectsFilterSearch;
         if (locSelect) locSelect.onchange = handleProjectsFilterSearch;
@@ -1527,50 +1660,58 @@ window.handleAdminLogout = function() {
                 activeButton.disabled = true;
 
                 try {
-                    var existingDetails = (currentEditingProjectIndex !== null && projectsList[currentEditingProjectIndex] && projectsList[currentEditingProjectIndex].details) || {};
+                    var editingProject = currentEditingProjectId ? projectsList.find(function(project) { return project.id === currentEditingProjectId; }) : null;
+                    if (currentEditingProjectId && !editingProject) throw new Error('Dự án đang chỉnh sửa không còn trong danh sách. Vui lòng tải lại trang.');
+
+                    var existingDetails = (editingProject && editingProject.details) || {};
                     var isPublishingDemo = !isDraft && !!existingDetails.isDraft;
+                    var projectCode = getStoredProjectCode(editingProject) || getNextProjectCode();
+                    var mainImageInput = document.getElementById('prj-main-image-input');
+                    var mapImageInput = document.getElementById('location-map-file-input');
+                    var mainFile = mainImageInput && mainImageInput.files ? mainImageInput.files[0] : null;
+                    var mapFile = mapImageInput && mapImageInput.files ? mapImageInput.files[0] : null;
+                    var galleryItems = Array.from(document.querySelectorAll('#gallery-container .gallery-item'));
+                    var floorplanItems = Array.from(document.querySelectorAll('#floorplans-container .floorplan-item'));
                     var projectData = {
                         name: nameVal,
                         owner: ownerInp ? ownerInp.value.trim() : 'Chủ đầu tư mới',
                         status: statusSel ? statusSel.value : 'Chờ xây dựng',
                         location: addressInp && addressInp.value.trim() ? addressInp.value.trim() : 'Hà Nội',
                         desc: descTxt ? descTxt.value : '',
-                        details: Object.assign({}, existingDetails, { desc: descTxt ? descTxt.value : '', address: addressInp ? addressInp.value.trim() : '', mapsUrl: mapsInp ? mapsInp.value.trim() : '', showFloorplans: floorplansToggle ? floorplansToggle.checked : true, showLocation: locationToggle ? locationToggle.checked : true, area: areaInp ? areaInp.value.trim() : '', scale: scaleInp ? scaleInp.value.trim() : '', handover: handoverInp ? handoverInp.value.trim() : '', estimatedPrice: estimatedPriceInp ? estimatedPriceInp.value.trim() : '', amenities: Array.from(document.querySelectorAll('#page-projects-new input[placeholder="Thêm tiện ích..."]')).filter(input => input.previousElementSibling && input.previousElementSibling.checked && input.value.trim()).map(input => input.value.trim()), statusTimeline: Array.from(document.querySelectorAll('#project-status-notes > div')).map(function(item) { return { label: item.querySelector('label span').textContent.trim(), checked: item.querySelector('input[type="checkbox"]').checked, note: item.querySelector('input[type="text"]').value.trim() }; }), isDraft: !!isDraft })
+                        details: Object.assign({}, existingDetails, { projectCode: projectCode, desc: descTxt ? descTxt.value : '', address: addressInp ? addressInp.value.trim() : '', mapsUrl: mapsInp ? mapsInp.value.trim() : '', showFloorplans: floorplansToggle ? floorplansToggle.checked : true, showLocation: locationToggle ? locationToggle.checked : true, area: areaInp ? areaInp.value.trim() : '', scale: scaleInp ? scaleInp.value.trim() : '', handover: handoverInp ? handoverInp.value.trim() : '', estimatedPrice: estimatedPriceInp ? estimatedPriceInp.value.trim() : '', amenities: Array.from(document.querySelectorAll('#page-projects-new input[placeholder="Thêm tiện ích..."]')).filter(input => input.previousElementSibling && input.previousElementSibling.checked && input.value.trim()).map(input => input.value.trim()), statusTimeline: Array.from(document.querySelectorAll('#project-status-notes > div')).map(function(item) { return { label: item.querySelector('label span').textContent.trim(), checked: item.querySelector('input[type="checkbox"]').checked, note: item.querySelector('input[type="text"]').value.trim() }; }), isDraft: !!isDraft })
                     };
 
                     var savedProject;
-                    if (currentEditingProjectIndex !== null && projectsList[currentEditingProjectIndex]) {
+                    if (editingProject) {
                         // Update
-                        var pId = projectsList[currentEditingProjectIndex].id;
-                        savedProject = await window.SupabaseService.updateProject(pId, projectData);
+                        savedProject = await window.SupabaseService.updateProject(editingProject.id, projectData);
                     } else {
                         // Create
                         savedProject = await window.SupabaseService.addProject(projectData);
                     }
 
-                    var projectId = (savedProject && savedProject.id) || (currentEditingProjectIndex !== null && projectsList[currentEditingProjectIndex] && projectsList[currentEditingProjectIndex].id);
+                    if (!savedProject) throw new Error('Không thể lưu thông tin dự án vào cơ sở dữ liệu.');
+                    var projectId = savedProject.id || (editingProject && editingProject.id);
                     if (!projectId) throw new Error('Không nhận được mã dự án sau khi lưu');
-                    var mainFile = document.getElementById('prj-main-image-input').files[0];
-                    var galleryItems = Array.from(document.querySelectorAll('#gallery-container .gallery-item'));
-                    var floorplanItems = Array.from(document.querySelectorAll('#floorplans-container .floorplan-item'));
-                    var mainImageUrl = mainFile ? await window.SupabaseService.uploadProjectImage(projectId, mainFile, 'main') : (existingDetails.mainImageUrl || '');
-                    var gallery = (await Promise.all(galleryItems.map(async function(item) { var file = item.querySelector('.gallery-file-input').files[0]; return file ? await window.SupabaseService.uploadProjectImage(projectId, file, 'gallery') : (item.dataset.existingUrl || null); }))).filter(Boolean);
-                    var floorplans = (await Promise.all(floorplanItems.map(async item => { var file = item.querySelector('.floorplan-file-input').files[0]; var url = file ? await window.SupabaseService.uploadProjectImage(projectId, file, 'floorplans') : item.dataset.existingUrl; return url ? { url: url, note: item.querySelector('input[type="text"]').value.trim() } : null; }))).filter(Boolean);
-                    var mapFile = document.getElementById('location-map-file-input').files[0];
-                    var locationMapUrl = mapFile ? await window.SupabaseService.uploadProjectImage(projectId, mapFile, 'location') : (existingDetails.locationMapUrl || '');
+                    var mainImageUrl = mainFile ? await uploadProjectImageOrThrow(projectId, mainFile, 'main') : (existingDetails.mainImageUrl || '');
+                    var gallery = (await Promise.all(galleryItems.map(async function(item) { var input = item.querySelector('.gallery-file-input'); var file = input && input.files ? input.files[0] : null; return file ? await uploadProjectImageOrThrow(projectId, file, 'gallery') : (item.dataset.existingUrl || null); }))).filter(Boolean);
+                    var floorplans = (await Promise.all(floorplanItems.map(async function(item) { var input = item.querySelector('.floorplan-file-input'); var file = input && input.files ? input.files[0] : null; var url = file ? await uploadProjectImageOrThrow(projectId, file, 'floorplans') : item.dataset.existingUrl; return url ? { url: url, note: item.querySelector('input[type="text"]').value.trim() } : null; }))).filter(Boolean);
+                    var locationMapUrl = mapFile ? await uploadProjectImageOrThrow(projectId, mapFile, 'location') : (existingDetails.locationMapUrl || '');
                     projectData.details = Object.assign(projectData.details, { mainImageUrl: mainImageUrl, gallery: gallery, floorplans: floorplans, locationMapUrl: locationMapUrl });
-                    await window.SupabaseService.updateProject(projectId, projectData);
+                    var updatedProject = await window.SupabaseService.updateProject(projectId, projectData);
+                    if (!updatedProject) throw new Error('Không thể hoàn tất việc lưu ảnh của dự án.');
 
                     // Reload from Supabase
-                    projectsList = await window.SupabaseService.getProjects() || [];
+                    projectsList = sortProjectsByProjectCode(await window.SupabaseService.getProjects() || []);
+                    populateAdminProjectProvinceFilter();
                     
                     resetProjectNewForm();
                     navigateTo('projects');
-                    renderProjectsTable(projectsList);
+                    handleProjectsFilterSearch();
                     alert(isDraft ? 'Đã lưu dự án dưới dạng bản nháp.' : (isPublishingDemo ? 'Đã xuất bản dự án DEMO. Hậu tố -DEMO đã được gỡ.' : 'Đã lưu dự án thành công.'));
                 } catch (err) {
                     console.error('Error saving project:', err);
-                    alert('Có lỗi xảy ra khi lưu dự án!');
+                    alert(err && err.message ? err.message : 'Có lỗi xảy ra khi lưu dự án!');
                 } finally {
                     activeButton.innerHTML = originalText;
                     activeButton.disabled = false;
@@ -1593,7 +1734,7 @@ window.handleAdminLogout = function() {
 
         initDeleteHoldModal();
         initProjectFormInteractiveFeatures();
-        renderProjectsTable(projectsList);
+        handleProjectsFilterSearch();
     }
 
     window.previewMainImage = function(input) {
@@ -2764,13 +2905,20 @@ window.handleAdminLogout = function() {
              .replace(/'/g, "&#039;");
     }
 
+    var isLoadingAdminData = false;
+
     async function loadAllAdminData() {
+        if (isLoadingAdminData) return;
+        isLoadingAdminData = true;
         if (window.SupabaseService) {
             try {
                 let allUsers = await SupabaseService.getUsers() || [];
                 usersList = allUsers.filter(u => u.role !== 'admin');
                 
+                await SupabaseService.migrateLegacyProjectStatuses();
                 projectsList = await SupabaseService.getProjects() || [];
+                projectsList = await ensurePersistentProjectCodes(projectsList);
+                populateAdminProjectProvinceFilter();
                 guidesList = (await SupabaseService.getDocuments() || []).filter(isGuideDocument);
                 // newsList = await SupabaseService.getNews() || [];
                 
@@ -2787,7 +2935,7 @@ window.handleAdminLogout = function() {
                 
                 // Cập nhật bảng và thống kê
                 renderUserTable();
-                renderProjectsTable(projectsList);
+                handleProjectsFilterSearch();
                 renderGuideList();
                 
                 isDataLoaded = true;
@@ -2807,7 +2955,11 @@ window.handleAdminLogout = function() {
                 }
             } catch(e) {
                 console.error('Error loading data from Supabase:', e);
+            } finally {
+                isLoadingAdminData = false;
             }
+        } else {
+            isLoadingAdminData = false;
         }
     }
 

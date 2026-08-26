@@ -30,10 +30,21 @@ CREATE TABLE IF NOT EXISTS public.projects (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- projectCode is stored inside details_json so existing deployments do not need
+-- a new table column. Once assigned (PRJ1, PRJ2, ...), it belongs to that row.
+CREATE UNIQUE INDEX IF NOT EXISTS projects_project_code_unique_idx
+ON public.projects ((details_json->>'projectCode'))
+WHERE COALESCE(details_json->>'projectCode', '') <> '';
+
 -- Normalize the legacy final-stage labels to the current project status contract.
 UPDATE public.projects
 SET status = 'Bàn giao'
 WHERE status IN ('Chờ bàn giao', 'Đã bàn giao');
+
+-- Normalize the legacy accepting-applications label.
+UPDATE public.projects
+SET status = 'Đang nhận hồ sơ'
+WHERE status = 'Đang nhận đơn';
 
 -- Dự án mà mỗi người dùng đã lưu.
 CREATE TABLE IF NOT EXISTS public.user_saved_projects (

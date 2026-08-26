@@ -56,7 +56,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   setText('#register-investor-inline', project.investor || project.owner);
   setText('#register-scale', project.scale || details.scale);
   setText('#register-handover', project.handover || details.handover);
-  const projectStatus = (project.status === 'Chờ bàn giao' || project.status === 'Đã bàn giao') ? 'Bàn giao' : project.status;
+  const projectStatus = project.status === 'Đang nhận đơn'
+    ? 'Đang nhận hồ sơ'
+    : ((project.status === 'Chờ bàn giao' || project.status === 'Đã bàn giao') ? 'Bàn giao' : project.status);
   setText('#register-status', projectStatus);
   setText('#register-status-inline', projectStatus);
 

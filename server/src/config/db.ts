@@ -14,6 +14,7 @@ export interface User {
 
 export interface Project {
   id: string;
+  projectCode: string;
   title: string;
   location: string;
   investor: string;
@@ -70,7 +71,17 @@ let dbData: DatabaseSchema = {
 };
 
 export function normalizeProjectStatus(status: string): string {
-  return status === 'Chờ bàn giao' || status === 'Đã bàn giao' ? 'Bàn giao' : status;
+  if (status === 'Chờ bàn giao' || status === 'Đã bàn giao') return 'Bàn giao';
+  if (status === 'Đang nhận đơn') return 'Đang nhận hồ sơ';
+  return status;
+}
+
+export function getNextProjectCode(projects: Project[]): string {
+  const highestCode = projects.reduce((highest, project) => {
+    const match = String(project.projectCode || project.detailsJson?.projectCode || '').match(/^PRJ0*(\d+)$/i);
+    return match ? Math.max(highest, Number(match[1])) : highest;
+  }, 0);
+  return `PRJ${highestCode + 1}`;
 }
 
 export function loadDatabase(): DatabaseSchema {
@@ -78,10 +89,20 @@ export function loadDatabase(): DatabaseSchema {
     try {
       const raw = fs.readFileSync(DB_FILE, 'utf-8');
       dbData = JSON.parse(raw);
-      dbData.projects = (dbData.projects || []).map(project => ({
-        ...project,
-        status: normalizeProjectStatus(project.status)
-      }));
+      let highestProjectCode = (dbData.projects || []).reduce((highest, project) => {
+        const match = String(project.projectCode || project.detailsJson?.projectCode || '').match(/^PRJ0*(\d+)$/i);
+        return match ? Math.max(highest, Number(match[1])) : highest;
+      }, 0);
+      dbData.projects = (dbData.projects || []).map(project => {
+        const existingCode = String(project.projectCode || project.detailsJson?.projectCode || '').match(/^PRJ0*(\d+)$/i);
+        const projectCode = existingCode ? `PRJ${Number(existingCode[1])}` : `PRJ${++highestProjectCode}`;
+        return {
+          ...project,
+          projectCode,
+          status: normalizeProjectStatus(project.status),
+          detailsJson: { ...(project.detailsJson || {}), projectCode }
+        };
+      });
       return dbData;
     } catch (e) {
       console.error('Failed to parse database.json, re-initializing...', e);
@@ -104,6 +125,7 @@ export function loadDatabase(): DatabaseSchema {
     projects: [
       {
         id: 'prj-1',
+        projectCode: 'PRJ1',
         title: 'NHS Trung Văn',
         location: 'Nam Từ Liêm, Hà Nội',
         investor: 'Công ty Cổ phần Đầu tư Xây dựng NHS',
@@ -113,6 +135,7 @@ export function loadDatabase(): DatabaseSchema {
       },
       {
         id: 'prj-2',
+        projectCode: 'PRJ2',
         title: 'Udic Ecotrans',
         location: 'Hoàng Mai, Hà Nội',
         investor: 'Tổng Công ty Đầu tư Phát triển Hạ tầng UDIC',
@@ -122,6 +145,7 @@ export function loadDatabase(): DatabaseSchema {
       },
       {
         id: 'prj-3',
+        projectCode: 'PRJ3',
         title: 'Rice City Tố Hữu',
         location: 'Hà Đông, Hà Nội',
         investor: 'Công ty Cổ phần BIC Việt Nam',
