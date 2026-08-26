@@ -1264,6 +1264,63 @@ window.handleAdminLogout = function() {
         locSelect.value = provinces.indexOf(selectedProvince) !== -1 ? selectedProvince : '';
     }
 
+    function getProjectStatusTimelineItems() {
+        return Array.from(document.querySelectorAll('#project-status-notes > div')).map(function(item) {
+            var label = item.querySelector('label span');
+            return {
+                checkbox: item.querySelector('input[type="checkbox"]'),
+                status: label ? label.textContent.trim() : ''
+            };
+        }).filter(function(item) {
+            return item.checkbox && item.status;
+        });
+    }
+
+    function syncProjectTimelineFromStatus(status) {
+        var items = getProjectStatusTimelineItems();
+        var activeIndex = items.findIndex(function(item) { return item.status === status; });
+        if (activeIndex < 0) return;
+
+        items.forEach(function(item, index) {
+            item.checkbox.checked = index <= activeIndex;
+        });
+    }
+
+    function syncProjectStatusFromTimeline() {
+        var statusSelect = document.getElementById('prj-select-status');
+        var items = getProjectStatusTimelineItems();
+        if (!statusSelect || items.length === 0) return;
+
+        var activeIndex = -1;
+        items.forEach(function(item, index) {
+            if (item.checkbox.checked) activeIndex = index;
+        });
+
+        // A project always has a status, so keep the first milestone selected.
+        if (activeIndex < 0) activeIndex = 0;
+        statusSelect.value = items[activeIndex].status;
+        syncProjectTimelineFromStatus(statusSelect.value);
+    }
+
+    function initProjectStatusSync() {
+        var statusSelect = document.getElementById('prj-select-status');
+        var items = getProjectStatusTimelineItems();
+        if (!statusSelect || items.length === 0) return;
+
+        statusSelect.onchange = function() {
+            syncProjectTimelineFromStatus(this.value);
+        };
+
+        items.forEach(function(item, index) {
+            item.checkbox.onchange = function() {
+                // Checking advances to this milestone; unchecking rolls back one step.
+                var activeIndex = this.checked ? index : Math.max(0, index - 1);
+                statusSelect.value = items[activeIndex].status;
+                syncProjectTimelineFromStatus(statusSelect.value);
+            };
+        });
+    }
+
     function resetProjectNewForm() {
         var titleEl = document.getElementById('prj-form-header-title');
         var nameInp = document.getElementById('prj-input-name');
@@ -1298,6 +1355,7 @@ window.handleAdminLogout = function() {
         if (locationMapPlaceholder) locationMapPlaceholder.classList.remove('hidden');
         document.querySelectorAll('#page-projects-new input[placeholder="Thêm tiện ích..."]').forEach(function(input) { input.value = ''; if (input.previousElementSibling) input.previousElementSibling.checked = false; });
         document.querySelectorAll('#project-status-notes > div').forEach(function(item) { var checkbox = item.querySelector('input[type="checkbox"]'); var note = item.querySelector('input[type="text"]'); if (checkbox) checkbox.checked = false; if (note) note.value = ''; });
+        syncProjectTimelineFromStatus(statusSel ? statusSel.value : 'Chờ xây dựng');
         document.querySelectorAll('#gallery-container .gallery-item').forEach(function(item) { item.remove(); });
         var floorplansContainer = document.getElementById('floorplans-container'); if (floorplansContainer) { floorplansContainer.innerHTML = ''; floorplansContainer.appendChild(createRestoredFloorplanItem({ url: '', note: '' })); }
 
@@ -1399,15 +1457,27 @@ window.handleAdminLogout = function() {
         if (scaleInp) scaleInp.value = (prj.details && prj.details.scale) || '';
         if (handoverInp) handoverInp.value = (prj.details && prj.details.handover) || '';
         if (estimatedPriceInp) estimatedPriceInp.value = (prj.details && prj.details.estimatedPrice) || '';
+        var hasCheckedTimelineStatus = false;
+        document.querySelectorAll('#project-status-notes > div').forEach(function(item) {
+            var checkbox = item.querySelector('input[type="checkbox"]');
+            var note = item.querySelector('input[type="text"]');
+            if (checkbox) checkbox.checked = false;
+            if (note) note.value = '';
+        });
         if (prj.details && Array.isArray(prj.details.statusTimeline)) {
             document.querySelectorAll('#project-status-notes > div').forEach(function(item, index) {
                 var statusItem = prj.details.statusTimeline[index];
                 if (!statusItem) return;
                 var checkbox = item.querySelector('input[type="checkbox"]'); var note = item.querySelector('input[type="text"]');
-                if (checkbox) checkbox.checked = !!statusItem.checked;
+                if (checkbox) {
+                    checkbox.checked = !!statusItem.checked;
+                    if (checkbox.checked) hasCheckedTimelineStatus = true;
+                }
                 if (note) note.value = statusItem.note || '';
             });
         }
+        if (hasCheckedTimelineStatus) syncProjectStatusFromTimeline();
+        else syncProjectTimelineFromStatus(statusSel ? statusSel.value : 'Chờ xây dựng');
         if (mainImagePreview && prj.imageUrl) mainImagePreview.src = prj.imageUrl;
         if (locationMapPreview && prj.details && prj.details.locationMapUrl) {
             locationMapPreview.src = prj.details.locationMapUrl;
@@ -1823,6 +1893,8 @@ window.handleAdminLogout = function() {
     };
 
     function initProjectFormInteractiveFeatures() {
+        initProjectStatusSync();
+
         // Location Map Upload Box
         var locBox = document.getElementById('location-map-upload-box');
         var locInput = document.getElementById('location-map-file-input');
