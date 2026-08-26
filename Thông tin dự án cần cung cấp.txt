@@ -10,4 +10,4 @@ Thông tin dự án cần cung cấp
 9. Tiến độ dự án đến hiện tại
 - Thời gian duyệt dự án khi nào
 - Khi nào khởi công
-- Dự kiến mở nhận đơn
+- Dự kiến mở nhận hồ sơ

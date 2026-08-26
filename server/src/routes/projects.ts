@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { getDb, saveDatabase, Project, normalizeProjectStatus } from '../config/db';
+import { getDb, saveDatabase, Project, normalizeProjectStatus, getNextProjectCode } from '../config/db';
 import { requireAdmin } from './auth';
 
 const router = Router();
@@ -28,14 +28,16 @@ router.post('/', requireAdmin, (req: Request, res: Response) => {
   }
 
   const db = getDb();
+  const projectCode = getNextProjectCode(db.projects);
   const newProject: Project = {
     id: 'prj-' + Date.now(),
+    projectCode,
     title: title.trim(),
     location: location.trim(),
     investor: (investor || '').trim(),
     progress: Number(progress) || 0,
     status: normalizeProjectStatus(status || 'Đang cập nhật'),
-    detailsJson: detailsJson || {},
+    detailsJson: { ...(detailsJson || {}), projectCode },
     createdAt: new Date().toISOString()
   };
 
@@ -53,10 +55,13 @@ router.put('/:id', requireAdmin, (req: Request, res: Response) => {
   }
 
   const current = db.projects[idx];
+  const detailsJson = { ...(req.body.detailsJson || current.detailsJson || {}), projectCode: current.projectCode };
   db.projects[idx] = {
     ...current,
     ...req.body,
     status: normalizeProjectStatus(req.body.status || current.status),
+    projectCode: current.projectCode,
+    detailsJson,
     id: current.id
   };
 

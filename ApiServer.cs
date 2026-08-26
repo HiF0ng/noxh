@@ -102,9 +102,9 @@ class FullStackApiServer
             sb.AppendLine("    }");
             sb.AppendLine("  ],");
             sb.AppendLine("  \"projects\": [");
-            sb.AppendLine("    { \"id\": \"prj-1\", \"title\": \"NHS Trung Văn\", \"location\": \"Nam Từ Liêm, Hà Nội\", \"investor\": \"Công ty Cổ phần Đầu tư Xây dựng NHS\", \"progress\": 85, \"status\": \"Đang mở bán\" },");
-            sb.AppendLine("    { \"id\": \"prj-2\", \"title\": \"Udic Ecotrans\", \"location\": \"Hoàng Mai, Hà Nội\", \"investor\": \"Tổng Công ty UDIC\", \"progress\": 60, \"status\": \"Đang xây dựng\" },");
-            sb.AppendLine("    { \"id\": \"prj-3\", \"title\": \"Rice City Tố Hữu\", \"location\": \"Hà Đông, Hà Nội\", \"investor\": \"Công ty Cổ phần BIC Việt Nam\", \"progress\": 100, \"status\": \"Bàn giao\" }");
+            sb.AppendLine("    { \"id\": \"prj-1\", \"projectCode\": \"PRJ1\", \"title\": \"NHS Trung Văn\", \"location\": \"Nam Từ Liêm, Hà Nội\", \"investor\": \"Công ty Cổ phần Đầu tư Xây dựng NHS\", \"progress\": 85, \"status\": \"Đang mở bán\" },");
+            sb.AppendLine("    { \"id\": \"prj-2\", \"projectCode\": \"PRJ2\", \"title\": \"Udic Ecotrans\", \"location\": \"Hoàng Mai, Hà Nội\", \"investor\": \"Tổng Công ty UDIC\", \"progress\": 60, \"status\": \"Đang xây dựng\" },");
+            sb.AppendLine("    { \"id\": \"prj-3\", \"projectCode\": \"PRJ3\", \"title\": \"Rice City Tố Hữu\", \"location\": \"Hà Đông, Hà Nội\", \"investor\": \"Công ty Cổ phần BIC Việt Nam\", \"progress\": 100, \"status\": \"Bàn giao\" }");
             sb.AppendLine("  ],");
             sb.AppendLine("  \"documents\": [");
             sb.AppendLine("    { \"id\": \"doc-1\", \"title\": \"Mẫu đơn đăng ký mua Nhà ở xã hội (Mẫu số 01)\", \"category\": \"Đơn đăng ký\", \"docType\": \"PDF\", \"fileUrl\": \"/uploads/mau-01-dang-ky-mua-noxh.pdf\", \"content\": \"Mẫu đơn đăng ký mua nhà ở xã hội chuẩn Bộ Xây dựng.\" },");
@@ -309,7 +309,8 @@ class FullStackApiServer
                     int arrEnd = FindMatchingBracket(dbText, arrStart);
                     string prjJson = dbText.Substring(arrStart, arrEnd - arrStart + 1);
                     prjJson = prjJson.Replace("\"Chờ bàn giao\"", "\"Bàn giao\"")
-                                         .Replace("\"Đã bàn giao\"", "\"Bàn giao\"");
+                                         .Replace("\"Đã bàn giao\"", "\"Bàn giao\"")
+                                         .Replace("\"Đang nhận đơn\"", "\"Đang nhận hồ sơ\"");
                     SendResponse(socket, "200 OK", "application/json; charset=utf-8", Encoding.UTF8.GetBytes("{\"projects\":" + prjJson + "}"));
                     return;
                 }
