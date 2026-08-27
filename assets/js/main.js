@@ -2299,8 +2299,9 @@ function renderProjectsList(container, list) {
         if (p.status && (p.status.includes('mở bán') || p.status === 'Đang nhận hồ sơ' || p.status === 'Đang nhận đơn')) statusClass = 'status-dang-nhan-ho-so';
         if (normalizedStatus.includes('bàn giao') || normalizedStatus.includes('hoàn thành')) statusClass = 'status-ban-giao';
         const estimatedPrice = (p.details && p.details.estimatedPrice) ? p.details.estimatedPrice.trim().replace(/\s*\/?\s*m(?:2|²)?\s*$/i, '') : '';
-        const compactPrice = value => value.replace(/^\s*(khoảng|từ)\s*/i, '').replace(/triệu(?:\s*đồng)?/gi, 'tr').replace(/\s+/g, ' ').trim();
-        const priceLabel = estimatedPrice ? `~${compactPrice(estimatedPrice)}/m²` : (p.price || 'Đang cập nhật');
+        const withoutPriceTilde = value => String(value).replace(/^\s*~\s*/, '');
+        const compactPrice = value => withoutPriceTilde(value).replace(/^\s*(khoảng|từ)\s*/i, '').replace(/triệu(?:\s*đồng)?/gi, 'tr').replace(/\s+/g, ' ').trim();
+        const priceLabel = estimatedPrice ? `${compactPrice(estimatedPrice)}/m²` : withoutPriceTilde(p.price || 'Đang cập nhật');
         const filterPrice = estimatedPrice || p.price || p.price_per_sqm || '';
         const priceRange = parseProjectPriceRange(filterPrice);
         const projectName = p.name || p.title || '';
@@ -2759,8 +2760,9 @@ window.addProjectToCompareList = function(id, title, location, status, progress)
     const rawEstimatedPrice = project.details && project.details.estimatedPrice
         ? String(project.details.estimatedPrice).trim().replace(/\s*\/?\s*m(?:2|²)?\s*$/i, '')
         : '';
-    const compactPrice = value => value.replace(/^\s*(khoảng|từ)\s*/i, '').replace(/triệu(?:\s*đồng)?/gi, 'tr').replace(/\s+/g, ' ').trim();
-    const priceLabel = rawEstimatedPrice ? `~${compactPrice(rawEstimatedPrice)}/m²` : (project.price || 'Đang cập nhật');
+    const withoutPriceTilde = value => String(value).replace(/^\s*~\s*/, '');
+    const compactPrice = value => withoutPriceTilde(value).replace(/^\s*(khoảng|từ)\s*/i, '').replace(/triệu(?:\s*đồng)?/gi, 'tr').replace(/\s+/g, ' ').trim();
+    const priceLabel = rawEstimatedPrice ? `${compactPrice(rawEstimatedPrice)}/m²` : withoutPriceTilde(project.price || 'Đang cập nhật');
     const imageUrl = (project.details && (project.details.mainImageUrl || project.details.imageUrl || project.details.image_url)) || project.image_url || '';
     const detailUrl = `details.html?id=${encodeURIComponent(id)}`;
     let statusClass = 'status-cho-xay-dung';

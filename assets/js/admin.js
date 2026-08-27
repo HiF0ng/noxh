@@ -1380,6 +1380,242 @@ window.handleAdminLogout = function() {
         return getStoredProjectCode(project) || 'Chưa gán';
     }
 
+    function normalizeProjectTimelineLabel(label) {
+        if (label === 'Đang nhận đơn') return 'Đang nhận hồ sơ';
+        if (label === 'Chờ bàn giao' || label === 'Đã bàn giao') return 'Bàn giao';
+        return String(label || '').trim();
+    }
+
+    function isProjectExportImageKey(key) {
+        var normalizedKey = String(key || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        return normalizedKey.indexOf('image') !== -1 ||
+            normalizedKey.indexOf('photo') !== -1 ||
+            normalizedKey.indexOf('thumbnail') !== -1 || [
+            'mainimageurl', 'imageurl', 'images', 'gallery', 'photos',
+            'thumbnail', 'thumbnailurl', 'locationmapurl', 'cover',
+            'coverurl', 'banner', 'bannerurl', 'avatar'
+        ].indexOf(normalizedKey) !== -1;
+    }
+
+    function stripImagesFromProjectExportValue(value) {
+        if (Array.isArray(value)) {
+            return value.map(stripImagesFromProjectExportValue);
+        }
+        if (!value || typeof value !== 'object') return value;
+
+        var sanitized = {};
+        Object.keys(value).forEach(function(key) {
+            if (!isProjectExportImageKey(key)) {
+                sanitized[key] = stripImagesFromProjectExportValue(value[key]);
+            }
+        });
+        return sanitized;
+    }
+
+    function sanitizeProjectExportValue(value) {
+        if (value === null || typeof value === 'undefined') return '';
+        if (typeof value === 'boolean') return value ? 'Có' : 'Không';
+        if (Array.isArray(value)) {
+            return value.map(function(item) {
+                if (item && typeof item === 'object') {
+                    return JSON.stringify(stripImagesFromProjectExportValue(item));
+                }
+                return String(item == null ? '' : item);
+            }).filter(Boolean).join('\n');
+        }
+        if (typeof value === 'object') {
+            return JSON.stringify(stripImagesFromProjectExportValue(value));
+        }
+        return String(value);
+    }
+
+    function formatProjectExportDate(value) {
+        if (!value) return '';
+        var date = new Date(value);
+        if (Number.isNaN(date.getTime())) return String(value);
+        return date.toLocaleString('vi-VN', {
+            day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit', second: '2-digit'
+        });
+    }
+
+    function getProjectFloorplanNotes(details) {
+        if (!details || !Array.isArray(details.floorplans)) return '';
+        return details.floorplans.map(function(plan) {
+            return plan && plan.note ? String(plan.note).trim() : '';
+        }).filter(Boolean).join('\n');
+    }
+
+    function getProjectExportTimeline(project, label) {
+        var timeline = project && project.details && Array.isArray(project.details.statusTimeline)
+            ? project.details.statusTimeline
+            : [];
+        return timeline.find(function(item) {
+            return normalizeProjectTimelineLabel(item && item.label) === label;
+        }) || null;
+    }
+
+    function getProjectExportColumns(items) {
+        var canonicalTimelineLabels = [
+            'Chờ xây dựng', 'Đang xây dựng', 'Sắp nhận hồ sơ',
+            'Đang nhận hồ sơ', 'Bàn giao'
+        ];
+        var timelineLabels = canonicalTimelineLabels.slice();
+        var handledDetailKeys = new Set([
+            'projectCode', 'desc', 'address', 'mapsUrl', 'showFloorplans',
+            'showLocation', 'area', 'scale', 'handover', 'estimatedPrice',
+            'amenities', 'statusTimeline', 'isDraft', 'floorplans'
+        ]);
+        var extraDetailKeys = new Set();
+
+        items.forEach(function(project) {
+            var details = project.details || {};
+            Object.keys(details).forEach(function(key) {
+                if (!handledDetailKeys.has(key) && !isProjectExportImageKey(key)) {
+                    extraDetailKeys.add(key);
+                }
+            });
+            (Array.isArray(details.statusTimeline) ? details.statusTimeline : []).forEach(function(item) {
+                var label = normalizeProjectTimelineLabel(item && item.label);
+                if (label && timelineLabels.indexOf(label) === -1) timelineLabels.push(label);
+            });
+        });
+
+        var columns = [
+            { header: 'STT', value: function(project, index) { return index + 1; } },
+            { header: 'Mã dự án', value: function(project) { return getProjectDisplayId(project); } },
+            { header: 'ID hệ thống', value: function(project) { return project.id || ''; } },
+            { header: 'Tên dự án', value: function(project) { return project.name || ''; } },
+            { header: 'Chủ đầu tư', value: function(project) { return project.owner || project.investor || ''; } },
+            { header: 'Trạng thái hiển thị', value: function(project) { return getAdminProjectStatus(project); } },
+            { header: 'Giai đoạn dự án', value: function(project) { return project.status || ''; } },
+            { header: 'Tiến độ (%)', value: function(project) { return project.progress == null ? '' : project.progress; } },
+            { header: 'Dự án nháp', value: function(project) { return isDraftProject(project) ? 'Có' : 'Không'; } },
+            { header: 'Vị trí', value: function(project) { return project.location || ''; } },
+            { header: 'Địa chỉ chi tiết', value: function(project) { return (project.details && project.details.address) || ''; } },
+            { header: 'Tỉnh/Thành phố', value: function(project) { return getAdminProjectProvince(project); } },
+            { header: 'Mô tả dự án', value: function(project) { return (project.details && project.details.desc) || project.desc || ''; } },
+            { header: 'Diện tích', value: function(project) { return (project.details && project.details.area) || ''; } },
+            { header: 'Quy mô', value: function(project) { return (project.details && project.details.scale) || ''; } },
+            { header: 'Bàn giao', value: function(project) { return (project.details && project.details.handover) || ''; } },
+            { header: 'Giá dự tính', value: function(project) { return (project.details && project.details.estimatedPrice) || ''; } },
+            { header: 'Link Google Maps', value: function(project) { return (project.details && project.details.mapsUrl) || ''; } },
+            { header: 'Hiển thị mặt bằng', value: function(project) { return !project.details || project.details.showFloorplans !== false ? 'Có' : 'Không'; } },
+            { header: 'Hiển thị vị trí', value: function(project) { return !project.details || project.details.showLocation !== false ? 'Có' : 'Không'; } },
+            { header: 'Tiện ích nổi bật', value: function(project) { return sanitizeProjectExportValue(project.details && project.details.amenities); } },
+            { header: 'Ghi chú mặt bằng', value: function(project) { return getProjectFloorplanNotes(project.details); } },
+            { header: 'Ngày tạo', value: function(project) { return formatProjectExportDate(project.created_at); } }
+        ];
+
+        timelineLabels.forEach(function(label) {
+            columns.push({
+                header: label + ' - Hoàn thành',
+                value: function(project) {
+                    var item = getProjectExportTimeline(project, label);
+                    return item ? (item.checked ? 'Có' : 'Không') : '';
+                }
+            });
+            columns.push({
+                header: label + ' - Ghi chú',
+                value: function(project) {
+                    var item = getProjectExportTimeline(project, label);
+                    return item && item.note ? item.note : '';
+                }
+            });
+        });
+
+        Array.from(extraDetailKeys).sort(function(a, b) {
+            return a.localeCompare(b, 'vi');
+        }).forEach(function(key) {
+            columns.push({
+                header: 'Thông tin bổ sung - ' + key,
+                value: function(project) {
+                    return sanitizeProjectExportValue(project.details && project.details[key]);
+                }
+            });
+        });
+
+        return columns;
+    }
+
+    function exportProjectsToExcel() {
+        if (!projectsList || projectsList.length === 0) {
+            alert('Chưa có dự án nào để xuất Excel.');
+            return;
+        }
+        if (!window.XLSX) {
+            alert('Không thể tải thư viện xuất Excel. Vui lòng kiểm tra kết nối mạng và thử lại.');
+            return;
+        }
+
+        var exportButton = document.getElementById('btn-export-projects-excel');
+        var originalButtonHtml = exportButton ? exportButton.innerHTML : '';
+        if (exportButton) {
+            exportButton.disabled = true;
+            exportButton.innerHTML = '<span class="material-symbols-outlined text-sm animate-spin">progress_activity</span><span>Đang xuất...</span>';
+        }
+
+        try {
+            var exportItems = sortProjectsByProjectCode(projectsList.slice());
+            var columns = getProjectExportColumns(exportItems);
+            var headers = columns.map(function(column) { return column.header; });
+            var rows = exportItems.map(function(project, index) {
+                return columns.map(function(column) { return column.value(project, index); });
+            });
+            var worksheet = window.XLSX.utils.aoa_to_sheet([headers].concat(rows));
+
+            worksheet['!autofilter'] = {
+                ref: window.XLSX.utils.encode_range({
+                    s: { r: 0, c: 0 },
+                    e: { r: rows.length, c: headers.length - 1 }
+                })
+            };
+            worksheet['!cols'] = headers.map(function(header, columnIndex) {
+                var maxLength = Math.max(String(header).length, rows.reduce(function(max, row) {
+                    var value = row[columnIndex] == null ? '' : String(row[columnIndex]);
+                    var longestLine = value.split('\n').reduce(function(lineMax, line) {
+                        return Math.max(lineMax, line.length);
+                    }, 0);
+                    return Math.max(max, longestLine);
+                }, 0));
+                return { wch: Math.min(Math.max(maxLength + 2, 10), 50) };
+            });
+            worksheet['!rows'] = [{ hpt: 24 }];
+
+            var mapsColumnIndex = headers.indexOf('Link Google Maps');
+            if (mapsColumnIndex !== -1) {
+                rows.forEach(function(row, rowIndex) {
+                    var mapsUrl = row[mapsColumnIndex];
+                    if (!/^https?:\/\//i.test(String(mapsUrl || ''))) return;
+                    var cell = worksheet[window.XLSX.utils.encode_cell({ r: rowIndex + 1, c: mapsColumnIndex })];
+                    if (cell) cell.l = { Target: mapsUrl, Tooltip: 'Mở Google Maps' };
+                });
+            }
+
+            var workbook = window.XLSX.utils.book_new();
+            workbook.Props = {
+                Title: 'Danh sách dự án NOXH',
+                Subject: 'Toàn bộ dữ liệu dự án, không bao gồm ảnh',
+                Author: 'NOXH Admin'
+            };
+            window.XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh sách dự án');
+
+            var today = new Date();
+            var datePart = today.getFullYear() + '-' +
+                String(today.getMonth() + 1).padStart(2, '0') + '-' +
+                String(today.getDate()).padStart(2, '0');
+            window.XLSX.writeFile(workbook, 'danh-sach-du-an-' + datePart + '.xlsx', { compression: true });
+        } catch (err) {
+            console.error('Error exporting projects to Excel:', err);
+            alert('Không thể xuất file Excel. Vui lòng thử lại.');
+        } finally {
+            if (exportButton) {
+                exportButton.disabled = false;
+                exportButton.innerHTML = originalButtonHtml;
+            }
+        }
+    }
+
     function createRestoredGalleryItem(url) {
         var item = document.createElement('div');
         item.className = 'gallery-item aspect-square bg-surface-container rounded-xl overflow-hidden relative group cursor-pointer border border-outline-variant hover:border-primary transition-all';
@@ -1676,6 +1912,7 @@ window.handleAdminLogout = function() {
         var searchInput = document.getElementById('admin-project-search');
         var locSelect = document.getElementById('admin-project-filter-location');
         var statusSelect = document.getElementById('admin-project-filter-status');
+        var exportButton = document.getElementById('btn-export-projects-excel');
         var cancelBtn = document.getElementById('btn-cancel-project-form');
         var saveBtn = document.getElementById('btn-save-project-form');
         var draftBtn = document.getElementById('btn-save-project-draft');
@@ -1685,6 +1922,7 @@ window.handleAdminLogout = function() {
         if (searchInput) searchInput.oninput = handleProjectsFilterSearch;
         if (locSelect) locSelect.onchange = handleProjectsFilterSearch;
         if (statusSelect) statusSelect.onchange = handleProjectsFilterSearch;
+        if (exportButton) exportButton.onclick = exportProjectsToExcel;
 
         if (cancelBtn) {
             cancelBtn.onclick = function(e) {
