@@ -340,7 +340,7 @@
                         progress: db.progress,
                         projectCode: db.details_json?.projectCode || '',
                         desc: db.details_json?.desc || '',
-                        imageUrl: db.details_json?.mainImageUrl || db.details_json?.imageUrl || db.details_json?.image_url || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80',
+                        imageUrl: db.details_json?.mainImageUrl || '',
                         price: db.details_json?.price || 'Từ 15tr/m²',
                         investor: db.investor,
                         scale: db.details_json?.scale || 'Đang cập nhật',
