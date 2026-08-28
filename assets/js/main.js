@@ -1665,11 +1665,31 @@ async function loadProjectDetails() {
     if (floorplanSection) floorplanSection.classList.toggle('hidden', !showFloorplans);
     if (locationSection) locationSection.classList.toggle('hidden', !showLocation);
 
-    const images = [project.imageUrl, ...(details.gallery || [])].filter(Boolean);
-    const setDetailImage = (imageId, url) => { const image = document.getElementById(imageId); const skeleton = document.getElementById(imageId + '-skeleton'); if (!image || !url) return; image.onload = () => { image.classList.remove('opacity-0'); if (skeleton) skeleton.classList.add('hidden'); }; image.src = url; };
-    setDetailImage('detail-hero-image', images[0]);
-    ['detail-gallery-thumb-0', 'detail-gallery-thumb-1'].forEach((thumbId, index) => setDetailImage(thumbId, images[index + 1]));
-    setupProjectGallery(images);
+    const galleryImages = (Array.isArray(details.gallery) ? details.gallery : []).map(url => typeof url === 'string' ? url.trim() : '').filter(Boolean);
+    const imageSlots = [project.imageUrl, galleryImages[0], galleryImages[1]].map(url => typeof url === 'string' ? url.trim() : '');
+    const images = [...new Set([imageSlots[0], ...galleryImages].filter(Boolean))];
+    const setDetailImage = (imageId, url) => {
+        const image = document.getElementById(imageId);
+        const skeleton = document.getElementById(imageId + '-skeleton');
+        if (!image || !url) return;
+        image.onload = () => {
+            image.classList.remove('opacity-0');
+            if (skeleton) skeleton.classList.add('hidden');
+        };
+        image.onerror = () => {
+            image.classList.add('opacity-0');
+            image.removeAttribute('src');
+            if (skeleton) skeleton.classList.remove('hidden');
+            if (imageId === 'detail-gallery-thumb-1') {
+                const viewAll = document.getElementById('detail-view-gallery');
+                if (viewAll) { viewAll.classList.add('hidden'); viewAll.classList.remove('flex'); }
+            }
+        };
+        image.src = url;
+    };
+    setDetailImage('detail-hero-image', imageSlots[0]);
+    ['detail-gallery-thumb-0', 'detail-gallery-thumb-1'].forEach((thumbId, index) => setDetailImage(thumbId, imageSlots[index + 1]));
+    setupProjectGallery(images, Boolean(imageSlots[2]));
 
     const floorplanPanel = document.getElementById('detail-floorplan-panel');
     if (showFloorplans && floorplanPanel && details.floorplans && details.floorplans.length) {
@@ -1702,13 +1722,21 @@ async function loadProjectDetails() {
     setupProjectFollowButton(id);
 }
 
-function setupProjectGallery(images) {
-    if (!images.length) return;
+function setupProjectGallery(images, showViewAll) {
+    const viewAll = document.getElementById('detail-view-gallery');
+    if (!images.length) {
+        if (viewAll) { viewAll.classList.add('hidden'); viewAll.classList.remove('flex'); }
+        return;
+    }
+    if (viewAll) {
+        viewAll.classList.toggle('hidden', !showViewAll);
+        viewAll.classList.toggle('flex', showViewAll);
+    }
     let index = 0; let modal = document.getElementById('project-gallery-modal');
     if (!modal) { modal = document.createElement('div'); modal.id = 'project-gallery-modal'; modal.className = 'fixed inset-0 z-[100] hidden items-center justify-center bg-black/85 p-4'; modal.innerHTML = '<button type="button" data-close class="absolute top-5 right-5 text-white text-4xl">×</button><button type="button" data-prev class="absolute left-4 md:left-10 text-white text-5xl">‹</button><img data-image class="max-h-[88vh] max-w-[88vw] object-contain rounded-lg"><button type="button" data-next class="absolute right-4 md:right-10 text-white text-5xl">›</button>'; document.body.appendChild(modal); }
     const render = () => { modal.querySelector('[data-image]').src = images[index]; }; const open = start => { index = start; render(); modal.classList.remove('hidden'); modal.classList.add('flex'); };
     modal.querySelector('[data-close]').onclick = () => { modal.classList.add('hidden'); modal.classList.remove('flex'); }; modal.querySelector('[data-prev]').onclick = () => { index = (index - 1 + images.length) % images.length; render(); }; modal.querySelector('[data-next]').onclick = () => { index = (index + 1) % images.length; render(); }; modal.onclick = event => { if (event.target === modal) modal.querySelector('[data-close]').click(); };
-    const hero = document.getElementById('detail-hero-image'); if (hero) hero.onclick = () => open(0); ['detail-gallery-thumb-0', 'detail-gallery-thumb-1'].forEach((id, i) => { const thumb = document.getElementById(id); if (thumb) thumb.onclick = () => open(Math.min(i + 1, images.length - 1)); }); const viewAll = document.getElementById('detail-view-gallery'); if (viewAll) viewAll.onclick = () => open(0);
+    const hero = document.getElementById('detail-hero-image'); if (hero && hero.getAttribute('src')) hero.onclick = () => open(Math.max(0, images.indexOf(hero.getAttribute('src')))); ['detail-gallery-thumb-0', 'detail-gallery-thumb-1'].forEach(id => { const thumb = document.getElementById(id); if (thumb && thumb.getAttribute('src')) thumb.onclick = () => open(Math.max(0, images.indexOf(thumb.getAttribute('src')))); }); if (viewAll) viewAll.onclick = () => open(0);
 }
 
 function setupFloorplanZoom(image) {
@@ -2307,6 +2335,7 @@ function renderProjectsList(container, list) {
         const projectName = p.name || p.title || '';
         const projectOwner = p.owner || p.investor || '';
         const projectLocation = (p.details && p.details.address) || p.location || '';
+        const projectImageUrl = typeof p.imageUrl === 'string' ? p.imageUrl.trim() : '';
         const detailUrl = `details.html?id=${p.id}`;
         const cardUrl = isWorkingProjectsGrid ? `register_steps.html?id=${p.id}` : detailUrl;
 
@@ -2314,7 +2343,7 @@ function renderProjectsList(container, list) {
             <div class="project-card-item bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/60 shadow-sm hover:shadow-md transition-all flex flex-col justify-between" data-name="${escapeHtml(projectName)}" data-owner="${escapeHtml(projectOwner)}" data-location="${escapeHtml(projectLocation)}" data-status="${escapeHtml(p.status || '')}" data-date="${escapeHtml(p.created_at || p.date || '')}" data-price-min="${priceRange.min === null ? '' : priceRange.min}" data-price-max="${priceRange.max === null ? '' : priceRange.max}">
                 <div>
                     <a href="${cardUrl}" class="project-card-thumbnail relative w-full rounded-lg overflow-hidden mb-3 bg-surface-container block">
-                        <img src="${p.imageUrl || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80'}" alt="${p.name || p.title}" class="w-full h-full object-cover">
+                        ${projectImageUrl ? `<img src="${escapeHtml(projectImageUrl)}" alt="${escapeHtml(p.name || p.title)}" class="w-full h-full object-cover">` : '<div class="absolute inset-0 skeleton-shimmer"></div>'}
                     </a>
                     <a href="${cardUrl}" class="block font-bold text-lg text-on-surface mb-1 hover:text-primary transition-colors"><h3>${p.name || p.title}</h3></a>
                     <p class="text-sm text-on-surface-variant flex items-center gap-1 mb-3">

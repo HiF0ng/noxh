@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const projectId = new URLSearchParams(window.location.search).get('id');
-  const fallbackImage = 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=85';
   const setText = (selector, value) => {
     const element = document.querySelector(selector);
     if (element) element.textContent = value || 'Đang cập nhật';
@@ -17,36 +16,56 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   const details = project.details || {};
-  const images = [...new Set([project.imageUrl, ...(details.gallery || [])].filter(Boolean))];
-  const primaryImage = images[0] || fallbackImage;
+  const gallery = (Array.isArray(details.gallery) ? details.gallery : []).map(url => typeof url === 'string' ? url.trim() : '').filter(Boolean);
+  const imageSlots = [project.imageUrl, gallery[0], gallery[1]].map(url => typeof url === 'string' ? url.trim() : '');
+  const galleryImages = [...new Set([imageSlots[0], ...gallery].filter(Boolean))];
   ['#register-hero-main', '#register-hero-second', '#register-hero-third'].forEach((selector, index) => {
     const image = document.querySelector(selector);
-    if (!image) return;
-    image.src = images[index] || primaryImage;
-    image.onerror = () => { image.src = fallbackImage; };
+    const skeleton = document.querySelector(`${selector}-skeleton`);
+    const url = imageSlots[index];
+    if (!image || !url) return;
+    image.onload = () => {
+      image.classList.remove('opacity-0');
+      skeleton?.classList.add('hidden');
+    };
+    image.onerror = () => {
+      image.classList.add('opacity-0');
+      image.removeAttribute('src');
+      skeleton?.classList.remove('hidden');
+      if (selector === '#register-hero-third') {
+        const viewGallery = document.getElementById('register-view-gallery');
+        viewGallery?.classList.add('hidden');
+        viewGallery?.classList.remove('flex');
+      }
+    };
+    image.src = url;
   });
-  const galleryImages = images.length ? images : [fallbackImage];
   const galleryLabel = document.getElementById('register-gallery-label');
   if (galleryLabel) galleryLabel.textContent = 'Xem tất cả ảnh';
-  let galleryIndex = 0;
-  let galleryModal = document.getElementById('register-project-gallery-modal');
-  if (!galleryModal) {
-    galleryModal = document.createElement('div');
-    galleryModal.id = 'register-project-gallery-modal';
-    galleryModal.className = 'fixed inset-0 z-[100] hidden items-center justify-center bg-black/85 p-4';
-    galleryModal.innerHTML = '<button type="button" data-close class="absolute top-5 right-5 text-white text-4xl" aria-label="Đóng">×</button><button type="button" data-prev class="absolute left-4 md:left-10 text-white text-5xl" aria-label="Ảnh trước">‹</button><img data-image class="max-h-[88vh] max-w-[88vw] object-contain rounded-lg" alt="Ảnh dự án"><button type="button" data-next class="absolute right-4 md:right-10 text-white text-5xl" aria-label="Ảnh tiếp theo">›</button>';
-    document.body.appendChild(galleryModal);
+  const viewGallery = document.getElementById('register-view-gallery');
+  if (galleryImages.length) {
+    viewGallery?.classList.toggle('hidden', !imageSlots[2]);
+    viewGallery?.classList.toggle('flex', Boolean(imageSlots[2]));
+    let galleryIndex = 0;
+    let galleryModal = document.getElementById('register-project-gallery-modal');
+    if (!galleryModal) {
+      galleryModal = document.createElement('div');
+      galleryModal.id = 'register-project-gallery-modal';
+      galleryModal.className = 'fixed inset-0 z-[100] hidden items-center justify-center bg-black/85 p-4';
+      galleryModal.innerHTML = '<button type="button" data-close class="absolute top-5 right-5 text-white text-4xl" aria-label="Đóng">×</button><button type="button" data-prev class="absolute left-4 md:left-10 text-white text-5xl" aria-label="Ảnh trước">‹</button><img data-image class="max-h-[88vh] max-w-[88vw] object-contain rounded-lg" alt="Ảnh dự án"><button type="button" data-next class="absolute right-4 md:right-10 text-white text-5xl" aria-label="Ảnh tiếp theo">›</button>';
+      document.body.appendChild(galleryModal);
+    }
+    const renderGallery = () => { galleryModal.querySelector('[data-image]').src = galleryImages[galleryIndex]; };
+    const openGallery = url => { galleryIndex = Math.max(0, galleryImages.indexOf(url)); renderGallery(); galleryModal.classList.remove('hidden'); galleryModal.classList.add('flex'); };
+    galleryModal.querySelector('[data-close]').onclick = () => { galleryModal.classList.add('hidden'); galleryModal.classList.remove('flex'); };
+    galleryModal.querySelector('[data-prev]').onclick = () => { galleryIndex = (galleryIndex - 1 + galleryImages.length) % galleryImages.length; renderGallery(); };
+    galleryModal.querySelector('[data-next]').onclick = () => { galleryIndex = (galleryIndex + 1) % galleryImages.length; renderGallery(); };
+    galleryModal.onclick = event => { if (event.target === galleryModal) galleryModal.querySelector('[data-close]').click(); };
+    ['register-hero-main', 'register-hero-second', 'register-hero-third'].forEach((id, index) => {
+      if (imageSlots[index]) document.getElementById(id)?.addEventListener('click', () => openGallery(imageSlots[index]));
+    });
+    viewGallery?.addEventListener('click', event => { event.stopPropagation(); openGallery(galleryImages[0]); });
   }
-  const renderGallery = () => { galleryModal.querySelector('[data-image]').src = galleryImages[galleryIndex]; };
-  const openGallery = (index) => { galleryIndex = index; renderGallery(); galleryModal.classList.remove('hidden'); galleryModal.classList.add('flex'); };
-  galleryModal.querySelector('[data-close]').onclick = () => { galleryModal.classList.add('hidden'); galleryModal.classList.remove('flex'); };
-  galleryModal.querySelector('[data-prev]').onclick = () => { galleryIndex = (galleryIndex - 1 + galleryImages.length) % galleryImages.length; renderGallery(); };
-  galleryModal.querySelector('[data-next]').onclick = () => { galleryIndex = (galleryIndex + 1) % galleryImages.length; renderGallery(); };
-  galleryModal.onclick = event => { if (event.target === galleryModal) galleryModal.querySelector('[data-close]').click(); };
-  document.getElementById('register-hero-main')?.addEventListener('click', () => openGallery(0));
-  document.getElementById('register-hero-second')?.addEventListener('click', () => openGallery(Math.min(1, galleryImages.length - 1)));
-  document.getElementById('register-hero-third')?.addEventListener('click', () => openGallery(Math.min(2, galleryImages.length - 1)));
-  document.getElementById('register-view-gallery')?.addEventListener('click', event => { event.stopPropagation(); openGallery(0); });
 
   const estimatedPrice = String(details.estimatedPrice || '').trim().replace(/\s*\/?\s*m(?:2|²)?\s*$/i, '');
   setText('#register-project-title', project.name);
