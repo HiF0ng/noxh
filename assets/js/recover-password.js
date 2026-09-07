@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendButton = document.getElementById('recovery-send-button');
     const resendButton = document.getElementById('recovery-resend-button');
     const otpWrap = document.getElementById('recovery-otp-inputs');
+    const emailInput = document.getElementById('recovery-email');
     const otpInputs = [...document.querySelectorAll('.otp-cell')];
     let recoveryEmail = '';
     let resendTimer;
@@ -37,10 +38,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const input = button.previousElementSibling; const reveal = input.type === 'password'; input.type = reveal ? 'text' : 'password'; button.querySelector('span').textContent = reveal ? 'visibility' : 'visibility_off'; button.setAttribute('aria-label', reveal ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
     }));
 
+    // Keep pasted addresses on the same path as typed input and prevent a
+    // native form navigation even if another listener is interrupted.
+    emailInput.addEventListener('paste', event => {
+        event.preventDefault();
+        const pastedEmail = (event.clipboardData || window.clipboardData).getData('text').trim();
+        emailInput.value = pastedEmail;
+        emailInput.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    emailForm.addEventListener('submit', event => event.preventDefault(), true);
+
     emailForm.addEventListener('submit', async e => {
         e.preventDefault(); clearMessage();
-        const email = document.getElementById('recovery-email').value.trim().toLowerCase();
-        if (!email || !document.getElementById('recovery-email').checkValidity()) return showMessage('Vui lòng nhập địa chỉ email hợp lệ.');
+        const email = emailInput.value.trim().toLowerCase();
+        if (!email || !emailInput.checkValidity()) return showMessage('Vui lòng nhập địa chỉ email hợp lệ.');
         if (!window.SupabaseService) return showMessage('Không thể kết nối dịch vụ xác thực.');
         setSending(true);
         try {

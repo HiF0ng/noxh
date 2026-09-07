@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/style.css?v=26">
+  <link rel="stylesheet" href="assets/css/style.css?v=30">
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <script src="assets/js/tailwind-config.js"></script>
   <link rel="stylesheet" href="assets/css/icon-utilities.css">
@@ -28,15 +28,16 @@
 
     <div class="max-w-5xl mx-auto px-6 md:px-12 pt-5 md:pt-6 pb-12 grid grid-cols-1 lg:grid-cols-[290px_minmax(0,1fr)] gap-8 lg:gap-12">
       <aside class="lg:sticky lg:top-28 lg:self-start rounded-xl border-2 border-slate-300 bg-surface-container-lowest p-5">
-        <p class="text-[18px] md:text-[20px] font-bold mb-4">Nội dung</p>
-        <nav id="policy-toc" aria-label="Mục lục" class="flex flex-col gap-1 text-on-surface-variant">
-          <a href="#du-lieu" class="policy-toc-link whitespace-nowrap text-[clamp(11px,1.05vw,15px)]" data-policy-section="du-lieu">Dữ liệu chúng tôi xử lý</a>
-          <a href="#muc-dich" class="policy-toc-link whitespace-nowrap text-[clamp(11px,1.05vw,15px)]" data-policy-section="muc-dich">Mục đích và căn cứ</a>
-          <a href="#chia-se" class="policy-toc-link whitespace-nowrap text-[clamp(11px,1.05vw,15px)]" data-policy-section="chia-se">Chia sẻ dữ liệu</a>
-          <a href="#luu-tru" class="policy-toc-link whitespace-nowrap text-[clamp(11px,1.05vw,15px)]" data-policy-section="luu-tru">Lưu trữ và bảo mật</a>
-          <a href="#quyen" class="policy-toc-link whitespace-nowrap text-[clamp(11px,1.05vw,15px)]" data-policy-section="quyen">Quyền của bạn</a>
-          <a href="#cookie" class="policy-toc-link whitespace-nowrap text-[clamp(11px,1.05vw,15px)]" data-policy-section="cookie">Cookie</a>
-          <a href="#lien-he" class="policy-toc-link whitespace-nowrap text-[clamp(11px,1.05vw,15px)]" data-policy-section="lien-he">Liên hệ</a>
+        <button id="policy-toc-toggle" type="button" class="lg:hidden mb-0 w-full flex items-center justify-between text-left text-[18px] md:text-[20px] font-bold" aria-controls="policy-toc" aria-expanded="false">Nội dung<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></button>
+        <p class="hidden lg:block text-[18px] md:text-[20px] font-bold mb-4">Nội dung</p>
+        <nav id="policy-toc" aria-label="Mục lục" class="hidden lg:flex flex-col gap-1 text-on-surface-variant">
+          <a href="#du-lieu" class="policy-toc-link whitespace-nowrap text-[clamp(14px,1.15vw,17px)]" data-policy-section="du-lieu">Dữ liệu chúng tôi xử lý</a>
+          <a href="#muc-dich" class="policy-toc-link whitespace-nowrap text-[clamp(14px,1.15vw,17px)]" data-policy-section="muc-dich">Mục đích và căn cứ</a>
+          <a href="#chia-se" class="policy-toc-link whitespace-nowrap text-[clamp(14px,1.15vw,17px)]" data-policy-section="chia-se">Chia sẻ dữ liệu</a>
+          <a href="#luu-tru" class="policy-toc-link whitespace-nowrap text-[clamp(14px,1.15vw,17px)]" data-policy-section="luu-tru">Lưu trữ và bảo mật</a>
+          <a href="#quyen" class="policy-toc-link whitespace-nowrap text-[clamp(14px,1.15vw,17px)]" data-policy-section="quyen">Quyền của bạn</a>
+          <a href="#cookie" class="policy-toc-link whitespace-nowrap text-[clamp(14px,1.15vw,17px)]" data-policy-section="cookie">Cookie</a>
+          <a href="#lien-he" class="policy-toc-link whitespace-nowrap text-[clamp(14px,1.15vw,17px)]" data-policy-section="lien-he">Liên hệ</a>
         </nav>
       </aside>
 
@@ -110,6 +111,6 @@
   <div id="footer-placeholder"></div>
   <script src="assets/js/supabase-config.js"></script>
   <script src="assets/js/supabase-service.js?v=17"></script>
-  <script src="assets/js/main.js?v=67"></script>
+  <script src="assets/js/main.js?v=87"></script>
 </body>
 </html>

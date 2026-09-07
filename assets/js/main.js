@@ -85,6 +85,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 // The destination page displays the same login dialog used by its action link.
 document.addEventListener('DOMContentLoaded', () => {
     const pageName = window.location.pathname.split('/').pop().toLowerCase();
+    // Account settings are only meaningful with a valid public user session.
+    // Use replace so a logged-out visitor cannot return to this page via Back.
+    if (pageName === 'settings.html' && !hasAuthenticatedUserSession()) {
+        window.location.replace('homepage.html');
+        return;
+    }
+
     if (pageName === 'docs-guide.html' && !hasAuthenticatedUserSession()) {
         window.location.replace('documents.html?loginRequired=1');
         return;
@@ -158,6 +165,12 @@ async function loadNavbar() {
 
                     if (restoreActiveItem && window.realActiveItem && window.slideNavIndicator) {
                         window.slideNavIndicator(window.realActiveItem, 'is-active');
+                    } else if (restoreActiveItem) {
+                        const indicator = document.getElementById('nav-indicator');
+                        if (indicator) {
+                            indicator.style.opacity = '0';
+                            indicator.style.width = '0px';
+                        }
                     }
                 };
 
@@ -191,7 +204,7 @@ async function loadNavbar() {
                     const isOpen = newBtn.classList.contains('dropdown-open');
 
                     if (isOpen) {
-                        closeFunctionsDropdown();
+                        // Keep the functions menu selected and visible until the user clicks away.
                         return;
                     }
                     
@@ -780,6 +793,12 @@ function setupSPARouter() {
             }
             window.hasUnsavedChanges = false;
         }
+
+        const destinationPage = href.split('?')[0].split('#')[0].split('/').pop().toLowerCase();
+        if (destinationPage === 'settings.html' && !hasAuthenticatedUserSession()) {
+            window.location.replace('homepage.html');
+            return;
+        }
         
         isNavigating = true;
         
@@ -1001,8 +1020,11 @@ function setupUserDropdown() {
             if (link.label === 'Đăng xuất') {
                 a.addEventListener('click', async (e) => {
                     e.preventDefault();
-                    if (window.SupabaseService) await window.SupabaseService.signOut();
-                    window.location.reload();
+                    try {
+                        if (window.SupabaseService) await window.SupabaseService.signOut();
+                    } finally {
+                        window.location.replace('homepage.html');
+                    }
                 });
             }
             
@@ -1532,12 +1554,71 @@ function setupSaveProjectToggle() {
 function setupPolicyTableOfContents() {
     const toc = document.getElementById('policy-toc');
     if (!toc) return;
+    const tocToggle = document.getElementById('policy-toc-toggle');
+    const compactViewport = window.matchMedia('(max-width: 1023px)');
     const links = Array.from(toc.querySelectorAll('.policy-toc-link'));
     const sections = links.map(link => document.getElementById(link.dataset.policySection)).filter(Boolean);
     if (!links.length || !sections.length) return;
 
-    const setActive = id => links.forEach(link => link.classList.toggle('is-active', link.dataset.policySection === id));
+    const existingIndicator = toc.querySelector('#policy-toc-indicator');
+    if (existingIndicator) existingIndicator.remove();
+    const indicator = document.createElement('span');
+    indicator.id = 'policy-toc-indicator';
+    indicator.setAttribute('aria-hidden', 'true');
+    toc.prepend(indicator);
+    let activeLink = null;
+    let activationTimer = null;
+    let indicatorInitialized = false;
+    let scrollSelectionLocked = false;
+    let scrollUnlockTimer = null;
+
+    const setTocExpanded = expanded => {
+        if (!tocToggle) return;
+        toc.classList.toggle('hidden', !expanded);
+        toc.classList.toggle('flex', expanded);
+        tocToggle.setAttribute('aria-expanded', String(expanded));
+        const icon = tocToggle.querySelector('.material-symbols-outlined');
+        if (icon) icon.textContent = expanded ? 'expand_less' : 'expand_more';
+    };
+    const handleTocToggle = () => {
+        setTocExpanded(toc.classList.contains('hidden'));
+    };
+
+    const moveIndicator = (link, animate) => {
+        indicator.style.transition = animate ? '' : 'none';
+        indicator.style.height = `${link.offsetHeight}px`;
+        indicator.style.transform = `translateY(${link.offsetTop}px)`;
+        if (!animate) requestAnimationFrame(() => { indicator.style.transition = ''; });
+    };
+    const setActive = id => {
+        const nextLink = links.find(link => link.dataset.policySection === id);
+        if (!nextLink) return;
+
+        if (compactViewport.matches) {
+            links.forEach(link => link.classList.remove('is-active'));
+            activeLink = nextLink;
+            indicatorInitialized = false;
+            return;
+        }
+
+        if (nextLink === activeLink && indicatorInitialized) return;
+        if (activationTimer) window.clearTimeout(activationTimer);
+        if (activeLink) activeLink.classList.remove('is-active');
+        activeLink = nextLink;
+        moveIndicator(nextLink, indicatorInitialized);
+
+        if (!indicatorInitialized) {
+            nextLink.classList.add('is-active');
+            indicatorInitialized = true;
+            return;
+        }
+
+        activationTimer = window.setTimeout(() => {
+            if (activeLink === nextLink) nextLink.classList.add('is-active');
+        }, 100);
+    };
     const updateActiveSection = () => {
+        if (scrollSelectionLocked) return;
         const offset = 160;
         let current = sections[0].id;
         sections.forEach(section => { if (section.getBoundingClientRect().top <= offset) current = section.id; });
@@ -1545,15 +1626,50 @@ function setupPolicyTableOfContents() {
     };
 
     if (window._policyTocCleanup) window._policyTocCleanup();
-    toc.addEventListener('click', event => {
+    const releaseScrollSelection = () => {
+        if (!scrollSelectionLocked) return;
+        scrollSelectionLocked = false;
+        if (scrollUnlockTimer) window.clearTimeout(scrollUnlockTimer);
+        scrollUnlockTimer = null;
+        updateActiveSection();
+    };
+    const handleTocClick = event => {
         const link = event.target.closest('.policy-toc-link');
-        if (link) setActive(link.dataset.policySection);
-    });
+        if (!link) return;
+        const section = document.getElementById(link.dataset.policySection);
+        if (!section) return;
+
+        event.preventDefault();
+        scrollSelectionLocked = true;
+        if (scrollUnlockTimer) window.clearTimeout(scrollUnlockTimer);
+        setActive(section.id);
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        scrollUnlockTimer = window.setTimeout(releaseScrollSelection, 900);
+        window.history.replaceState(null, '', `#${section.id}`);
+        if (compactViewport.matches) setTocExpanded(false);
+    };
+    if (tocToggle) {
+        setTocExpanded(false);
+        tocToggle.addEventListener('click', handleTocToggle);
+    }
+    toc.addEventListener('click', handleTocClick);
     window.addEventListener('scroll', updateActiveSection, { passive: true });
-    window.addEventListener('resize', updateActiveSection);
+    window.addEventListener('scrollend', releaseScrollSelection);
+    const handleTocResize = () => {
+        activeLink = null;
+        indicatorInitialized = false;
+        updateActiveSection();
+    };
+    window.addEventListener('resize', handleTocResize);
     window._policyTocCleanup = () => {
+        if (tocToggle) tocToggle.removeEventListener('click', handleTocToggle);
+        toc.removeEventListener('click', handleTocClick);
         window.removeEventListener('scroll', updateActiveSection);
-        window.removeEventListener('resize', updateActiveSection);
+        window.removeEventListener('scrollend', releaseScrollSelection);
+        window.removeEventListener('resize', handleTocResize);
+        if (activationTimer) window.clearTimeout(activationTimer);
+        if (scrollUnlockTimer) window.clearTimeout(scrollUnlockTimer);
+        indicator.remove();
     };
     updateActiveSection();
 }
@@ -1656,7 +1772,11 @@ async function loadProjectDetails() {
     const setQuickField = (field, value) => document.querySelectorAll(`[data-detail-field="${field}"]`).forEach(el => { el.textContent = value || 'Đang cập nhật'; });
     setText('detail-title', project.name); setText('detail-breadcrumb-title', project.name); setText('detail-location', details.address || project.location); setQuickField('investor', project.investor); setText('detail-price', displayPrice); setText('detail-status', project.status);
     setQuickField('area', details.area); setQuickField('scale', details.scale); setQuickField('handover', details.handover);
-    const desc = document.getElementById('detail-desc'); if (desc) desc.textContent = project.desc || 'Đang cập nhật thông tin dự án.';
+    const desc = document.getElementById('detail-desc');
+    if (desc) {
+        desc.textContent = project.desc || 'Đang cập nhật thông tin dự án.';
+        setupDetailDescriptionToggle(desc);
+    }
 
     const showFloorplans = details.showFloorplans !== false;
     const showLocation = details.showLocation !== false;
@@ -1694,7 +1814,7 @@ async function loadProjectDetails() {
     const floorplanPanel = document.getElementById('detail-floorplan-panel');
     if (showFloorplans && floorplanPanel && details.floorplans && details.floorplans.length) {
         const plans = details.floorplans;
-        floorplanPanel.innerHTML = `<div class="relative min-h-[360px] md:min-h-[560px] bg-surface-container"><div id="detail-floorplan-skeleton" class="absolute inset-0 skeleton-shimmer"></div><img id="detail-floorplan-image" data-floorplan-zoom class="w-full h-auto max-h-[620px] min-h-[360px] md:min-h-[560px] object-contain bg-white cursor-zoom-in opacity-0 transition-opacity duration-200" src="${plans[0].url}" alt="Mặt bằng căn hộ"></div><p id="detail-floorplan-note" class="mt-3 text-center font-body-md text-body-md text-on-surface-variant">${plans[0].note || ''}</p><div id="detail-floorplan-tabs" class="flex flex-wrap justify-center gap-sm mt-sm"></div>`;
+        floorplanPanel.innerHTML = `<div class="relative bg-surface-container"><div id="detail-floorplan-skeleton" class="absolute inset-0 skeleton-shimmer"></div><img id="detail-floorplan-image" data-floorplan-zoom class="block w-full h-auto max-h-[620px] object-contain bg-white cursor-zoom-in opacity-0 transition-opacity duration-200" src="${plans[0].url}" alt="Mặt bằng căn hộ"></div><p id="detail-floorplan-note" class="mt-3 text-center font-body-md text-body-md text-on-surface-variant">${plans[0].note || ''}</p><div id="detail-floorplan-tabs" class="flex flex-wrap justify-center gap-sm mt-sm"></div>`;
         const image = document.getElementById('detail-floorplan-image'); const note = document.getElementById('detail-floorplan-note'); const tabs = document.getElementById('detail-floorplan-tabs');
         const floorplanSkeleton = document.getElementById('detail-floorplan-skeleton');
         const revealFloorplan = () => { image.classList.remove('opacity-0'); if (floorplanSkeleton) floorplanSkeleton.classList.add('hidden'); };
@@ -1714,7 +1834,7 @@ async function loadProjectDetails() {
         const milestones = ['Chờ xây dựng', 'Đang xây dựng', 'Sắp nhận hồ sơ', 'Đang nhận hồ sơ', 'Bàn giao'];
         const stored = details.statusTimeline || []; const lastReached = stored.reduce((last, item, index) => item.checked ? index : last, -1);
         progressCard.innerHTML = `<h3 class="font-title-lg text-title-lg font-bold text-on-surface mb-5">Tiến độ Dự án</h3><div class="flex flex-col">${milestones.map((label, index) => { const item = stored[index] || {}; const reached = index <= lastReached; const current = index === lastReached; return `<div class="detail-timeline-item relative flex items-center gap-4 ${index < milestones.length - 1 ? 'pb-7' : ''}">${index < milestones.length - 1 ? `<span class="detail-timeline-connector absolute left-4 -translate-x-1/2 top-8 -bottom-7 w-0.5 ${index < lastReached ? 'bg-primary' : 'border-l-2 border-dashed border-outline-variant'}"></span>` : ''}<span class="detail-timeline-point relative z-10 w-8 h-8 shrink-0 rounded-full flex items-center justify-center ${reached ? 'bg-primary text-white' : 'border-2 border-outline-variant bg-surface-container-lowest text-outline'}">${reached ? '<span class="material-symbols-outlined text-[17px]">check</span>' : '<span class="w-2.5 h-2.5 rounded-full bg-outline-variant"></span>'}</span><div class="detail-timeline-content min-w-0"><p class="detail-timeline-title font-label-md text-label-md ${current ? 'text-primary font-bold' : reached ? 'text-on-surface' : 'text-outline'}">${label}</p>${item.note ? `<p class="detail-timeline-note font-body-md text-sm text-on-surface-variant mt-0.5">${escapeHtml(item.note)}</p>` : ''}</div></div>`; }).join('')}</div>`;
-        progressCard.innerHTML += '<button id="detail-follow-btn" type="button" class="mt-5 w-full border border-primary text-primary bg-surface-container-lowest font-label-md text-label-md py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"><span class="material-symbols-outlined text-[20px]">edit_document</span><span>Đăng ký dự án</span></button><a id="detail-registration-steps-link" href="#" class="hidden mt-3 w-full text-center text-sm font-semibold text-primary hover:underline">Đến trang Quy trình đăng ký</a>';
+        progressCard.innerHTML += '<button id="detail-follow-btn" data-project-follow-button type="button" class="mt-5 w-full border border-primary text-primary bg-surface-container-lowest font-label-md text-label-md py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"><span class="material-symbols-outlined text-[20px]">edit_document</span><span>Đăng ký dự án</span></button><a id="detail-registration-steps-link" href="#" class="hidden mt-3 w-full text-center text-sm font-semibold text-primary hover:underline">Đến trang Quy trình đăng ký</a>';
     }
     const amenitiesList = Array.from(document.querySelectorAll('ul.grid')).find(list => list.previousElementSibling && list.previousElementSibling.textContent.trim() === 'Tiện ích nổi bật');
     if (amenitiesList && Array.isArray(details.amenities)) amenitiesList.innerHTML = details.amenities.map(item => `<li class="flex items-center gap-2 overflow-hidden"><span class="material-symbols-outlined text-secondary icon-fill flex-shrink-0">check_circle</span><span class="font-body-md text-body-md text-on-surface truncate">${escapeHtml(item)}</span></li>`).join('');
@@ -1776,26 +1896,36 @@ async function setupProjectSaveButton(projectId) {
 }
 
 async function setupProjectFollowButton(projectId) {
-    const button = document.getElementById('detail-follow-btn'); if (!button) return;
+    const buttons = [...document.querySelectorAll('[data-project-follow-button]')]; if (!buttons.length) return;
     const registrationStepsLink = document.getElementById('detail-registration-steps-link');
     let user = null; try { user = JSON.parse(localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser') || 'null'); user = user && (user.user || user); } catch (_) {}
-    if (!user) { button.onclick = showLoginRequiredModal; return; }
+    if (!user) { buttons.forEach(button => { button.onclick = showLoginRequiredModal; }); return; }
     if (!window.SupabaseService) return;
     if (!user.id && user.email) user = await window.SupabaseService.getUser(user.email);
     if (!user || !user.id) return;
     const setState = followed => {
-        button.classList.toggle('bg-primary', followed);
-        button.classList.toggle('text-white', followed);
-        button.classList.toggle('text-primary', !followed);
-        button.classList.toggle('bg-surface-container-lowest', !followed);
-        button.innerHTML = `<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' ${followed ? 1 : 0}">edit_document</span><span>${followed ? 'Đang đăng ký' : 'Đăng ký dự án'}</span>`;
+        buttons.forEach(button => {
+            button.classList.toggle('bg-primary', followed);
+            button.classList.toggle('text-white', followed);
+            button.classList.toggle('text-primary', !followed);
+            button.classList.toggle('bg-surface-container-lowest', !followed);
+            button.innerHTML = `<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' ${followed ? 1 : 0}">edit_document</span><span>${followed ? 'Đang đăng ký' : 'Đăng ký dự án'}</span>`;
+        });
         if (registrationStepsLink) {
             registrationStepsLink.href = `register_steps.html?id=${encodeURIComponent(projectId)}`;
             registrationStepsLink.classList.toggle('hidden', !followed);
         }
     };
     let followed = await window.SupabaseService.isProjectFollowed(user.id, projectId); setState(followed);
-    button.onclick = async () => { button.disabled = true; const next = !followed; if (await window.SupabaseService.setProjectFollowed(user.id, projectId, next)) { followed = next; setState(followed); } else alert('Không thể cập nhật trạng thái đăng ký. Vui lòng thử lại.'); button.disabled = false; };
+    buttons.forEach(button => {
+        button.onclick = async () => {
+            buttons.forEach(item => { item.disabled = true; });
+            const next = !followed;
+            if (await window.SupabaseService.setProjectFollowed(user.id, projectId, next)) { followed = next; setState(followed); }
+            else alert('Không thể cập nhật trạng thái đăng ký. Vui lòng thử lại.');
+            buttons.forEach(item => { item.disabled = false; });
+        };
+    });
 }
 
 async function loadFaqsFromSupabase() {
@@ -1828,77 +1958,80 @@ function setupFAQSearch() {
     if (!searchInput) return;
 
     const allCategories = document.querySelectorAll('.faq-tab-content');
-    const allQuestions = document.querySelectorAll('.faq-tab-content > .space-y-4 > div');
+    const allQuestions = [...document.querySelectorAll('.faq-tab-content .faq-list > div')];
+    if (!allQuestions.length || searchInput.dataset.faqSearchBound === 'true') return;
+    searchInput.dataset.faqSearchBound = 'true';
 
-    function removeAccents(str) {
-        return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
+    const normalizeSearchPhrase = value => String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    const originalQuestions = allQuestions.map((question, index) => ({ question, parent: question.parentElement, index }));
+    const resultsParent = document.querySelector('.faq-tab-content')?.parentElement;
+    let results = resultsParent?.querySelector('#faq-search-results');
+    if (!results && resultsParent) {
+        results = document.createElement('div');
+        results.id = 'faq-search-results';
+        results.className = 'space-y-2 md:space-y-4 scroll-mt-24';
+        results.hidden = true;
+        resultsParent.appendChild(results);
     }
 
+    const hideCategory = category => {
+        category.classList.add('hidden');
+        category.classList.remove('block');
+    };
+    const restoreQuestions = () => {
+        originalQuestions.forEach(({ question, parent }) => {
+            question.hidden = false;
+            question.style.removeProperty('display');
+            const content = question.querySelector('.accordion-content');
+            const icon = question.querySelector('.accordion-icon');
+            if (content) content.classList.remove('open');
+            if (icon) icon.style.transform = 'rotate(0deg)';
+            parent.appendChild(question);
+        });
+    };
+
     function performSearch() {
-        const query = removeAccents(searchInput.value.trim().toLowerCase());
-        const searchWords = query.split(/\s+/).filter(w => w.length > 0);
-        
-        if (searchWords.length === 0) {
-            // Reset to normal state
-            allQuestions.forEach(q => {
-                q.style.display = '';
-                const content = q.querySelector('.accordion-content');
-                const icon = q.querySelector('.accordion-icon');
-                if (content) content.style.maxHeight = null;
-                if (icon) icon.style.transform = "rotate(0deg)";
-            });
+        const query = normalizeSearchPhrase(searchInput.value);
+        if (!query) {
+            if (results) results.hidden = true;
+            restoreQuestions();
             const activeTab = document.querySelector('.faq-tab-btn.active-tab');
-            if (activeTab) {
-                activeTab.click(); // Reset the tab view logic
-            }
+            if (activeTab) activeTab.click();
             return;
         }
 
-        // Show all categories initially to search within them
-        allCategories.forEach(cat => {
-            cat.classList.remove('hidden');
-            cat.classList.add('block');
-            let hasCategoryMatch = false;
-            
-            // Search questions within this category
-            const questions = cat.querySelectorAll('.space-y-4 > div');
-            questions.forEach(q => {
-                const rawQuestion = q.querySelector('.accordion-header').textContent.toLowerCase();
-                const rawAnswer = q.querySelector('.accordion-inner').textContent.toLowerCase();
-                const questionText = removeAccents(rawQuestion);
-                const answerText = removeAccents(rawAnswer);
-                
-                const fullText = questionText + " " + answerText;
-                const isMatch = searchWords.every(word => fullText.includes(word));
-                
-                if (isMatch) {
-                    q.style.display = '';
-                    hasCategoryMatch = true;
-                    // Automatically expand the accordion if it matches
-                    const content = q.querySelector('.accordion-content');
-                    const icon = q.querySelector('.accordion-icon');
-                    if (content) {
-                        content.classList.add('open');
-                    }
-                    if (icon) icon.style.transform = "rotate(180deg)";
-                } else {
-                    q.style.display = 'none';
-                    // Collapse
-                    const content = q.querySelector('.accordion-content');
-                    const icon = q.querySelector('.accordion-icon');
-                    if (content) {
-                        content.classList.remove('open');
-                    }
-                    if (icon) icon.style.transform = "rotate(0deg)";
-                }
+        restoreQuestions();
+        const queryWords = query.split(' ');
+        const rankedQuestions = originalQuestions.map(({ question, index }) => {
+            const questionText = normalizeSearchPhrase(question.querySelector('.accordion-header')?.textContent);
+            const answerText = normalizeSearchPhrase(question.querySelector('.accordion-inner')?.textContent);
+            const fullText = `${questionText} ${answerText}`;
+            const phraseMatch = fullText.includes(query);
+            const matchedWords = queryWords.filter(word => fullText.split(' ').includes(word)).length;
+            return { question, index, rank: phraseMatch ? queryWords.length + 1 : matchedWords };
+        }).filter(item => item.rank > 0).sort((a, b) => b.rank - a.rank || a.index - b.index);
+
+        allCategories.forEach(hideCategory);
+        if (results) {
+            results.hidden = false;
+            rankedQuestions.forEach(({ question }) => {
+                question.hidden = false;
+                question.style.removeProperty('display');
+                const content = question.querySelector('.accordion-content');
+                const icon = question.querySelector('.accordion-icon');
+                if (content) content.classList.remove('open');
+                if (icon) icon.style.transform = 'rotate(0deg)';
+                results.appendChild(question);
             });
-            
-            // Hide category if no matches
-            if (!hasCategoryMatch) {
-                cat.classList.remove('block');
-                cat.classList.add('hidden');
-            }
-        });
+        }
     }
 
     searchInput.addEventListener('input', performSearch);
@@ -1920,6 +2053,30 @@ function normalizeProjectFilterText(value) {
         .replace(/[^a-z0-9\s]/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
+}
+
+function setupDetailDescriptionToggle(description) {
+    const toggle = document.getElementById('detail-desc-toggle');
+    if (!toggle) return;
+    const compactViewport = window.matchMedia('(max-width: 1023px)');
+    const update = () => {
+        const canCollapse = compactViewport.matches && description.scrollHeight > description.clientHeight + 1;
+        toggle.classList.toggle('hidden', !canCollapse);
+        if (!canCollapse) {
+            description.classList.remove('is-expanded');
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.textContent = 'Xem đầy đủ thông tin';
+        }
+    };
+    description.classList.remove('is-expanded');
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.textContent = 'Xem đầy đủ thông tin';
+    toggle.onclick = () => {
+        const expanded = description.classList.toggle('is-expanded');
+        toggle.setAttribute('aria-expanded', String(expanded));
+        toggle.textContent = expanded ? 'Ẩn thông tin' : 'Xem đầy đủ thông tin';
+    };
+    requestAnimationFrame(update);
 }
 
 function parseProjectPriceRange(value) {
@@ -1980,17 +2137,52 @@ function setupProjectFilterSort() {
     const districtInput = document.getElementById('district-input');
     const priceSelect = document.getElementById('sidebar-price-filter');
     const resetButton = document.getElementById('project-filter-reset');
+    const additionalFilters = document.getElementById('project-additional-filters');
+    const additionalFiltersToggle = document.getElementById('project-additional-filters-toggle');
     const grid = document.getElementById('projects-grid');
     const pagination = document.getElementById('projects-pagination');
     const emptyState = document.getElementById('project-filter-empty-state');
     if (!sortSelect || !grid) return;
 
+    const projectListStateKey = 'noxh-all-projects-view-state';
+    const getSavedViewState = () => {
+        try {
+            const savedState = JSON.parse(sessionStorage.getItem(projectListStateKey) || 'null');
+            return savedState && typeof savedState === 'object' ? savedState : null;
+        } catch (error) {
+            return null;
+        }
+    };
+    const saveViewState = state => {
+        try {
+            sessionStorage.setItem(projectListStateKey, JSON.stringify(state));
+        } catch (error) {
+            // Keep the project list usable when browser storage is unavailable.
+        }
+    };
+
+    const setAdditionalFiltersExpanded = expanded => {
+        if (!additionalFilters || !additionalFiltersToggle) return;
+        additionalFilters.classList.toggle('is-expanded', expanded);
+        additionalFiltersToggle.setAttribute('aria-expanded', String(expanded));
+        additionalFiltersToggle.textContent = expanded ? 'Ẩn bộ lọc' : 'Tất cả bộ lọc';
+    };
+    const handleAdditionalFiltersToggle = () => {
+        setAdditionalFiltersExpanded(!additionalFilters.classList.contains('is-expanded'));
+    };
+
     // Get all project card items
     const cards = Array.from(grid.querySelectorAll('.project-card-item'));
     if (cards.length === 0) return;
 
+    if (additionalFilters && additionalFiltersToggle) {
+        setAdditionalFiltersExpanded(additionalFilters.classList.contains('is-expanded'));
+        additionalFiltersToggle.addEventListener('click', handleAdditionalFiltersToggle);
+    }
+
     let currentPage = 1;
     let itemsPerPage = getProjectsPerPage();
+    let isRestoringViewState = false;
 
     function renderPagination(totalPages) {
         if (!pagination) return;
@@ -2002,8 +2194,14 @@ function setupProjectFilterSort() {
         }
 
         pagination.classList.remove('hidden');
-        const pageButtons = Array.from({ length: totalPages }, (_, index) => {
-            const page = index + 1;
+        const visiblePageCount = window.matchMedia('(min-width: 1024px)').matches
+            ? totalPages
+            : Math.min(3, totalPages);
+        const firstVisiblePage = window.matchMedia('(min-width: 1024px)').matches
+            ? 1
+            : Math.min(Math.max(currentPage - 1, 1), Math.max(totalPages - visiblePageCount + 1, 1));
+        const pageButtons = Array.from({ length: visiblePageCount }, (_, index) => {
+            const page = firstVisiblePage + index;
             const activeClasses = page === currentPage
                 ? 'bg-primary text-on-primary border-primary'
                 : 'bg-surface-container-lowest text-on-surface border-outline-variant hover:border-primary hover:text-primary';
@@ -2111,9 +2309,21 @@ function setupProjectFilterSort() {
         if (totText) totText.textContent = filteredCards.length;
         if (emptyState) emptyState.classList.toggle('hidden', filteredCards.length > 0);
         renderPagination(filteredCards.length > 0 ? totalPages : 0);
+        saveViewState({
+            page: currentPage,
+            search: searchInput ? searchInput.value : '',
+            province: provinceInput ? provinceInput.value : '',
+            district: districtInput ? districtInput.value : '',
+            status: statusSelect ? statusSelect.value : 'all',
+            price: priceSelect ? priceSelect.value : 'all',
+            sort: sortSelect.value,
+            additionalFiltersExpanded: Boolean(additionalFilters?.classList.contains('is-expanded'))
+        });
     }
 
-    const handleFilterChange = () => updateGrid(true);
+    const handleFilterChange = () => {
+        if (!isRestoringViewState) updateGrid(true);
+    };
     const handleFilterReset = () => {
         if (searchInput) searchInput.value = '';
         if (provinceInput) provinceInput.value = '';
@@ -2132,7 +2342,42 @@ function setupProjectFilterSort() {
     };
     const handleResize = () => {
         const nextItemsPerPage = getProjectsPerPage();
-        if (nextItemsPerPage !== itemsPerPage) updateGrid(true);
+        if (nextItemsPerPage !== itemsPerPage) updateGrid();
+    };
+
+    const restoreViewState = () => {
+        const savedState = getSavedViewState();
+        if (!savedState) {
+            updateGrid();
+            return;
+        }
+
+        isRestoringViewState = true;
+        if (searchInput) searchInput.value = savedState.search || '';
+        if (statusSelect) statusSelect.value = savedState.status || 'all';
+        if (priceSelect) priceSelect.value = savedState.price || 'all';
+        sortSelect.value = savedState.sort || 'latest';
+        if (typeof savedState.additionalFiltersExpanded === 'boolean') {
+            setAdditionalFiltersExpanded(savedState.additionalFiltersExpanded);
+        }
+
+        if (provinceInput && savedState.province) {
+            const provinceButton = Array.from(document.querySelectorAll('#province-options .province-item'))
+                .find(button => button.textContent.trim() === savedState.province);
+            if (provinceButton) provinceButton.click();
+            else provinceInput.value = savedState.province;
+        }
+
+        if (districtInput && savedState.district) {
+            const districtButton = Array.from(document.querySelectorAll('#district-options .district-item'))
+                .find(button => button.textContent.trim() === savedState.district);
+            if (districtButton) districtButton.click();
+            else districtInput.value = savedState.district;
+        }
+
+        currentPage = Math.max(1, Number(savedState.page) || 1);
+        isRestoringViewState = false;
+        updateGrid();
     };
 
     sortSelect.addEventListener('change', handleFilterChange);
@@ -2154,10 +2399,11 @@ function setupProjectFilterSort() {
         if (priceSelect) priceSelect.removeEventListener('change', handleFilterChange);
         if (resetButton) resetButton.removeEventListener('click', handleFilterReset);
         if (statusSelect) statusSelect.removeEventListener('change', handleFilterChange);
+        if (additionalFiltersToggle) additionalFiltersToggle.removeEventListener('click', handleAdditionalFiltersToggle);
         window.removeEventListener('resize', handleResize);
     };
 
-    updateGrid();
+    restoreViewState();
 }
 
 function getProjectsPerPage() {
@@ -2261,6 +2507,7 @@ async function loadLiveProjects() {
                 renderProjectsSkeleton(hpGrid, 4);
             } else {
                 renderProjectsList(hpGrid, projects.slice(0, 4));
+                setupHomepageProjectFilters(hpGrid, projects);
             }
         }
 
@@ -2289,7 +2536,7 @@ async function loadSavedProjects() {
     grid.innerHTML = '<div class="col-span-full py-12 text-center text-on-surface-variant">Đang tải dự án đã lưu...</div>';
     const projects = await window.SupabaseService.getSavedProjects(user.id);
     if (projects === null) { grid.innerHTML = '<div class="col-span-full py-12 text-center text-error">Không thể tải dự án đã lưu. Vui lòng thử lại.</div>'; return; }
-    if (!projects.length) { grid.innerHTML = '<div class="col-span-full py-xl flex flex-col items-center justify-center text-center bg-surface-container-lowest rounded-lg border border-dashed border-outline-variant"><div class="w-24 h-24 bg-surface-container-low rounded-full flex items-center justify-center mb-4 text-primary"><span class="material-symbols-outlined text-4xl">bookmark_border</span></div><h3 class="font-headline-md text-headline-md text-on-surface mb-2">Chưa có Dự án nào được lưu</h3><p class="font-body-md text-body-md text-on-surface-variant mb-6 max-w-md">Hãy khám phá các dự án phù hợp với nhu cầu của bạn.</p><a href="all-projects.html" class="bg-primary text-on-primary font-label-md text-label-md px-6 py-3 rounded-full">Khám phá Dự án</a></div>'; return; }
+    if (!projects.length) { grid.innerHTML = '<div class="col-span-full py-xl flex flex-col items-center justify-center text-center bg-surface-container-lowest rounded-lg border border-dashed border-outline-variant"><div class="w-24 h-24 bg-surface-container-low rounded-full flex items-center justify-center mb-4 text-primary"><span class="material-symbols-outlined text-4xl">bookmark_border</span></div><h3 class="font-headline-md text-headline-md text-on-surface mb-2">Chưa có Dự án nào được lưu</h3><p class="font-body-md text-body-md text-on-surface-variant mb-6 max-w-md px-4 lg:px-0">Hãy khám phá các dự án phù hợp với nhu cầu của bạn.</p><a href="all-projects.html" class="bg-primary text-on-primary font-label-md text-label-md px-6 py-3 rounded-full">Khám phá Dự án</a></div>'; return; }
     renderProjectsList(grid, projects);
 }
 
@@ -2371,6 +2618,44 @@ function renderProjectsList(container, list) {
     // Project cards are loaded asynchronously, so initialize the filters only
     // after the complete list is present in the all-projects grid.
     if (container.id === 'projects-grid') setupProjectFilterSort();
+}
+
+function setupHomepageProjectFilters(container, projects) {
+    if (typeof setupHomepageProjectFilters.cleanup === 'function') {
+        setupHomepageProjectFilters.cleanup();
+        setupHomepageProjectFilters.cleanup = null;
+    }
+
+    const searchInput = document.getElementById('homepage-project-search-input');
+    const provinceInput = document.getElementById('province-input');
+    const districtInput = document.getElementById('district-input');
+    if (!container || !searchInput || !provinceInput || !districtInput) return;
+
+    const updateResults = () => {
+        const searchTerms = normalizeProjectFilterText(searchInput.value).split(' ').filter(Boolean);
+        const province = provinceInput.value;
+        const district = districtInput.value;
+        const matchedProjects = projects.filter(project => {
+            const projectName = normalizeProjectFilterText(project.name || project.title || '');
+            const address = (project.details && project.details.address) || project.location || '';
+            return searchTerms.every(term => projectName.includes(term))
+                && projectLocationMatches(address, province, true)
+                && projectLocationMatches(address, district);
+        }).slice(0, 4);
+
+        if (matchedProjects.length) renderProjectsList(container, matchedProjects);
+        else renderEmptyState(container, 'Không tìm thấy dự án phù hợp', 'Hãy thử từ khóa hoặc khu vực khác.');
+    };
+
+    searchInput.addEventListener('input', updateResults);
+    provinceInput.addEventListener('change', updateResults);
+    districtInput.addEventListener('change', updateResults);
+    setupHomepageProjectFilters.cleanup = () => {
+        searchInput.removeEventListener('input', updateResults);
+        provinceInput.removeEventListener('change', updateResults);
+        districtInput.removeEventListener('change', updateResults);
+    };
+    updateResults();
 }
 
 // 5. Fetch and Render Live Documents
@@ -2615,7 +2900,12 @@ async function loadDocumentSections() {
         renderList('Đơn đăng ký mua, thuê, thuê mua NOXH', ['Đơn đăng ký']);
         renderList('Xác nhận thực trạng nhà ở', ['Xác nhận nhà ở']);
         renderList('Xác nhận đối tượng & điều kiện thu nhập', ['Đối tượng & Thu nhập']);
-        const packageCategories = ['Bộ tài liệu - Lao động tự do', 'Bộ tài liệu - Người đi làm', 'Bộ tài liệu - Người độc thân', 'Bộ tài liệu - Quân nhân/Công an'];
+        const packageCategories = [
+            'Bộ tài liệu - Đối tượng 1', 'Bộ tài liệu - Đối tượng 2', 'Bộ tài liệu - Đối tượng 3',
+            'Bộ tài liệu - Đối tượng 4', 'Bộ tài liệu - Đối tượng 5', 'Bộ tài liệu - Đối tượng 6',
+            'Bộ tài liệu - Đối tượng 7', 'Bộ tài liệu - Đối tượng 8', 'Bộ tài liệu - Đối tượng 9',
+            'Bộ tài liệu - Đối tượng 10', 'Bộ tài liệu - Đối tượng 11', 'Bộ tài liệu - Đối tượng 12'
+        ];
         document.querySelectorAll('.document-pack-button').forEach((button, index) => {
             const category = packageCategories[index];
             const packageFile = (documents || []).filter(document => !document.isDraft && document.type === category).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))[0];

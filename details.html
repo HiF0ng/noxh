@@ -10,7 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
 <!-- Tailwind CSS -->
-<link rel="stylesheet" href="assets/css/style.css?v=26">
+<link rel="stylesheet" href="assets/css/style.css?v=30">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script src="assets/js/tailwind-config.js"></script>
 <!-- Tailwind Configuration -->
@@ -32,24 +32,23 @@
 </ol>
 </nav>
 <!-- Hero Bento Gallery -->
-<section class="grid grid-cols-1 md:grid-cols-4 gap-sm h-[300px] md:h-[500px] mb-md">
+<section id="detail-gallery" class="grid grid-cols-4 gap-1 h-[220px] md:h-[320px] lg:h-[500px] mb-md">
 <!-- Main Image -->
-<div class="md:col-span-3 relative rounded-xl overflow-hidden group">
+<div class="col-span-3 relative rounded-lg overflow-hidden group">
 <div id="detail-hero-image-skeleton" class="absolute inset-0 skeleton-shimmer"></div>
 <img id="detail-hero-image" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer opacity-0" data-alt="Ảnh dự án">
 </div>
 <!-- Thumbnails -->
-<div class="hidden md:flex flex-col gap-sm md:col-span-1 h-full">
-<div class="flex-1 rounded-xl overflow-hidden group relative">
+<div class="flex flex-col gap-1 col-span-1 h-full">
+<div class="flex-1 rounded-lg overflow-hidden group relative">
 <div id="detail-gallery-thumb-0-skeleton" class="absolute inset-0 skeleton-shimmer"></div>
 <img id="detail-gallery-thumb-0" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer opacity-0" data-alt="Ảnh thư viện dự án">
 </div>
-<div class="flex-1 rounded-xl overflow-hidden group relative">
+<div class="flex-1 rounded-lg overflow-hidden group relative">
 <div id="detail-gallery-thumb-1-skeleton" class="absolute inset-0 skeleton-shimmer"></div>
 <img id="detail-gallery-thumb-1" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer opacity-0" data-alt="Ảnh thư viện dự án">
 <button id="detail-view-gallery" type="button" class="absolute inset-0 hidden bg-black/40 items-center justify-center cursor-pointer hover:bg-black/50 transition-colors">
-<span class="text-white font-label-md text-label-md flex items-center gap-xs">
-<span class="material-symbols-outlined">photo_library</span>
+<span class="text-white font-label-md text-label-md text-center leading-tight">
                             Xem tất cả ảnh
                         </span>
 </button>
@@ -61,31 +60,33 @@
 <!-- Left Column: Main Content -->
 <div id="detail-main-sections" class="lg:col-span-8 flex flex-col gap-10">
 <!-- Title & Basic Info -->
-<div class="border-b border-outline-variant pb-sm">
-<div class="flex items-center justify-between gap-md mb-xs">
-    <h1 id="detail-title" class="font-headline-lg text-headline-lg text-on-surface flex-1 leading-tight">Đang tải tên dự án...</h1>
-    <button id="detail-save-btn" class="flex items-center justify-center gap-2 px-6 py-2 rounded-full border border-primary text-primary font-label-md text-label-md hover:bg-primary hover:text-white transition-all duration-300 active:scale-95 flex-shrink-0 whitespace-nowrap">
+<div id="detail-basic-info" class="border-b border-outline-variant pb-sm">
+    <h1 id="detail-title" class="font-headline-lg text-headline-lg text-on-surface leading-tight">Đang tải tên dự án...</h1>
+    <div id="detail-location-row" class="flex items-center gap-1 text-on-surface-variant font-body-md text-sm md:text-body-md min-w-0">
+        <span class="material-symbols-outlined text-primary text-[18px] flex-shrink-0">location_on</span>
+        <span id="detail-location" class="break-words">Đang tải vị trí...</span>
+    </div>
+    <div id="detail-price-row" class="flex items-center gap-1 text-on-surface-variant font-body-md text-sm md:text-body-md min-w-0">
+        <span class="material-symbols-outlined text-secondary text-[18px] flex-shrink-0">payments</span>
+        <span id="detail-price" class="font-semibold text-secondary break-words">16tr - 18tr / m²</span>
+    </div>
+    <div id="detail-project-actions" class="flex flex-wrap items-center gap-2">
+    <button id="detail-save-btn" class="flex items-center justify-center gap-2 px-5 py-2 rounded-full border border-primary text-primary font-label-md text-label-md hover:bg-primary hover:text-white transition-all duration-300 active:scale-95 flex-shrink-0 whitespace-nowrap">
         <span class="material-symbols-outlined text-[20px]">favorite</span>
         <span>Lưu Dự án</span>
     </button>
-</div>
-<div class="flex flex-row items-center justify-between w-full text-on-surface-variant font-body-md text-sm md:text-body-md overflow-hidden">
-<div class="flex items-center gap-1 whitespace-nowrap overflow-hidden text-ellipsis flex-shrink mr-4">
-<span class="material-symbols-outlined text-primary text-[18px] flex-shrink-0">location_on</span>
-<span id="detail-location" class="truncate">Đang tải vị trí...</span>
-</div>
-<div class="flex items-center gap-1 whitespace-nowrap flex-shrink-0 text-right">
-<span class="material-symbols-outlined text-secondary text-[18px] flex-shrink-0">payments</span>
-<span id="detail-price" class="font-semibold text-secondary">16tr - 18tr / m²</span>
-</div>
-</div>
+    <button id="detail-register-project-btn" data-project-follow-button type="button" class="flex items-center justify-center gap-2 px-5 py-2 rounded-full border border-primary bg-primary text-white font-label-md text-label-md hover:bg-primary/90 transition-all duration-300 active:scale-95 flex-shrink-0 whitespace-nowrap">
+        <span class="material-symbols-outlined text-[20px]">edit_document</span>
+        <span>Đăng ký dự án</span>
+    </button>
+    </div>
 </div>
 <!-- Key Specs Glassmorphism-ish Cards -->
 <div class="grid grid-cols-2 gap-2 lg:hidden">
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-3 flex items-center gap-2 shadow-sm"><span class="material-symbols-outlined text-primary text-[22px]">corporate_fare</span><div class="min-w-0 flex flex-col"><span class="text-xs text-on-surface-variant">Chủ đầu tư</span><span data-detail-field="investor" class="text-sm font-semibold text-on-surface truncate">Đang cập nhật</span></div></div>
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-3 flex items-center gap-2 shadow-sm"><span class="material-symbols-outlined text-primary text-[22px]">straighten</span><div class="min-w-0 flex flex-col"><span class="text-xs text-on-surface-variant">Diện tích</span><span data-detail-field="area" class="text-sm font-semibold text-on-surface truncate">Đang cập nhật</span></div></div>
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-3 flex items-center gap-2 shadow-sm"><span class="material-symbols-outlined text-primary text-[22px]">apartment</span><div class="min-w-0 flex flex-col"><span class="text-xs text-on-surface-variant">Quy mô</span><span data-detail-field="scale" class="text-sm font-semibold text-on-surface truncate">Đang cập nhật</span></div></div>
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-3 flex items-center gap-2 shadow-sm"><span class="material-symbols-outlined text-primary text-[22px]">key</span><div class="min-w-0 flex flex-col"><span class="text-xs text-on-surface-variant">Bàn giao</span><span data-detail-field="handover" class="text-sm font-semibold text-on-surface truncate">Đang cập nhật</span></div></div>
+<div class="detail-quick-card bg-surface-container-lowest border border-outline-variant rounded-xl p-3 flex items-start gap-2 shadow-sm"><span class="material-symbols-outlined text-primary text-[22px]">corporate_fare</span><div class="min-w-0 flex flex-col"><span class="text-xs text-on-surface-variant">Chủ đầu tư</span><span data-detail-field="investor" class="text-sm font-semibold text-on-surface break-words">Đang cập nhật</span></div></div>
+<div class="detail-quick-card bg-surface-container-lowest border border-outline-variant rounded-xl p-3 flex items-start gap-2 shadow-sm"><span class="material-symbols-outlined text-primary text-[22px]">straighten</span><div class="min-w-0 flex flex-col"><span class="text-xs text-on-surface-variant">Diện tích</span><span data-detail-field="area" class="text-sm font-semibold text-on-surface break-words">Đang cập nhật</span></div></div>
+<div class="detail-quick-card bg-surface-container-lowest border border-outline-variant rounded-xl p-3 flex items-start gap-2 shadow-sm"><span class="material-symbols-outlined text-primary text-[22px]">apartment</span><div class="min-w-0 flex flex-col"><span class="text-xs text-on-surface-variant">Quy mô</span><span data-detail-field="scale" class="text-sm font-semibold text-on-surface break-words">Đang cập nhật</span></div></div>
+<div class="detail-quick-card bg-surface-container-lowest border border-outline-variant rounded-xl p-3 flex items-start gap-2 shadow-sm"><span class="material-symbols-outlined text-primary text-[22px]">key</span><div class="min-w-0 flex flex-col"><span class="text-xs text-on-surface-variant">Bàn giao</span><span data-detail-field="handover" class="text-sm font-semibold text-on-surface break-words">Đang cập nhật</span></div></div>
 </div>
 
 <!-- Description -->
@@ -102,6 +103,7 @@
 
                         </p>
 </div>
+<button id="detail-desc-toggle" type="button" class="detail-desc-toggle hidden mt-2 text-sm font-semibold text-primary hover:underline" aria-expanded="false">Xem đầy đủ thông tin</button>
 </div>
 <!-- Amenities/Features List -->
 <div>
@@ -137,9 +139,9 @@
 <div id="detail-floorplans-section" class="hidden">
 <h2 class="font-headline-md text-headline-md text-on-surface mb-md">Mặt bằng căn hộ</h2>
 <div id="detail-floorplan-panel" class="rounded-xl border border-outline-variant overflow-hidden bg-surface-container-lowest p-sm">
-<div class="relative min-h-[360px] md:min-h-[560px] bg-surface-container">
+<div class="relative bg-surface-container">
 <div id="detail-floorplan-skeleton" class="absolute inset-0 skeleton-shimmer"></div>
-<img id="detail-floorplan-image" data-floorplan-zoom class="w-full h-auto min-h-[360px] md:min-h-[560px] object-contain bg-white cursor-zoom-in opacity-0 transition-opacity duration-200" alt="Mặt bằng căn hộ">
+<img id="detail-floorplan-image" data-floorplan-zoom class="block w-full h-auto object-contain bg-white cursor-zoom-in opacity-0 transition-opacity duration-200" alt="Mặt bằng căn hộ">
 </div>
 <div id="detail-floorplan-tabs-placeholder" class="min-h-[48px] mt-sm"></div>
 </div>
@@ -309,7 +311,7 @@ Mẫu hồ sơ đăng ký
 
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/supabase-service.js?v=17"></script>
-<script src="assets/js/main.js?v=67"></script>
+<script src="assets/js/main.js?v=87"></script>
 </body></html>
 
 
