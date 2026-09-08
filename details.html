@@ -10,7 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
 <!-- Tailwind CSS -->
-<link rel="stylesheet" href="assets/css/style.css?v=30">
+<link rel="stylesheet" href="assets/css/style.css?v=34">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script src="assets/js/tailwind-config.js"></script>
 <!-- Tailwind Configuration -->
@@ -283,9 +283,19 @@ Mẫu hồ sơ đăng ký
 </div>
 </div>
 <!-- Similar Projects -->
-<section class="pt-lg border-t border-outline-variant mt-lg">
-    <h2 class="font-headline-lg text-headline-lg text-on-surface mb-md">Dự án tương tự</h2>
-    <div id="similar-projects-grid" class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<section id="similar-projects-section" class="pt-lg border-t border-outline-variant mt-lg" aria-labelledby="similar-projects-title">
+    <div class="flex items-center justify-between gap-4 mb-md">
+        <h2 id="similar-projects-title" class="font-headline-lg text-headline-lg text-on-surface">Dự án tương tự</h2>
+        <div class="flex items-center gap-2 shrink-0">
+            <button id="similar-projects-prev" type="button" class="similar-projects-nav" aria-label="Xem các dự án trước" disabled>
+                <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+            </button>
+            <button id="similar-projects-next" type="button" class="similar-projects-nav" aria-label="Xem các dự án tiếp theo" disabled>
+                <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+            </button>
+        </div>
+    </div>
+    <div id="similar-projects-grid" class="similar-projects-carousel" aria-live="polite">
         <!-- Dynamic Cards will be rendered here by main.js -->
     </div>
 </section>
@@ -311,7 +321,7 @@ Mẫu hồ sơ đăng ký
 
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/supabase-service.js?v=17"></script>
-<script src="assets/js/main.js?v=87"></script>
+<script src="assets/js/main.js?v=90"></script>
 </body></html>
 
 

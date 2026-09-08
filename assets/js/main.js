@@ -1838,8 +1838,132 @@ async function loadProjectDetails() {
     }
     const amenitiesList = Array.from(document.querySelectorAll('ul.grid')).find(list => list.previousElementSibling && list.previousElementSibling.textContent.trim() === 'Tiện ích nổi bật');
     if (amenitiesList && Array.isArray(details.amenities)) amenitiesList.innerHTML = details.amenities.map(item => `<li class="flex items-center gap-2 overflow-hidden"><span class="material-symbols-outlined text-secondary icon-fill flex-shrink-0">check_circle</span><span class="font-body-md text-body-md text-on-surface truncate">${escapeHtml(item)}</span></li>`).join('');
+    loadSimilarProjects(project, id);
     setupProjectSaveButton(id);
     setupProjectFollowButton(id);
+}
+
+function getProjectProvinceKey(project) {
+    const location = String((project && project.details && project.details.address) || (project && project.location) || '').trim();
+    if (!location) return '';
+
+    const parts = location.split(',').map(part => part.trim()).filter(Boolean);
+    while (parts.length && normalizeProjectFilterText(parts[parts.length - 1]) === 'viet nam') parts.pop();
+    const province = parts[parts.length - 1] || location;
+    return normalizeProjectFilterText(province)
+        .replace(/^(?:tp|thanh pho|tinh)\s+/, '')
+        .replace(/^(?:hcm|tp hcm|tphcm|sai gon)$/, 'ho chi minh');
+}
+
+function projectsShareProvince(firstProject, secondProject) {
+    const firstProvince = getProjectProvinceKey(firstProject);
+    const secondProvince = getProjectProvinceKey(secondProject);
+    if (!firstProvince || !secondProvince) return false;
+    return firstProvince === secondProvince
+        || firstProvince.endsWith(` ${secondProvince}`)
+        || secondProvince.endsWith(` ${firstProvince}`);
+}
+
+function setupSimilarProjectsCarousel(container) {
+    const previous = document.getElementById('similar-projects-prev');
+    const next = document.getElementById('similar-projects-next');
+    if (!container || !previous || !next) return;
+
+    const originalCards = Array.from(container.children);
+    if (!originalCards.length) return;
+
+    // Keep several identical groups before and after the real group.  Resetting
+    // by exactly one group preserves the card currently under the viewport, so
+    // mouse-wheel, touch and button navigation all feel continuous.
+    const repeatedGroups = 4;
+    const createGroup = () => originalCards.map(card => {
+        const copy = card.cloneNode(true);
+        copy.setAttribute('aria-hidden', 'true');
+        copy.querySelectorAll('a').forEach(link => { link.tabIndex = -1; });
+        return copy;
+    });
+    const before = Array.from({ length: repeatedGroups }, createGroup).flat();
+    const after = Array.from({ length: repeatedGroups }, createGroup).flat();
+    container.replaceChildren(...before, ...originalCards, ...after);
+
+    const baseStartIndex = before.length;
+    const getLoopMetrics = () => {
+        const baseStartCard = container.children[baseStartIndex];
+        const nextGroupStartCard = container.children[baseStartIndex + originalCards.length];
+        if (!baseStartCard || !nextGroupStartCard) return null;
+        const centerOffset = window.matchMedia('(max-width: 1023px)').matches
+            ? Math.max(0, (container.clientWidth - baseStartCard.offsetWidth) / 2)
+            : 0;
+        return {
+            baseStart: baseStartCard.offsetLeft - container.offsetLeft,
+            groupWidth: nextGroupStartCard.offsetLeft - baseStartCard.offsetLeft,
+            centerOffset
+        };
+    };
+    const setScrollImmediately = left => {
+        const previousBehavior = container.style.scrollBehavior;
+        container.style.scrollBehavior = 'auto';
+        container.scrollLeft = left;
+        container.style.scrollBehavior = previousBehavior;
+    };
+    const positionAtLoopCenter = () => {
+        const metrics = getLoopMetrics();
+        if (metrics && metrics.groupWidth > 0) setScrollImmediately(metrics.baseStart - metrics.centerOffset);
+    };
+    const keepInsideLoop = () => {
+        const metrics = getLoopMetrics();
+        if (!metrics || metrics.groupWidth <= 0) return;
+        const loopStart = metrics.baseStart - metrics.centerOffset;
+        let nextPosition = container.scrollLeft;
+        while (nextPosition < loopStart) nextPosition += metrics.groupWidth;
+        while (nextPosition >= loopStart + metrics.groupWidth) nextPosition -= metrics.groupWidth;
+        if (nextPosition !== container.scrollLeft) setScrollImmediately(nextPosition);
+    };
+    const scroll = direction => {
+        const firstCard = container.children[baseStartIndex];
+        const followingCard = container.children[baseStartIndex + 1];
+        const cardStep = firstCard && followingCard
+            ? followingCard.offsetLeft - firstCard.offsetLeft
+            : (firstCard ? firstCard.offsetWidth + 24 : 288);
+        container.scrollBy({ left: direction * cardStep, behavior: 'smooth' });
+    };
+
+    previous.disabled = false;
+    next.disabled = false;
+    previous.onclick = () => scroll(-1);
+    next.onclick = () => scroll(1);
+    container.onscroll = keepInsideLoop;
+    window.addEventListener('resize', () => requestAnimationFrame(positionAtLoopCenter), { once: true });
+    requestAnimationFrame(positionAtLoopCenter);
+}
+
+async function loadSimilarProjects(project, currentProjectId) {
+    const section = document.getElementById('similar-projects-section');
+    const container = document.getElementById('similar-projects-grid');
+    if (!section || !container || !window.SupabaseService) return;
+
+    renderProjectsSkeleton(container, 3);
+    try {
+        const projects = await window.SupabaseService.getProjects();
+        if (!section.isConnected) return;
+        const similarProjects = (projects || []).filter(candidate =>
+            String(candidate.id) !== String(currentProjectId)
+            && !(candidate.details && candidate.details.isDraft)
+            && projectsShareProvince(project, candidate)
+        );
+
+        if (!similarProjects.length) {
+            section.classList.add('hidden');
+            return;
+        }
+
+        section.classList.remove('hidden');
+        renderProjectsList(container, similarProjects);
+        setupSimilarProjectsCarousel(container);
+    } catch (error) {
+        console.error('Error loading similar projects:', error);
+        section.classList.add('hidden');
+    }
 }
 
 function setupProjectGallery(images, showViewAll) {
@@ -2590,7 +2714,7 @@ function renderProjectsList(container, list) {
             <div class="project-card-item bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/60 shadow-sm hover:shadow-md transition-all flex flex-col justify-between" data-name="${escapeHtml(projectName)}" data-owner="${escapeHtml(projectOwner)}" data-location="${escapeHtml(projectLocation)}" data-status="${escapeHtml(p.status || '')}" data-date="${escapeHtml(p.created_at || p.date || '')}" data-price-min="${priceRange.min === null ? '' : priceRange.min}" data-price-max="${priceRange.max === null ? '' : priceRange.max}">
                 <div>
                     <a href="${cardUrl}" class="project-card-thumbnail relative w-full rounded-lg overflow-hidden mb-3 bg-surface-container block">
-                        ${projectImageUrl ? `<img src="${escapeHtml(projectImageUrl)}" alt="${escapeHtml(p.name || p.title)}" class="w-full h-full object-cover">` : '<div class="absolute inset-0 skeleton-shimmer"></div>'}
+                        ${projectImageUrl ? `<img src="${escapeHtml(projectImageUrl)}" alt="${escapeHtml(p.name || p.title)}" class="w-full h-full object-cover" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');"><div class="absolute inset-0 hidden skeleton-shimmer"></div>` : '<div class="absolute inset-0 skeleton-shimmer"></div>'}
                     </a>
                     <a href="${cardUrl}" class="block font-bold text-lg text-on-surface mb-1 hover:text-primary transition-colors"><h3>${p.name || p.title}</h3></a>
                     <p class="text-sm text-on-surface-variant flex items-center gap-1 mb-3">
