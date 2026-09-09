@@ -1,4 +1,8 @@
-$port = 5500
+param(
+    [int]$Port = 5500
+)
+
+$port = $Port
 $root = $PSScriptRoot
 if ([string]::IsNullOrEmpty($root)) { $root = "d:\noxh" }
 
@@ -18,8 +22,15 @@ while ($listener.IsListening) {
         $request = $context.Request
         $response = $context.Response
         
-        $localPath = $request.Url.LocalPath
-        if ($localPath -eq "/") { $localPath = "/homepage.html" }
+        $localPath = $request.Url.LocalPath.TrimEnd('/')
+        if ([string]::IsNullOrEmpty($localPath) -or $localPath -eq "/") { $localPath = "/homepage.html" }
+        elseif ($localPath -eq "/trang-chu") { $localPath = "/homepage.html" }
+        elseif ($localPath -eq "/du-an") { $localPath = "/all-projects.html" }
+        elseif ($localPath -eq "/tai-lieu") { $localPath = "/documents.html" }
+        elseif ($localPath -eq "/cau-hoi-thuong-gap") { $localPath = "/faq.html" }
+        elseif ($localPath -eq "/so-sanh") { $localPath = "/compare.html" }
+        elseif ($localPath -eq "/tinh-khoan-vay") { $localPath = "/loan.html" }
+        elseif ($localPath.StartsWith('/du-an/')) { $localPath = "/details.html" }
         $filePath = Join-Path $root $localPath.TrimStart('/').Replace('/', '\')
         
         if (Test-Path $filePath -PathType Leaf) {

@@ -191,6 +191,27 @@ class FullStackApiServer
         }
     }
 
+    private static string ResolvePublicRoute(string urlPath)
+    {
+        string path = Uri.UnescapeDataString(urlPath ?? "/").TrimEnd('/');
+        if (string.IsNullOrEmpty(path) || path == "/") return "/homepage.html";
+
+        switch (path)
+        {
+            case "/trang-chu": return "/homepage.html";
+            case "/du-an": return "/all-projects.html";
+            case "/tai-lieu": return "/documents.html";
+            case "/cau-hoi-thuong-gap": return "/faq.html";
+            case "/so-sanh": return "/compare.html";
+            case "/tinh-khoan-vay": return "/loan.html";
+        }
+
+        // The browser resolves the project slug to an ID after the template
+        // loads. Serving this template here also makes a pasted URL refreshable.
+        if (path.StartsWith("/du-an/", StringComparison.OrdinalIgnoreCase)) return "/details.html";
+        return urlPath;
+    }
+
     private static void HandleRequest(Socket socket)
     {
         socket.ReceiveTimeout = 10000;
@@ -228,7 +249,7 @@ class FullStackApiServer
         }
 
         // STATIC FILE SERVER
-        if (urlPath == "/") urlPath = "/homepage.html";
+        urlPath = ResolvePublicRoute(urlPath);
 
         string filePath = Path.Combine(root, urlPath.TrimStart('/').Replace('/', '\\'));
 

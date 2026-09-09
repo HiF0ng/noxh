@@ -57,6 +57,44 @@ function escapeHtml(value) {
         .replace(/'/g, '&#039;');
 }
 
+// Public-facing URLs use Vietnamese paths while the existing HTML files remain
+// the implementation templates. Keeping this in one place prevents a UUID or
+// an English template name from leaking back into project links.
+const NoxhRoutes = (() => {
+    const pagePaths = {
+        'homepage.html': '/trang-chu',
+        'all-projects.html': '/du-an',
+        'documents.html': '/tai-lieu',
+        'faq.html': '/cau-hoi-thuong-gap',
+        'compare.html': '/so-sanh',
+        'loan.html': '/tinh-khoan-vay'
+    };
+
+    const slugify = value => String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd').replace(/Đ/g, 'd')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '') || 'du-an';
+
+    const getProjectPath = project => `/du-an/${slugify(project && (project.name || project.title))}`;
+    const getPagePath = page => pagePaths[page] || page;
+    const getCurrentPage = (pathname = window.location.pathname) => {
+        const path = String(pathname || '/').replace(/\/+$/, '') || '/';
+        if (path === '/') return 'homepage.html';
+        const route = Object.entries(pagePaths).find(([, value]) => value === path);
+        if (route) return route[0];
+        if (path === '/du-an') return 'all-projects.html';
+        if (path.startsWith('/du-an/')) return 'details.html';
+        return path.split('/').pop() || 'homepage.html';
+    };
+    const getTemplatePath = path => getCurrentPage(String(path || '').split('?')[0].split('#')[0]);
+
+    return { getPagePath, getProjectPath, getCurrentPage, getTemplatePath, slugify };
+})();
+window.NoxhRoutes = NoxhRoutes;
+
 document.addEventListener('DOMContentLoaded', async () => {
     // Load components
     await loadNavbar();
@@ -84,16 +122,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Keep the protected guide out of reach when its URL is opened directly.
 // The destination page displays the same login dialog used by its action link.
 document.addEventListener('DOMContentLoaded', () => {
-    const pageName = window.location.pathname.split('/').pop().toLowerCase();
+    const pageName = NoxhRoutes.getCurrentPage().toLowerCase();
     // Account settings are only meaningful with a valid public user session.
     // Use replace so a logged-out visitor cannot return to this page via Back.
     if (pageName === 'settings.html' && !hasAuthenticatedUserSession()) {
-        window.location.replace('homepage.html');
+        window.location.replace(NoxhRoutes.getPagePath('homepage.html'));
         return;
     }
 
     if (pageName === 'docs-guide.html' && !hasAuthenticatedUserSession()) {
-        window.location.replace('documents.html?loginRequired=1');
+        window.location.replace(`${NoxhRoutes.getPagePath('documents.html')}?loginRequired=1`);
         return;
     }
 
@@ -181,7 +219,7 @@ async function loadNavbar() {
                 };
 
                 const activateFunctionImmediately = (link) => {
-                    const page = (link.getAttribute('href') || '').split('/').pop();
+                    const page = NoxhRoutes.getCurrentPage(link.getAttribute('href') || '');
                     const label = functionPages[page];
                     if (!label) return;
 
@@ -424,7 +462,7 @@ async function initSettingsForm() {
                 } finally {
                     localStorage.removeItem('currentUser');
                     sessionStorage.removeItem('currentUser');
-                    window.location.href = 'homepage.html';
+                    window.location.href = NoxhRoutes.getPagePath('homepage.html');
                 }
             };
         }
@@ -582,7 +620,7 @@ function setupAuthForms() {
                     localStorage.setItem('isLoggedIn', 'true');
                     localStorage.setItem('currentUser', JSON.stringify(user.user));
                     showToast('Đăng nhập thành công!', 'success');
-                    setTimeout(() => { window.location.href = 'homepage.html'; }, 800);
+                    setTimeout(() => { window.location.href = NoxhRoutes.getPagePath('homepage.html'); }, 800);
                     return;
                 }
                 showToast((user && user.error) || 'Đăng nhập thất bại. Vui lòng kiểm tra lại!', 'error');
@@ -616,7 +654,7 @@ function setupAuthForms() {
                 const registered = window.SupabaseService && await window.SupabaseService.signUpWithPassword({ email, password, fullName: fullname, phone });
                 if (registered && registered.success) {
                     showToast('Tạo tài khoản thành công! Bạn đã được đăng nhập.', 'success');
-                    setTimeout(() => { window.location.href = 'homepage.html'; }, 800);
+                    setTimeout(() => { window.location.href = NoxhRoutes.getPagePath('homepage.html'); }, 800);
                 } else {
                     showToast((registered && registered.error) || 'Đăng ký thất bại. Vui lòng thử lại!', 'error');
                 }
@@ -767,8 +805,8 @@ function setupSPARouter() {
         
         e.preventDefault();
         
-        const currentPath = window.location.pathname.split('/').pop() || 'homepage.html';
-        if (href === currentPath) {
+        const currentPath = window.location.pathname || NoxhRoutes.getPagePath('homepage.html');
+        if (href === currentPath || href === NoxhRoutes.getCurrentPage()) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
         }
@@ -782,8 +820,7 @@ function setupSPARouter() {
             window.location.reload();
             return;
         }
-        const href = window.location.pathname.split('/').pop() || 'homepage.html';
-        await navigateTo(href, false);
+        await navigateTo(window.location.pathname || NoxhRoutes.getPagePath('homepage.html'), false);
     });
 
     async function navigateTo(href, push = true) {
@@ -794,16 +831,20 @@ function setupSPARouter() {
             window.hasUnsavedChanges = false;
         }
 
-        const destinationPage = href.split('?')[0].split('#')[0].split('/').pop().toLowerCase();
+        const destinationPage = NoxhRoutes.getCurrentPage(href.split('?')[0].split('#')[0]).toLowerCase();
         if (destinationPage === 'settings.html' && !hasAuthenticatedUserSession()) {
-            window.location.replace('homepage.html');
+            window.location.replace(NoxhRoutes.getPagePath('homepage.html'));
             return;
         }
         
         isNavigating = true;
         
         try {
-            const response = await fetch(href);
+            // Live Server does not offer rewrite rules. Fetch the existing
+            // template for an in-app navigation, then retain the Vietnamese
+            // URL in the address bar. Production/static servers also map the
+            // friendly path for direct loads and refreshes.
+            const response = await fetch(NoxhRoutes.getTemplatePath(href));
             if (!response.ok) throw new Error('Network response was not ok');
             
             const html = await response.text();
@@ -1023,12 +1064,12 @@ function setupUserDropdown() {
                     try {
                         if (window.SupabaseService) await window.SupabaseService.signOut();
                     } finally {
-                        window.location.replace('homepage.html');
+                        window.location.replace(NoxhRoutes.getPagePath('homepage.html'));
                     }
                 });
             }
             
-            const currentPage = window.location.pathname.split('/').pop() || 'homepage.html';
+            const currentPage = NoxhRoutes.getCurrentPage();
             const isActive = link.url === currentPage;
             
             let classes = 'user-dropdown-link px-4 py-2.5 min-h-12 flex items-center gap-3 transition-colors ';
@@ -1127,7 +1168,7 @@ function setupUserDropdown() {
 }
 
 function highlightActiveLink() {
-    let currentPage = window.location.pathname.split('/').pop() || 'homepage.html';
+    let currentPage = NoxhRoutes.getCurrentPage();
     if (!currentPage || currentPage === '/' || currentPage === 'index.html') currentPage = 'homepage.html';
     // A detail page belongs to the Projects section in the global navigation.
     const activeNavPage = currentPage === 'details.html' ? 'all-projects.html' : currentPage;
@@ -1148,8 +1189,7 @@ function highlightActiveLink() {
     topNavLinks.forEach(link => {
         let href = link.getAttribute('href');
         if (!href || href.startsWith('http') || href.startsWith('#')) return;
-        href = href.split('/').pop();
-        if (!href || href === '/' || href === 'index.html') href = 'homepage.html';
+        href = NoxhRoutes.getCurrentPage(href);
 
         if (href === activeNavPage) {
             targetLink = link;
@@ -1269,8 +1309,7 @@ function highlightActiveLink() {
     desktopNavLinks.forEach(link => {
         let href = link.getAttribute('href');
         if (!href || href.startsWith('http') || href.startsWith('#')) return;
-        href = href.split('/').pop();
-        if (!href || href === '/' || href === 'index.html') href = 'homepage.html';
+        href = NoxhRoutes.getCurrentPage(href);
 
         if (href === activeNavPage) {
             link.className = "nav-link font-label-md text-label-md text-primary border-b-2 border-primary pb-1 font-bold transition-colors active";
@@ -1761,10 +1800,22 @@ function setupDocumentAccessGuard(container) {
 
 async function loadProjectDetails() {
     if (!document.getElementById('detail-title') || !window.SupabaseService) return;
-    const id = new URLSearchParams(window.location.search).get('id');
-    if (!id) return;
-    const project = await window.SupabaseService.getProject(id);
+    let id = new URLSearchParams(window.location.search).get('id');
+    let project = id ? await window.SupabaseService.getProject(id) : null;
+
+    // The friendly route is resolved from the authoritative project name. The
+    // old ?id= URL remains readable, then is immediately cleaned up below.
+    if (!project && window.location.pathname.startsWith('/du-an/')) {
+        const requestedSlug = decodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() || '');
+        const projects = await window.SupabaseService.getProjects();
+        project = (projects || []).find(candidate => NoxhRoutes.slugify(candidate.name || candidate.title) === requestedSlug) || null;
+        id = project && project.id;
+    }
     if (!project) return;
+    const canonicalPath = NoxhRoutes.getProjectPath(project);
+    if (window.location.pathname !== canonicalPath || window.location.search) {
+        window.history.replaceState({}, '', canonicalPath);
+    }
     const details = project.details || {};
     const setText = (elementId, value, fallback = 'Đang cập nhật') => { const el = document.getElementById(elementId); if (el) el.textContent = value || fallback; };
     const estimatedPrice = (details.estimatedPrice || '').trim().replace(/\s*\/?\s*m(?:2|²)?\s*$/i, '');
@@ -2660,7 +2711,7 @@ async function loadSavedProjects() {
     grid.innerHTML = '<div class="col-span-full py-12 text-center text-on-surface-variant">Đang tải dự án đã lưu...</div>';
     const projects = await window.SupabaseService.getSavedProjects(user.id);
     if (projects === null) { grid.innerHTML = '<div class="col-span-full py-12 text-center text-error">Không thể tải dự án đã lưu. Vui lòng thử lại.</div>'; return; }
-    if (!projects.length) { grid.innerHTML = '<div class="col-span-full py-xl flex flex-col items-center justify-center text-center bg-surface-container-lowest rounded-lg border border-dashed border-outline-variant"><div class="w-24 h-24 bg-surface-container-low rounded-full flex items-center justify-center mb-4 text-primary"><span class="material-symbols-outlined text-4xl">bookmark_border</span></div><h3 class="font-headline-md text-headline-md text-on-surface mb-2">Chưa có Dự án nào được lưu</h3><p class="font-body-md text-body-md text-on-surface-variant mb-6 max-w-md px-4 lg:px-0">Hãy khám phá các dự án phù hợp với nhu cầu của bạn.</p><a href="all-projects.html" class="bg-primary text-on-primary font-label-md text-label-md px-6 py-3 rounded-full">Khám phá Dự án</a></div>'; return; }
+    if (!projects.length) { grid.innerHTML = '<div class="col-span-full py-xl flex flex-col items-center justify-center text-center bg-surface-container-lowest rounded-lg border border-dashed border-outline-variant"><div class="w-24 h-24 bg-surface-container-low rounded-full flex items-center justify-center mb-4 text-primary"><span class="material-symbols-outlined text-4xl">bookmark_border</span></div><h3 class="font-headline-md text-headline-md text-on-surface mb-2">Chưa có Dự án nào được lưu</h3><p class="font-body-md text-body-md text-on-surface-variant mb-6 max-w-md px-4 lg:px-0">Hãy khám phá các dự án phù hợp với nhu cầu của bạn.</p><a href="/du-an" class="bg-primary text-on-primary font-label-md text-label-md px-6 py-3 rounded-full">Khám phá Dự án</a></div>'; return; }
     renderProjectsList(grid, projects);
 }
 
@@ -2676,7 +2727,7 @@ async function loadFollowedProjects() {
     const projects = await window.SupabaseService.getFollowedProjects(user.id);
     if (projects === null) { grid.innerHTML = '<div class="py-12 text-center text-error">Không thể tải các dự án đang đăng ký. Vui lòng thử lại.</div>'; return; }
     if (!projects.length) {
-        grid.innerHTML = '<div class="py-xl flex flex-col items-center justify-center text-center bg-surface-container-lowest rounded-lg border border-dashed border-outline-variant"><div class="w-24 h-24 bg-surface-container-low rounded-full flex items-center justify-center mb-4 text-primary"><span class="material-symbols-outlined text-4xl">edit_document</span></div><h3 class="font-headline-md text-headline-md text-on-surface mb-2">Chưa có dự án đang đăng ký</h3><p class="font-body-md text-body-md text-on-surface-variant mb-6 max-w-md">Hãy chọn một dự án phù hợp để bắt đầu đăng ký.</p><a href="all-projects.html" class="bg-primary text-on-primary font-label-md text-label-md px-6 py-3 rounded-full">Khám phá Dự án</a></div>';
+        grid.innerHTML = '<div class="py-xl flex flex-col items-center justify-center text-center bg-surface-container-lowest rounded-lg border border-dashed border-outline-variant"><div class="w-24 h-24 bg-surface-container-low rounded-full flex items-center justify-center mb-4 text-primary"><span class="material-symbols-outlined text-4xl">edit_document</span></div><h3 class="font-headline-md text-headline-md text-on-surface mb-2">Chưa có dự án đang đăng ký</h3><p class="font-body-md text-body-md text-on-surface-variant mb-6 max-w-md">Hãy chọn một dự án phù hợp để bắt đầu đăng ký.</p><a href="/du-an" class="bg-primary text-on-primary font-label-md text-label-md px-6 py-3 rounded-full">Khám phá Dự án</a></div>';
         return;
     }
     renderProjectsList(grid, projects);
@@ -2707,7 +2758,7 @@ function renderProjectsList(container, list) {
         const projectOwner = p.owner || p.investor || '';
         const projectLocation = (p.details && p.details.address) || p.location || '';
         const projectImageUrl = typeof p.imageUrl === 'string' ? p.imageUrl.trim() : '';
-        const detailUrl = `details.html?id=${p.id}`;
+        const detailUrl = NoxhRoutes.getProjectPath(p);
         const cardUrl = isWorkingProjectsGrid ? `register_steps.html?id=${p.id}` : detailUrl;
 
         html += `
@@ -2952,7 +3003,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Authenticated visitors should not see forms intended for a new login or signup.
 async function redirectAuthenticatedUsersFromAuthPages() {
-    const pageName = window.location.pathname.split('/').pop().toLowerCase();
+    const pageName = NoxhRoutes.getCurrentPage().toLowerCase();
     if (pageName !== 'login.html' && pageName !== 'signup.html') return;
     if (!window.SupabaseService) return;
 
@@ -2963,7 +3014,7 @@ async function redirectAuthenticatedUsersFromAuthPages() {
     if (!isSessionValid(session) && session && session.refresh_token) {
         session = await window.SupabaseService.refreshAuthSession();
     }
-    if (isSessionValid(session)) window.location.replace('homepage.html');
+    if (isSessionValid(session)) window.location.replace(NoxhRoutes.getPagePath('homepage.html'));
 }
 
 void redirectAuthenticatedUsersFromAuthPages();
@@ -3207,7 +3258,7 @@ window.addProjectToCompareList = function(id, title, location, status, progress)
     const compactPrice = value => withoutPriceTilde(value).replace(/^\s*(khoảng|từ)\s*/i, '').replace(/triệu(?:\s*đồng)?/gi, 'tr').replace(/\s+/g, ' ').trim();
     const priceLabel = rawEstimatedPrice ? `${compactPrice(rawEstimatedPrice)}/m²` : withoutPriceTilde(project.price || 'Đang cập nhật');
     const imageUrl = (project.details && (project.details.mainImageUrl || project.details.imageUrl || project.details.image_url)) || project.image_url || '';
-    const detailUrl = `details.html?id=${encodeURIComponent(id)}`;
+    const detailUrl = NoxhRoutes.getProjectPath(project);
     let statusClass = 'status-cho-xay-dung';
     if (projectStatus === 'Đang xây dựng') statusClass = 'status-dang-xay-dung';
     if (projectStatus === 'Sắp nhận hồ sơ') statusClass = 'status-sap-nhan-ho-so';

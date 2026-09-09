@@ -86,6 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? 'Mật khẩu trùng với mật khẩu hiện tại. Vui lòng thử <a class="font-semibold underline" href="login.html">đăng nhập</a>.'
                 : updated.error);
         }
-        title.textContent = 'Hoàn tất đổi mật khẩu'; description.textContent = 'Mật khẩu của bạn đã được cập nhật. Đang điều hướng về trang chủ'; document.getElementById('recovery-heading-icon').classList.add('hidden'); document.getElementById('recovery-back-link').classList.add('hidden'); showOnly(success); window.setTimeout(() => window.location.href = 'homepage.html', 2200);
+        title.textContent = 'Hoàn tất đổi mật khẩu'; description.textContent = 'Mật khẩu của bạn đã được cập nhật. Đang điều hướng về trang chủ'; document.getElementById('recovery-heading-icon').classList.add('hidden'); document.getElementById('recovery-back-link').classList.add('hidden'); showOnly(success); window.setTimeout(() => window.location.href = '/trang-chu', 2200);
     });
 });
