@@ -1,0 +1,11 @@
+{
+  "name": "noxh-static-site",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Allowlisted public build for NOXH",
+  "scripts": {
+    "build:public": "node scripts/build-public.mjs",
+    "verify:public": "node scripts/verify-public.mjs",
+    "build": "node scripts/build-public.mjs && node scripts/verify-public.mjs"
+  }
+}

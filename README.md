@@ -9,6 +9,10 @@ Website HTML/JavaScript sử dụng Supabase cho dữ liệu, Auth và Storage.
 
 Ngày 10/09/2026, người dùng duyệt thực hiện **mã 01**. Các mã khác chỉ là kế hoạch, chưa được phép triển khai.
 
+## Build public
+
+`npm run build` tạo và kiểm tra `dist/public/` từ allowlist. Chỉ deploy thư mục output này; chi tiết tại [hướng dẫn deployment](deploy/README.md).
+
 ## Kiến trúc đích
 
 Nginx phục vụ HTML/CSS/JS đã build; Supabase là nguồn dữ liệu chính. Tiến trình build sinh HTML public và trang dự án, không chạy như backend Express cũ. Quy trình build, cấu hình Nginx và SEO dự án sẽ được triển khai lần lượt tại mã 03, 04 và 07.

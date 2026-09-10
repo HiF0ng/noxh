@@ -17,6 +17,7 @@
 *.dll
 *.pdb
 node_modules/
+.pnpm-store/
 dist/
 
 # Security audit/rewrite workspace may contain restricted backups.
