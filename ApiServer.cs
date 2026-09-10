@@ -61,7 +61,7 @@ class FullStackApiServer
             sb.AppendLine("    {");
             sb.AppendLine("      \"id\": \"user-admin-1\",");
             sb.AppendLine("      \"email\": \"admin@noxh.help\",");
-            sb.AppendLine("      \"passwordHash\": \"REMOVED_LEGACY_CREDENTIAL\",");
+            sb.AppendLine("      \"passwordHash\": \"\",");
             sb.AppendLine("      \"fullName\": \"Nguyễn Văn A (Admin)\",");
             sb.AppendLine("      \"role\": \"admin\",");
             sb.AppendLine("      \"createdAt\": \"" + DateTime.UtcNow.ToString("o") + "\"");
