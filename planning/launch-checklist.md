@@ -18,7 +18,7 @@ Cập nhật: 10/09/2026. Đây là danh sách đã trao đổi với người d
 | 2 | 02A–C | Secrets, Git và xử lý lịch sử | Hoàn tất; lịch sử GitHub đã làm sạch |
 | 3 | 05A–C | Supabase: RLS, Storage, admin và Auth | Chờ duyệt từng môi trường |
 | 4 | 11A–E | Chọn/mua VPS, domain; thiết lập tài khoản, VPS và DNS ban đầu | Chờ duyệt phương án và chi phí trước khi mua |
-| 5 | 03 | Tách public build | Đã duyệt; đã tạo build allowlist và đang kiểm tra |
+| 5 | 03 | Tách public build | Hoàn tất; artifact allowlist đã kiểm tra |
 | 6 | 04A–B | Nginx, staging và HTTPS staging | Chờ duyệt |
 | 7 | 06A–C | Metadata, trang riêng tư, robots/sitemap/404 | Chờ duyệt từng phần |
 | 8 | 07 | HTML từng dự án và cơ chế xuất bản | Chờ duyệt |
@@ -140,4 +140,4 @@ Domain được chọn/mua sớm để kiểm tra HTTPS và Auth callback bằng
 - 10/09/2026: lưu toàn bộ danh sách 01–11 và thứ tự triển khai; duyệt duy nhất mã 01.
 - 10/09/2026: hoàn tất quyết định kiến trúc và kiểm kê nguồn mã 01; xóa hằng API localhost không dùng, tăng phiên bản script admin. Ghi các chức năng chưa hoàn chỉnh và điều kiện nghiệm thu runtime trong tài liệu kiến trúc; chưa thực hiện các mã khác.
 - 10/09/2026: mã 02 đã kiểm kê 25 commit và remote public; thêm ignore/template/secret scanner; thay JWT legacy local, loại default credential, chuẩn bị lịch sử đã làm sạch và bản sao lưu xác minh. Remote sẽ chỉ được cập nhật sau khi quét lại bản lịch sử đã viết lại.
-- 10/09/2026: mã 02 force-push lịch sử GitHub đã làm sạch sau khi quét 0 finding; không có fork/tag/PR mở tại lúc xử lý. Mã 03 được duyệt tiếp theo; build allowlist xuất 46 file vào `dist/public`, kiểm tra không có đường dẫn/marker restricted.
+- 10/09/2026: mã 02 force-push lịch sử GitHub đã làm sạch sau khi quét 0 finding; không có fork/tag/PR mở tại lúc xử lý. Mã 03 đã hoàn tất: build allowlist xuất 46 file vào `dist/public`, kiểm tra không có đường dẫn/marker restricted.
