@@ -6,6 +6,7 @@
   "scripts": {
     "build:public": "node scripts/build-public.mjs",
     "verify:public": "node scripts/verify-public.mjs",
-    "build": "node scripts/build-public.mjs && node scripts/verify-public.mjs"
+    "verify:security": "node scripts/verify-security-05b.mjs",
+    "build": "node scripts/build-public.mjs && node scripts/verify-public.mjs && node scripts/verify-security-05b.mjs"
   }
 }

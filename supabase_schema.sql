@@ -7,7 +7,6 @@
 CREATE TABLE IF NOT EXISTS public.users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
     full_name VARCHAR(255) NOT NULL,
     phone VARCHAR(20) DEFAULT NULL,
     role VARCHAR(50) DEFAULT 'user',
@@ -26,6 +25,7 @@ CREATE TABLE IF NOT EXISTS public.projects (
     investor VARCHAR(255),
     progress INT DEFAULT 0,
     status VARCHAR(100) DEFAULT 'Đang cập nhật',
+    is_draft BOOLEAN NOT NULL DEFAULT false,
     details_json JSONB DEFAULT '{}'::jsonb,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -62,19 +62,11 @@ CREATE TABLE IF NOT EXISTS public.user_followed_projects (
     PRIMARY KEY (user_id, project_id)
 );
 
--- Run this once in Supabase SQL Editor to store project images.
+-- Bootstrap only: public project images live in their own bucket. Access policies
+-- are created by supabase_migrations/20260910_05b_security_hardening.sql.
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('project-images', 'project-images', true)
 ON CONFLICT (id) DO NOTHING;
-
-DROP POLICY IF EXISTS "Public project image read" ON storage.objects;
-DROP POLICY IF EXISTS "Anon project image upload" ON storage.objects;
-DROP POLICY IF EXISTS "Anon project image update" ON storage.objects;
-DROP POLICY IF EXISTS "Anon project image delete" ON storage.objects;
-CREATE POLICY "Public project image read" ON storage.objects FOR SELECT USING (bucket_id = 'project-images');
-CREATE POLICY "Anon project image upload" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'project-images');
-CREATE POLICY "Anon project image update" ON storage.objects FOR UPDATE USING (bucket_id = 'project-images');
-CREATE POLICY "Anon project image delete" ON storage.objects FOR DELETE USING (bucket_id = 'project-images');
 
 CREATE TABLE IF NOT EXISTS public.documents (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -83,6 +75,8 @@ CREATE TABLE IF NOT EXISTS public.documents (
     doc_type VARCHAR(50) DEFAULT 'PDF',
     file_url TEXT,
     content TEXT,
+    is_draft BOOLEAN NOT NULL DEFAULT false,
+    draft_key TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -106,7 +100,7 @@ CREATE TABLE IF NOT EXISTS public.news (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- BƯỚC 2: PHÂN QUYỀN TRUY CẬP ĐỌC / GHI CSDL (RLS POLICIES)
+-- BƯỚC 2: BẬT RLS. Không tạo policy mở ở bootstrap; chạy migration 05B ngay sau file này.
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_saved_projects ENABLE ROW LEVEL SECURITY;
@@ -115,21 +109,8 @@ ALTER TABLE public.documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.faqs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.news ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "Anon full access users" ON public.users;
-DROP POLICY IF EXISTS "Anon full access projects" ON public.projects;
-DROP POLICY IF EXISTS "Anon full access user saved projects" ON public.user_saved_projects;
-DROP POLICY IF EXISTS "Anon full access user followed projects" ON public.user_followed_projects;
-DROP POLICY IF EXISTS "Anon full access documents" ON public.documents;
-DROP POLICY IF EXISTS "Anon full access faqs" ON public.faqs;
-DROP POLICY IF EXISTS "Anon full access news" ON public.news;
-
-CREATE POLICY "Anon full access users" ON public.users FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Anon full access projects" ON public.projects FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Anon full access user saved projects" ON public.user_saved_projects FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Anon full access user followed projects" ON public.user_followed_projects FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Anon full access documents" ON public.documents FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Anon full access faqs" ON public.faqs FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Anon full access news" ON public.news FOR ALL USING (true) WITH CHECK (true);
+-- Do not add policies here. The canonical migration recreates the minimal
+-- policies after it links Supabase Auth profiles and installs admin checks.
 
 -- BƯỚC 3: DỮ LIỆU BAN ĐẦU
 -- Default administrator seed removed. Create identities through Supabase Auth

@@ -9,6 +9,10 @@
     }
 
     const BASE_URL = `${config.url}/rest/v1`;
+    const PRIVATE_DOCUMENT_BUCKET = 'private-documents';
+    const PRIVATE_DOCUMENT_PREFIX = `storage://${PRIVATE_DOCUMENT_BUCKET}/`;
+    const PUBLIC_PROJECT_SELECT = 'id,title,location,investor,progress,status,is_draft,details_json,created_at';
+    const PUBLIC_DOCUMENT_SELECT = 'id,title,category,doc_type,file_url,content,is_draft,draft_key,created_at';
     const normalizeProjectStatus = status => {
         if (status === 'Chờ bàn giao' || status === 'Đã bàn giao') return 'Bàn giao';
         if (status === 'Đang nhận đơn') return 'Đang nhận hồ sơ';
@@ -123,6 +127,19 @@
         },
         guide: docData.guide || null
     });
+    const isPrivateDocumentReference = value => String(value || '').startsWith(PRIVATE_DOCUMENT_PREFIX);
+    const getPrivateDocumentPath = value => isPrivateDocumentReference(value)
+        ? String(value).slice(PRIVATE_DOCUMENT_PREFIX.length)
+        : '';
+    const getProjectDetails = db => ({
+        ...(db.details_json || {}),
+        isDraft: db.is_draft === true || db.details_json?.isDraft === true
+    });
+    const getProjectPayloadDetails = details => {
+        const payload = { ...(details || {}) };
+        delete payload.isDraft;
+        return payload;
+    };
     const cleanDocumentTitle = title => String(title || '')
         .replace(/\s*\((?:PDF|DOCX)\)\s*$/i, '')
         .replace(/\.(?:pdf|docx?)$/i, '')
@@ -326,7 +343,8 @@
         // --- Projects ---
         async getProject(id) {
             try {
-                const res = await fetchReadWithRetry(`${BASE_URL}/projects?id=eq.${id}&select=*`, { headers: getHeaders() });
+                const select = isAdminContext() ? '*' : PUBLIC_PROJECT_SELECT;
+                const res = await fetchReadWithRetry(`${BASE_URL}/projects?id=eq.${id}&select=${select}`, { headers: getHeaders() });
                 if (!res.ok) throw new Error('Failed to fetch project');
                 const data = await res.json();
                 if (data && data.length > 0) {
@@ -346,7 +364,7 @@
                         scale: db.details_json?.scale || 'Đang cập nhật',
                         area: db.details_json?.area || 'Đang cập nhật',
                         handover: db.details_json?.handover || 'Đang cập nhật',
-                        details: db.details_json || {}
+                        details: getProjectDetails(db)
                     };
                 }
                 return null;
@@ -358,7 +376,8 @@
 
         async getProjects() {
             try {
-                const res = await fetchReadWithRetry(`${BASE_URL}/projects?select=*`, { headers: getHeaders() });
+                const select = isAdminContext() ? '*' : PUBLIC_PROJECT_SELECT;
+                const res = await fetchReadWithRetry(`${BASE_URL}/projects?select=${select}`, { headers: getHeaders() });
                 if (!res.ok) throw new Error('Failed to fetch projects');
                 const data = await res.json();
                 return data.map(db => ({
@@ -371,7 +390,7 @@
                     projectCode: db.details_json?.projectCode || '',
                     desc: db.details_json?.desc || '',
                     imageUrl: db.details_json?.mainImageUrl || '',
-                    details: db.details_json || {},
+                    details: getProjectDetails(db),
                     created_at: db.created_at
                 }));
             } catch (err) {
@@ -418,7 +437,8 @@
                     location: projectData.location || 'Hà Nội',
                     investor: projectData.owner || '',
                     status: normalizeProjectStatus(projectData.status || 'Chờ xây dựng'),
-                    details_json: projectData.details || { desc: projectData.desc || '' }
+                    details_json: getProjectPayloadDetails(projectData.details || { desc: projectData.desc || '' }),
+                    is_draft: !!projectData.isDraft
                 };
                 const res = await fetch(`${BASE_URL}/projects`, {
                     method: 'POST',
@@ -441,7 +461,8 @@
                     location: projectData.location || 'Hà Nội',
                     investor: projectData.owner || '',
                     status: normalizeProjectStatus(projectData.status || 'Chờ xây dựng'),
-                    details_json: projectData.details || { desc: projectData.desc || '' }
+                    details_json: getProjectPayloadDetails(projectData.details || { desc: projectData.desc || '' }),
+                    is_draft: !!projectData.isDraft
                 };
                 const res = await fetch(`${BASE_URL}/projects?id=eq.${id}`, {
                     method: 'PATCH',
@@ -462,7 +483,7 @@
                 const res = await fetch(`${BASE_URL}/projects?id=eq.${encodeURIComponent(id)}`, {
                     method: 'PATCH',
                     headers: getHeaders(),
-                    body: JSON.stringify({ details_json: details || {} })
+                    body: JSON.stringify({ details_json: getProjectPayloadDetails(details) })
                 });
                 if (!res.ok) throw new Error('Failed to update project details');
                 const data = await res.json();
@@ -519,7 +540,7 @@
                 return (await res.json()).map(row => {
                     const db = row.projects;
                     if (!db) return null;
-                    return { id: db.id, name: db.title, location: db.location, owner: db.investor, status: normalizeProjectStatus(db.status), progress: db.progress, projectCode: db.details_json?.projectCode || '', desc: db.details_json?.desc || '', imageUrl: db.details_json?.mainImageUrl || '', details: db.details_json || {}, created_at: db.created_at };
+                    return { id: db.id, name: db.title, location: db.location, owner: db.investor, status: normalizeProjectStatus(db.status), progress: db.progress, projectCode: db.details_json?.projectCode || '', desc: db.details_json?.desc || '', imageUrl: db.details_json?.mainImageUrl || '', details: getProjectDetails(db), created_at: db.created_at };
                 }).filter(Boolean);
             } catch (err) {
                 console.error('Fetch saved projects error:', err);
@@ -559,7 +580,7 @@
                 return (await res.json()).map(row => {
                     const db = row.projects;
                     if (!db) return null;
-                    return { id: db.id, name: db.title, location: db.location, owner: db.investor, status: normalizeProjectStatus(db.status), progress: db.progress, projectCode: db.details_json?.projectCode || '', desc: db.details_json?.desc || '', imageUrl: db.details_json?.mainImageUrl || '', details: db.details_json || {}, created_at: db.created_at };
+                    return { id: db.id, name: db.title, location: db.location, owner: db.investor, status: normalizeProjectStatus(db.status), progress: db.progress, projectCode: db.details_json?.projectCode || '', desc: db.details_json?.desc || '', imageUrl: db.details_json?.mainImageUrl || '', details: getProjectDetails(db), created_at: db.created_at };
                 }).filter(Boolean);
             } catch (err) {
                 console.error('Fetch followed projects error:', err);
@@ -637,22 +658,6 @@
             }
         },
 
-        async resetPasswordByEmail(email, newPassword) {
-            try {
-                const res = await fetch(`${BASE_URL}/users?email=eq.${encodeURIComponent(email)}`, {
-                    method: 'PATCH',
-                    headers: getHeaders(),
-                    body: JSON.stringify({ password_hash: newPassword })
-                });
-                if (!res.ok) throw new Error('Failed to reset password');
-                const data = await res.json();
-                return Array.isArray(data) ? data[0] || null : data;
-            } catch (err) {
-                console.error('Reset password error:', err);
-                return null;
-            }
-        },
-
         async updateUserActivity(id) {
             try {
                 const res = await fetch(`${BASE_URL}/users?id=eq.${id}`, {
@@ -677,28 +682,6 @@
             } catch (err) {
                 console.error(err);
                 return 0;
-            }
-        },
-
-        async addUser(userData) {
-            try {
-                const payload = {
-                    full_name: userData.name,
-                    email: userData.email,
-                    password_hash: 'default_hash', // Since it's admin adding
-                    role: 'user'
-                };
-                const res = await fetch(`${BASE_URL}/users`, {
-                    method: 'POST',
-                    headers: getHeaders(),
-                    body: JSON.stringify(payload)
-                });
-                if (!res.ok) throw new Error('Failed to add user');
-                const data = await res.json();
-                return data[0] || data;
-            } catch (err) {
-                console.error(err);
-                return null;
             }
         },
 
@@ -827,7 +810,8 @@
         // --- Documents ---
         async getDocuments() {
             try {
-                const res = await fetchReadWithRetry(`${BASE_URL}/documents?select=*`, { headers: getHeaders() });
+                const select = isAdminContext() ? '*' : PUBLIC_DOCUMENT_SELECT;
+                const res = await fetchReadWithRetry(`${BASE_URL}/documents?select=${select}`, { headers: getHeaders() });
                 if (!res.ok) throw new Error('Failed to fetch documents');
                 const data = await res.json();
                 return mergeFormDocuments(data.map(mapDocumentRecord));
@@ -903,15 +887,37 @@
                     .replace(/_+/g, '_');
                 if (!safeName || safeName === '.') safeName = 'document.pdf';
                 const path = `documents/${group}/${Date.now()}-${safeName}`;
-                const res = await fetch(`${config.url}/storage/v1/object/project-images/${path}`, {
+                const res = await fetch(`${config.url}/storage/v1/object/${PRIVATE_DOCUMENT_BUCKET}/${path}`, {
                     method: 'POST',
                     headers: { ...getHeaders(), 'Content-Type': file.type || 'application/octet-stream', 'x-upsert': 'true' },
                     body: file
                 });
                 if (!res.ok) throw new Error(await res.text());
-                return `${config.url}/storage/v1/object/public/project-images/${path}`;
+                return `${PRIVATE_DOCUMENT_PREFIX}${path}`;
             } catch (err) {
                 console.error('Document upload error:', err);
+                return null;
+            }
+        },
+
+        async createPrivateDocumentDownloadUrl(reference, downloadName) {
+            const path = getPrivateDocumentPath(reference);
+            if (!path || !getAuthSession()?.access_token) return null;
+            try {
+                const res = await fetch(`${config.url}/storage/v1/object/sign/${PRIVATE_DOCUMENT_BUCKET}/${path}`, {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({
+                        expiresIn: 60,
+                        ...(downloadName ? { download: downloadName } : {})
+                    })
+                });
+                if (!res.ok) throw new Error('Failed to sign private document URL');
+                const data = await res.json();
+                if (!data?.signedURL) throw new Error('Private document signature is missing');
+                return `${config.url}/storage/v1${data.signedURL}`;
+            } catch (err) {
+                console.error('Private document download error:', err);
                 return null;
             }
         },
@@ -954,12 +960,14 @@
                 const guideImageUrls = meta.guide && Array.isArray(meta.guide.imageUrls) ? meta.guide.imageUrls : [];
                 const fileUrls = [...new Set([record.file_url, meta.attachments.pdf, meta.attachments.docx, meta.guide && meta.guide.imageUrl, ...guideImageUrls].filter(Boolean))];
                 if (fileUrls.length && !options.keepFile) {
-                    const marker = '/storage/v1/object/public/project-images/';
                     for (const fileUrl of fileUrls) {
-                        const pathIndex = fileUrl.indexOf(marker);
-                        if (pathIndex !== -1) {
-                            const path = fileUrl.slice(pathIndex + marker.length);
-                            const storageRes = await fetch(`${config.url}/storage/v1/object/project-images/${path}`, {
+                        const privatePath = getPrivateDocumentPath(fileUrl);
+                        const legacyMarker = '/storage/v1/object/public/project-images/';
+                        const legacyPathIndex = fileUrl.indexOf(legacyMarker);
+                        const bucket = privatePath ? PRIVATE_DOCUMENT_BUCKET : 'project-images';
+                        const path = privatePath || (legacyPathIndex !== -1 ? fileUrl.slice(legacyPathIndex + legacyMarker.length) : '');
+                        if (path) {
+                            const storageRes = await fetch(`${config.url}/storage/v1/object/${bucket}/${path}`, {
                                 method: 'DELETE', headers: getHeaders()
                             });
                             if (!storageRes.ok) throw new Error('Failed to delete document file from storage');
@@ -1056,7 +1064,7 @@
         async loginUser(email, password) { return this.signInWithPassword(email, password); },
 
         async registerUser(newUser) {
-            return this.signUpWithPassword({ email: newUser.email, password: newUser.password_hash, fullName: newUser.full_name, phone: newUser.phone });
+            return this.signUpWithPassword({ email: newUser.email, password: newUser.password, fullName: newUser.full_name, phone: newUser.phone });
         }
     };
 

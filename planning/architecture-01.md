@@ -73,9 +73,9 @@ Các tên hàm là điểm tìm bằng `rg`, không phải kết quả browser h
 
 | Mã phát hiện | Vấn đề | Nơi xử lý / trạng thái |
 |---|---|---|
-| A01 | Chính sách công khai cần lọc draft tại database; slug hiện sinh từ tên | 05 + 07, chờ duyệt |
+| A01 | Chính sách công khai cần lọc draft tại database; slug hiện sinh từ tên | 05B đã chuẩn bị cột/policy draft; chờ kiểm thử staging, slug thuộc 07 |
 | A02 | Admin tự gọi `migrateLegacyProjectStatuses` và `ensurePersistentProjectCodes` khi tải dữ liệu; mở admin không thuần đọc | 05: chuyển tác vụ di trú sang quy trình có kiểm soát; 01 không đăng nhập admin live để tránh ghi ngoài ý muốn |
-| A03 | `resetPasswordByEmail` legacy PATCH `password_hash`; `addUser/deleteUser` thao tác profile, không quản lý Supabase Auth; chưa thấy caller các hàm này trong UI đã quét | 05: rà/xóa hoặc thay theo nhu cầu đã duyệt; không dùng hàm legacy để triển khai reset |
+| A03 | `resetPasswordByEmail` legacy PATCH `password_hash`; `addUser/deleteUser` thao tác profile, không quản lý Supabase Auth; chưa thấy caller các hàm này trong UI đã quét | 05B đã xóa reset profile và tạo `default_hash`; migration chuẩn bị bỏ cột legacy sau backup 05C |
 | A04 | Phản hồi báo thành công nhưng không lưu/gửi; news UI chưa nối đầy đủ | Cần người dùng duyệt bổ sung chức năng hoặc tạm ẩn trước launch; 09 ghi là khoảng trống chức năng, chưa sửa trong 01 |
 | A05 | Checklist/nhắc tiến độ local và analytics local | Checklist đa thiết bị cần duyệt riêng nếu muốn; analytics thuộc 10 |
 | A06 | Live file URLs và dữ liệu JSON cũ chưa đối soát | 05 trước khi xóa legacy hoặc chuyển file Storage |

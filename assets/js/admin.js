@@ -1371,7 +1371,7 @@ window.handleAdminLogout = function() {
     }
 
     function isDraftProject(project) {
-        return !!(project && project.details && project.details.isDraft);
+        return !!(project && (project.isDraft || (project.details && project.details.isDraft)));
     }
 
     function getProjectDisplayId(project) {
@@ -1970,7 +1970,7 @@ window.handleAdminLogout = function() {
                     if (currentEditingProjectId && !editingProject) throw new Error('Dự án đang chỉnh sửa không còn trong danh sách. Vui lòng tải lại trang.');
 
                     var existingDetails = (editingProject && editingProject.details) || {};
-                    var isPublishingDemo = !isDraft && !!existingDetails.isDraft;
+                    var isPublishingDemo = !isDraft && !!(editingProject && (editingProject.isDraft || existingDetails.isDraft));
                     var projectCode = getStoredProjectCode(editingProject) || getNextProjectCode();
                     var mainImageInput = document.getElementById('prj-main-image-input');
                     var mapImageInput = document.getElementById('location-map-file-input');
@@ -1984,7 +1984,8 @@ window.handleAdminLogout = function() {
                         status: statusSel ? statusSel.value : 'Chờ xây dựng',
                         location: addressInp && addressInp.value.trim() ? addressInp.value.trim() : 'Hà Nội',
                         desc: descTxt ? descTxt.value : '',
-                        details: Object.assign({}, existingDetails, { projectCode: projectCode, desc: descTxt ? descTxt.value : '', address: addressInp ? addressInp.value.trim() : '', mapsUrl: mapsInp ? mapsInp.value.trim() : '', showFloorplans: floorplansToggle ? floorplansToggle.checked : true, showLocation: locationToggle ? locationToggle.checked : true, area: areaInp ? areaInp.value.trim() : '', scale: scaleInp ? scaleInp.value.trim() : '', handover: handoverInp ? handoverInp.value.trim() : '', estimatedPrice: estimatedPriceInp ? estimatedPriceInp.value.trim() : '', amenities: Array.from(document.querySelectorAll('#page-projects-new input[placeholder="Thêm tiện ích..."]')).filter(input => input.previousElementSibling && input.previousElementSibling.checked && input.value.trim()).map(input => input.value.trim()), statusTimeline: Array.from(document.querySelectorAll('#project-status-notes > div')).map(function(item) { return { label: item.querySelector('label span').textContent.trim(), checked: item.querySelector('input[type="checkbox"]').checked, note: item.querySelector('input[type="text"]').value.trim() }; }), isDraft: !!isDraft })
+                        details: Object.assign({}, existingDetails, { projectCode: projectCode, desc: descTxt ? descTxt.value : '', address: addressInp ? addressInp.value.trim() : '', mapsUrl: mapsInp ? mapsInp.value.trim() : '', showFloorplans: floorplansToggle ? floorplansToggle.checked : true, showLocation: locationToggle ? locationToggle.checked : true, area: areaInp ? areaInp.value.trim() : '', scale: scaleInp ? scaleInp.value.trim() : '', handover: handoverInp ? handoverInp.value.trim() : '', estimatedPrice: estimatedPriceInp ? estimatedPriceInp.value.trim() : '', amenities: Array.from(document.querySelectorAll('#page-projects-new input[placeholder="Thêm tiện ích..."]')).filter(input => input.previousElementSibling && input.previousElementSibling.checked && input.value.trim()).map(input => input.value.trim()), statusTimeline: Array.from(document.querySelectorAll('#project-status-notes > div')).map(function(item) { return { label: item.querySelector('label span').textContent.trim(), checked: item.querySelector('input[type="checkbox"]').checked, note: item.querySelector('input[type="text"]').value.trim() }; }) }),
+                        isDraft: !!isDraft
                     };
 
                     var savedProject;

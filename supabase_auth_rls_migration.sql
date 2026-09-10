@@ -1,9 +1,19 @@
--- NOXH.HELP: Supabase Auth + RLS migration
--- Run this only AFTER the updated website code has been deployed locally.
--- Replace the email below with the email of the Auth user that must be admin.
+-- NOXH.HELP: legacy Auth + RLS compatibility migration.
+-- New deployments must run supabase_migrations/20260910_05b_security_hardening.sql
+-- after this file. This file contains no open public-write policy.
 
 ALTER TABLE public.users ADD COLUMN IF NOT EXISTS auth_user_id UUID UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE;
-ALTER TABLE public.users ALTER COLUMN password_hash DROP NOT NULL;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'users' AND column_name = 'password_hash'
+  ) THEN
+    ALTER TABLE public.users ALTER COLUMN password_hash DROP NOT NULL;
+  END IF;
+END $$;
+ALTER TABLE public.projects ADD COLUMN IF NOT EXISTS is_draft BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE public.documents ADD COLUMN IF NOT EXISTS is_draft BOOLEAN NOT NULL DEFAULT false;
 
 -- Create/link a public profile for existing Supabase Auth users.
 INSERT INTO public.users (auth_user_id, email, full_name, phone, role)
@@ -18,10 +28,8 @@ ON CONFLICT (email) DO UPDATE
 SET auth_user_id = EXCLUDED.auth_user_id
 WHERE public.users.auth_user_id IS NULL;
 
--- Set your existing Auth account as the administrator.
-UPDATE public.users
-SET role = 'admin'
-WHERE auth_user_id = (SELECT id FROM auth.users WHERE email = '2fong.vn@gmail.com');
+-- Assign the first administrator in a separately authorized SQL session after
+-- confirming its auth_user_id. Never commit a personal email or credential here.
 
 -- Auto-create the public profile whenever a new Auth user signs up.
 CREATE OR REPLACE FUNCTION public.handle_new_auth_user()
@@ -139,16 +147,16 @@ USING (auth_user_id = (select auth.uid()) OR (select public.is_admin()))
 WITH CHECK (auth_user_id = (select auth.uid()) OR (select public.is_admin()));
 
 -- Public content can be read; only admins can change it.
-CREATE POLICY "Public read projects" ON public.projects FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "Public read projects" ON public.projects FOR SELECT TO anon, authenticated USING (is_draft = false);
 CREATE POLICY "Admins manage projects" ON public.projects FOR ALL TO authenticated
 USING ((select public.is_admin())) WITH CHECK ((select public.is_admin()));
-CREATE POLICY "Public read documents" ON public.documents FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "Public read documents" ON public.documents FOR SELECT TO anon, authenticated USING (is_draft = false);
 CREATE POLICY "Admins manage documents" ON public.documents FOR ALL TO authenticated
 USING ((select public.is_admin())) WITH CHECK ((select public.is_admin()));
 CREATE POLICY "Public read faqs" ON public.faqs FOR SELECT TO anon, authenticated USING (true);
 CREATE POLICY "Admins manage faqs" ON public.faqs FOR ALL TO authenticated
 USING ((select public.is_admin())) WITH CHECK ((select public.is_admin()));
-CREATE POLICY "Public read news" ON public.news FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "Public read news" ON public.news FOR SELECT TO anon, authenticated USING (status = 'published');
 CREATE POLICY "Admins manage news" ON public.news FOR ALL TO authenticated
 USING ((select public.is_admin())) WITH CHECK ((select public.is_admin()));
 

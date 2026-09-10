@@ -1789,12 +1789,29 @@ window.requireDocumentLogin = function(event) {
 function setupDocumentAccessGuard(container) {
     if (!container || container.dataset.documentAccessGuardBound === 'true') return;
     container.dataset.documentAccessGuardBound = 'true';
-    container.addEventListener('click', event => {
+    container.addEventListener('click', async event => {
         if (event.defaultPrevented) return;
         const action = event.target.closest('[data-login-required]');
-        if (!action || !container.contains(action) || hasAuthenticatedUserSession()) return;
+        if (!action || !container.contains(action)) return;
+        if (!hasAuthenticatedUserSession()) {
+            event.preventDefault();
+            showLoginRequiredModal();
+            return;
+        }
+        const privateReference = action.dataset.privateDocumentReference;
+        if (!privateReference) return;
         event.preventDefault();
-        showLoginRequiredModal();
+        if (action.dataset.downloadPending === 'true') return;
+        action.dataset.downloadPending = 'true';
+        action.setAttribute('aria-busy', 'true');
+        const signedUrl = await window.SupabaseService?.createPrivateDocumentDownloadUrl?.(privateReference, action.dataset.downloadName || 'tai-lieu');
+        delete action.dataset.downloadPending;
+        action.removeAttribute('aria-busy');
+        if (!signedUrl) {
+            alert('Không thể tạo liên kết tải tài liệu. Vui lòng thử lại.');
+            return;
+        }
+        window.location.assign(signedUrl);
     });
 }
 
@@ -2853,9 +2870,35 @@ function getDocumentDownloadName(document, format) {
 function getDocumentDownloadUrl(document, format) {
     const normalizedFormat = String(format || '').toUpperCase();
     const fileUrl = normalizedFormat === 'PDF' ? document.pdfUrl : (normalizedFormat === 'DOCX' ? document.docxUrl : (document.fileUrl || document.file || ''));
-    if (!fileUrl) return '#';
+    if (!fileUrl || String(fileUrl).startsWith('storage://private-documents/')) return '#';
     const separator = fileUrl.includes('?') ? '&' : '?';
     return `${fileUrl}${separator}download=${encodeURIComponent(getDocumentDownloadName(document, format))}`;
+}
+
+function getDocumentDownloadAttributes(document, format) {
+    const normalizedFormat = String(format || '').toUpperCase();
+    const reference = normalizedFormat === 'PDF' ? document.pdfUrl : (normalizedFormat === 'DOCX' ? document.docxUrl : (document.fileUrl || document.file || ''));
+    const attributes = [`data-login-required`, `href="${escapeHtml(getDocumentDownloadUrl(document, format))}"`];
+    if (String(reference || '').startsWith('storage://private-documents/')) {
+        attributes.push(`data-private-document-reference="${escapeHtml(reference)}"`);
+        attributes.push(`data-download-name="${escapeHtml(getDocumentDownloadName(document, format))}"`);
+    }
+    return attributes.join(' ');
+}
+
+function setDocumentDownloadLink(link, document, format) {
+    if (!link) return;
+    const normalizedFormat = String(format || '').toUpperCase();
+    const reference = normalizedFormat === 'PDF' ? document.pdfUrl : (normalizedFormat === 'DOCX' ? document.docxUrl : (document.fileUrl || document.file || ''));
+    link.href = getDocumentDownloadUrl(document, format);
+    link.setAttribute('data-login-required', '');
+    if (String(reference || '').startsWith('storage://private-documents/')) {
+        link.dataset.privateDocumentReference = reference;
+        link.dataset.downloadName = getDocumentDownloadName(document, format);
+    } else {
+        delete link.dataset.privateDocumentReference;
+        delete link.dataset.downloadName;
+    }
 }
 
 async function loadDocumentGuide() {
@@ -2896,9 +2939,13 @@ async function loadDocumentGuide() {
         const imageSkeleton = document.getElementById('document-guide-image-skeleton');
         const imageEmpty = document.getElementById('document-guide-image-empty');
         if (imageSkeleton) imageSkeleton.classList.add('hidden');
-        const imageUrls = guide && Array.isArray(guide.imageUrls) && guide.imageUrls.length
+        const imageReferences = guide && Array.isArray(guide.imageUrls) && guide.imageUrls.length
             ? guide.imageUrls.filter(Boolean)
             : (guide && guide.imageUrl ? [guide.imageUrl] : []);
+        const imageUrls = (await Promise.all(imageReferences.map(async imageUrl => {
+            if (!String(imageUrl).startsWith('storage://private-documents/')) return imageUrl;
+            return window.SupabaseService.createPrivateDocumentDownloadUrl(imageUrl);
+        }))).filter(Boolean);
         if (images && imageUrls.length) {
             images.innerHTML = imageUrls.map((imageUrl, index) => `<figure><img src="${escapeHtml(imageUrl)}" alt="Trang ${index + 1} của ${escapeHtml(selectedDocument.name)}" class="w-full h-auto rounded shadow-sm border border-outline-variant/30"><figcaption class="mt-2 text-center text-xs font-medium text-on-surface-variant">Trang ${index + 1}</figcaption></figure>`).join('');
             images.classList.remove('hidden');
@@ -2912,15 +2959,13 @@ async function loadDocumentGuide() {
         const docxLink = document.getElementById('document-guide-docx');
         if (pdfLink) {
             if (selectedDocument.pdfUrl) {
-                pdfLink.href = getDocumentDownloadUrl(selectedDocument, 'PDF');
-                pdfLink.setAttribute('data-login-required', '');
+                setDocumentDownloadLink(pdfLink, selectedDocument, 'PDF');
             }
             else pdfLink.classList.add('hidden');
         }
         if (docxLink) {
             if (selectedDocument.docxUrl) {
-                docxLink.href = getDocumentDownloadUrl(selectedDocument, 'DOCX');
-                docxLink.setAttribute('data-login-required', '');
+                setDocumentDownloadLink(docxLink, selectedDocument, 'DOCX');
             }
             else docxLink.classList.add('hidden');
         }
@@ -2979,7 +3024,7 @@ async function loadLiveDocuments() {
                                 </div>
                             </div>
                         </div>
-                        <a data-login-required href="${getDocumentDownloadUrl(d)}" class="px-2 md:px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 justify-center transition-colors">
+                        <a ${getDocumentDownloadAttributes(d)} class="px-2 md:px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 justify-center transition-colors">
                             <span class="material-symbols-outlined text-base">download</span> Tải xuống
                         </a>
                     </div>
@@ -3042,7 +3087,7 @@ async function loadLegalDocuments() {
             container.innerHTML = '<div class="py-10 text-center flex flex-col items-center justify-center gap-2"><span class="material-symbols-outlined text-4xl text-outline-variant/60">gavel</span><span class="font-body-md text-on-surface-variant text-sm">Chưa có văn bản pháp luật</span></div>';
             return;
         }
-        container.innerHTML = legalDocuments.map(document => `<a data-login-required href="${getDocumentDownloadUrl(document)}" class="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant/60 hover:border-primary hover:bg-primary/5 transition-colors flex items-center justify-between gap-4"><div class="flex items-center gap-3 min-w-0"><span class="material-symbols-outlined text-red-500 text-2xl">picture_as_pdf</span><div class="min-w-0"><p class="font-label-md text-label-md text-on-surface truncate">${escapeHtml(document.name)}</p>${document.desc ? `<p class="mt-1 text-sm text-on-surface-variant">${escapeHtml(document.desc)}</p>` : ''}</div></div><span class="material-symbols-outlined text-primary">download</span></a>`).join('');
+        container.innerHTML = legalDocuments.map(document => `<a ${getDocumentDownloadAttributes(document)} class="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant/60 hover:border-primary hover:bg-primary/5 transition-colors flex items-center justify-between gap-4"><div class="flex items-center gap-3 min-w-0"><span class="material-symbols-outlined text-red-500 text-2xl">picture_as_pdf</span><div class="min-w-0"><p class="font-label-md text-label-md text-on-surface truncate">${escapeHtml(document.name)}</p>${document.desc ? `<p class="mt-1 text-sm text-on-surface-variant">${escapeHtml(document.desc)}</p>` : ''}</div></div><span class="material-symbols-outlined text-primary">download</span></a>`).join('');
         setupDocumentAccessGuard(document.body);
     } catch (error) {
         console.error('Error loading legal documents:', error);
@@ -3061,14 +3106,14 @@ async function loadDocumentSections() {
             const items = (documents || []).filter(document => !document.isDraft && categories.includes(document.type));
             const renderFormDocument = document => {
                 const pdfButton = document.pdfUrl
-                    ? `<a data-login-required href="${getDocumentDownloadUrl(document, 'PDF')}" class="flex-1 min-w-0 px-3 py-1.5 border-2 border-orange-500 text-orange-600 bg-white hover:bg-orange-500 hover:text-white rounded-md text-xs font-semibold leading-none whitespace-nowrap flex items-center justify-center gap-1 transition-colors"><span class="material-symbols-outlined text-sm">picture_as_pdf</span>Tải PDF</a>`
+                    ? `<a ${getDocumentDownloadAttributes(document, 'PDF')} class="flex-1 min-w-0 px-3 py-1.5 border-2 border-orange-500 text-orange-600 bg-white hover:bg-orange-500 hover:text-white rounded-md text-xs font-semibold leading-none whitespace-nowrap flex items-center justify-center gap-1 transition-colors"><span class="material-symbols-outlined text-sm">picture_as_pdf</span>Tải PDF</a>`
                     : '<span class="flex-1 min-w-0 px-3 py-1.5 border-2 border-outline-variant text-outline bg-surface-container rounded-md text-xs font-semibold leading-none whitespace-nowrap text-center cursor-not-allowed">Chưa có PDF</span>';
                 const docxButton = document.docxUrl
-                    ? `<a data-login-required href="${getDocumentDownloadUrl(document, 'DOCX')}" class="flex-1 min-w-0 px-3 py-1.5 border-2 border-sky-600 text-sky-700 bg-white hover:bg-sky-600 hover:text-white rounded-md text-xs font-semibold leading-none whitespace-nowrap flex items-center justify-center gap-1 transition-colors"><span class="material-symbols-outlined text-sm">description</span>Tải DOCX</a>`
+                    ? `<a ${getDocumentDownloadAttributes(document, 'DOCX')} class="flex-1 min-w-0 px-3 py-1.5 border-2 border-sky-600 text-sky-700 bg-white hover:bg-sky-600 hover:text-white rounded-md text-xs font-semibold leading-none whitespace-nowrap flex items-center justify-center gap-1 transition-colors"><span class="material-symbols-outlined text-sm">description</span>Tải DOCX</a>`
                     : '<span class="flex-1 min-w-0 px-3 py-1.5 border-2 border-outline-variant text-outline bg-surface-container rounded-md text-xs font-semibold leading-none whitespace-nowrap text-center cursor-not-allowed">Chưa có DOCX</span>';
                 return `<div class="p-4 rounded-lg border border-outline-variant/60 bg-white flex flex-col md:flex-row md:items-center justify-between gap-4"><div class="min-w-0"><p class="font-label-md text-label-md text-on-surface font-semibold">${escapeHtml(document.name)}</p><p class="mt-1 text-xs leading-relaxed whitespace-pre-line text-on-surface-variant">${escapeHtml(document.desc || 'Chưa có thông tin bổ sung.')}</p></div><div class="w-full md:w-[270px] shrink-0 flex flex-col gap-1.5"><div class="flex gap-1.5">${pdfButton}${docxButton}</div><a data-login-required onclick="return window.requireDocumentLogin(event)" href="docs-guide.html?id=${encodeURIComponent(document.id)}" class="w-full px-3 py-1.5 border-2 border-blue-600 text-blue-700 bg-white hover:bg-blue-600 hover:text-white rounded-md text-xs font-semibold leading-none whitespace-nowrap flex items-center justify-center gap-1 transition-colors"><span class="material-symbols-outlined text-sm">menu_book</span>Xem hướng dẫn điền</a></div></div>`;
             };
-            const renderOtherDocument = document => `<a data-login-required href="${getDocumentDownloadUrl(document)}" class="p-4 rounded-lg border border-outline-variant/60 hover:border-primary hover:bg-primary/5 transition-colors flex items-center justify-between gap-3"><div class="min-w-0"><p class="font-label-md text-label-md text-on-surface truncate">${escapeHtml(document.name)}</p><p class="mt-1 text-xs text-on-surface-variant">${escapeHtml(document.docType || 'PDF')} · ${escapeHtml(document.date || '')}</p></div><span class="material-symbols-outlined text-primary">download</span></a>`;
+            const renderOtherDocument = document => `<a ${getDocumentDownloadAttributes(document)} class="p-4 rounded-lg border border-outline-variant/60 hover:border-primary hover:bg-primary/5 transition-colors flex items-center justify-between gap-3"><div class="min-w-0"><p class="font-label-md text-label-md text-on-surface truncate">${escapeHtml(document.name)}</p><p class="mt-1 text-xs text-on-surface-variant">${escapeHtml(document.docType || 'PDF')} · ${escapeHtml(document.date || '')}</p></div><span class="material-symbols-outlined text-primary">download</span></a>`;
             content.innerHTML = items.length ? `<div class="flex flex-col gap-3">${items.map(document => ['Đơn đăng ký', 'Xác nhận nhà ở', 'Đối tượng & Thu nhập'].includes(document.type) ? renderFormDocument(document) : renderOtherDocument(document)).join('')}</div>` : '<div class="py-8 text-center text-sm text-on-surface-variant">Chưa có tài liệu</div>';
             setupDocumentAccessGuard(content);
         };

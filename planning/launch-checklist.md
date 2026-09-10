@@ -16,7 +16,7 @@ Cập nhật: 10/09/2026. Đây là danh sách đã trao đổi với người d
 |---:|---|---|---|
 | 1 | 01 | Chốt kiến trúc và kiểm kê phụ thuộc server cũ | Đã duyệt; đã chốt và kiểm kê, nghiệm thu runtime còn chờ staging |
 | 2 | 02A–C | Secrets, Git và xử lý lịch sử | Hoàn tất; lịch sử GitHub đã làm sạch |
-| 3 | 05A–C | Supabase: RLS, Storage, admin và Auth | Chờ duyệt từng môi trường |
+| 3 | 05A–C | Supabase: RLS, Storage, admin và Auth | 05A hoàn tất; 05B source/migration đã chuẩn bị, chờ staging; 05C chờ duyệt production |
 | 4 | 11A–E | Chọn/mua VPS, domain; thiết lập tài khoản, VPS và DNS ban đầu | Chờ duyệt phương án và chi phí trước khi mua |
 | 5 | 03 | Tách public build | Hoàn tất; artifact allowlist đã kiểm tra |
 | 6 | 04A–B | Nginx, staging và HTTPS staging | Chờ duyệt |
@@ -141,3 +141,7 @@ Domain được chọn/mua sớm để kiểm tra HTTPS và Auth callback bằng
 - 10/09/2026: hoàn tất quyết định kiến trúc và kiểm kê nguồn mã 01; xóa hằng API localhost không dùng, tăng phiên bản script admin. Ghi các chức năng chưa hoàn chỉnh và điều kiện nghiệm thu runtime trong tài liệu kiến trúc; chưa thực hiện các mã khác.
 - 10/09/2026: mã 02 đã kiểm kê 25 commit và remote public; thêm ignore/template/secret scanner; thay JWT legacy local, loại default credential, chuẩn bị lịch sử đã làm sạch và bản sao lưu xác minh. Remote sẽ chỉ được cập nhật sau khi quét lại bản lịch sử đã viết lại.
 - 10/09/2026: mã 02 force-push lịch sử GitHub đã làm sạch sau khi quét 0 finding; không có fork/tag/PR mở tại lúc xử lý. Mã 03 đã hoàn tất: build allowlist xuất 46 file vào `dist/public`, kiểm tra không có đường dẫn/marker restricted.
+- 10/09/2026: thực hiện phần REST/source của 05A chỉ đọc: REST production xác nhận khách đang đọc dự án/tài liệu/FAQ; chưa có draft ở thời điểm kiểm tra. Source policy public chưa chặn draft và script schema cũ có thể mở toàn bộ RLS/Storage. Dashboard chưa đăng nhập nên bucket, Site URL và redirect allowlist cần xác minh trước khi chốt 05A. Xem `planning/supabase-audit-05a.md`.
+- 10/09/2026: chốt 05A bằng Dashboard chỉ đọc: xác nhận live policy đọc public cho projects/documents đang là `true`; Storage `project-images` public, nhưng upload/update/delete giới hạn bằng `is_admin()`; Site URL và redirect allowlist chỉ có localhost. Quyền admin thật, tài khoản A/B, tạo profile Auth và migration khắc phục sẽ thực hiện ở 05B/05C.
+- 10/09/2026: người dùng xác nhận đã kiểm thử thành công luồng reset password đầy đủ ở môi trường local. Cần lặp lại ở HTTPS staging sau khi có VPS/domain để xác nhận callback và email với domain thật.
+- 10/09/2026: 05B đã chuẩn bị migration RLS/Storage, chuyển draft dự án sang SQL column, private bucket cho tài liệu mới, signed download, loại API `password_hash` legacy và chặn schema bootstrap mở quyền. Đã chạy kiểm tra cú pháp, contract bảo mật và public build; chưa chạy SQL hay thay đổi Supabase. Xem `planning/supabase-05b.md`.
