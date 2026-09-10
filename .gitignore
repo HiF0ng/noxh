@@ -1,0 +1,32 @@
+# Secrets: retain templates, never local values.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Local data, logs, and legacy build output.
+/database.json
+/server/database.json
+/server/uploads/
+/server_log.txt
+*.log
+*.exe
+*.dll
+*.pdb
+node_modules/
+dist/
+
+# Security audit/rewrite workspace may contain restricted backups.
+/.security-local/
+
+# Editor locks and temporary verification artifacts.
+~$*
+*.tmp
+*.bak
+/.tmp-*
+/.edge-*/
+.DS_Store
+Thumbs.db

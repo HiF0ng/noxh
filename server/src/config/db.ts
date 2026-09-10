@@ -109,19 +109,9 @@ export function loadDatabase(): DatabaseSchema {
     }
   }
 
-  // Seed Initial Data
-  const defaultAdminPasswordHash = 'REMOVED_LEGACY_CREDENTIAL'; // admin123
+  // Legacy local fixtures only. Never create a shared/default administrator.
   dbData = {
-    users: [
-      {
-        id: 'user-admin-1',
-        email: 'admin@noxh.help',
-        passwordHash: 'REMOVED_LEGACY_CREDENTIAL', // password: admin
-        fullName: 'Nguyễn Văn A (Admin)',
-        role: 'admin',
-        createdAt: new Date().toISOString()
-      }
-    ],
+    users: [],
     projects: [
       {
         id: 'prj-1',

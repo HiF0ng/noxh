@@ -132,6 +132,5 @@ CREATE POLICY "Anon full access faqs" ON public.faqs FOR ALL USING (true) WITH C
 CREATE POLICY "Anon full access news" ON public.news FOR ALL USING (true) WITH CHECK (true);
 
 -- BƯỚC 3: DỮ LIỆU BAN ĐẦU
-INSERT INTO public.users (email, password_hash, full_name, role)
-VALUES ('admin@noxh.help', 'REMOVED_LEGACY_CREDENTIAL', 'Nguyễn Văn A (Admin)', 'admin')
-ON CONFLICT (email) DO NOTHING;
+-- Default administrator seed removed. Create identities through Supabase Auth
+-- and assign admin roles through a separately authorized server-side process.

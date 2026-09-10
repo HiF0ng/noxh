@@ -1,5 +1,3 @@
-const API_BASE_URL = 'http://localhost:3000/api/v1';
-
 // Admin and public website sessions are intentionally isolated.
 if (window.SupabaseService) {
     window.SupabaseService.setAuthContext('admin');

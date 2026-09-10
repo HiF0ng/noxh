@@ -1,0 +1,11 @@
+title = "NOXH secret scanning"
+
+[extend]
+useDefault = true
+
+# Supabase publishable keys are explicitly public browser configuration.
+# This does not allow sb_secret_ keys, service-role JWTs, or JWT signing secrets.
+[[allowlists]]
+description = "Supabase publishable key (public by design)"
+regexTarget = "secret"
+regexes = ['''^sb_publishable_[A-Za-z0-9_-]+$''']

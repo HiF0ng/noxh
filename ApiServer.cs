@@ -27,42 +27,8 @@ class FullStackApiServer
 
     static void Main(string[] args)
     {
-        if (!Directory.Exists(uploadsDir))
-        {
-            Directory.CreateDirectory(uploadsDir);
-        }
-
-        EnsureDatabaseSeeded();
-
-        Log("Starting Full-Stack API & Static Web Server on port " + port + "...");
-
-        Socket serverSocket = null;
-        try
-        {
-            serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            serverSocket.Bind(new IPEndPoint(IPAddress.Any, port));
-            serverSocket.Listen(100);
-            Log("Server listening on 0.0.0.0:" + port);
-        }
-        catch (Exception ex)
-        {
-            Log("Failed to bind port: " + ex.Message);
-            return;
-        }
-
-        while (true)
-        {
-            try
-            {
-                Socket clientSocket = serverSocket.Accept();
-                ThreadPool.QueueUserWorkItem(WorkItem, clientSocket);
-            }
-            catch (Exception ex)
-            {
-                Log("Accept error: " + ex.Message);
-                Thread.Sleep(50);
-            }
-        }
+        Console.Error.WriteLine("Legacy API server retired. Use the static frontend with Supabase.");
+        Environment.ExitCode = 1;
     }
 
     private static void EnsureDatabaseSeeded()

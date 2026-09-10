@@ -1,3 +1,5 @@
+> Tài liệu lịch sử. Phương án backend Express/database riêng dưới đây được thay thế bởi [quyết định kiến trúc mã 01](planning/architecture-01.md) ngày 10/09/2026. Xem [danh sách duyệt hiện hành](planning/launch-checklist.md) trước khi triển khai.
+
 # FINALIZE PLAN: Kế Hoạch Triển Khai Full-Stack Dự Án NOXH.HELP
 
 Báo cáo kế hoạch tổng thể kiến trúc, công nghệ và lộ trình 3 bước triển khai hệ thống lưu trữ, đăng nhập, bảo mật và quản lý dự án lâu dài cho `noxh.help`.

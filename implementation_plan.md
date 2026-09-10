@@ -1,3 +1,5 @@
+> Tài liệu lịch sử. Từ 10/09/2026, xem [quyết định kiến trúc mã 01](planning/architecture-01.md) và [danh sách duyệt hiện hành](planning/launch-checklist.md). Nội dung dưới đây không phải chỉ dẫn triển khai hoặc xác nhận cấu hình production hiện tại.
+
 # Liên kết Dữ liệu giữa Admin và Website (sử dụng Supabase)
 
 Yêu cầu: Đồng bộ hóa các thao tác quản trị từ giao diện Admin sang hiển thị trên Website chính thức và ngược lại, sử dụng cơ sở dữ liệu Supabase có sẵn.
