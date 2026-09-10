@@ -139,6 +139,17 @@ DROP POLICY IF EXISTS "Admins manage news" ON public.news;
 DROP POLICY IF EXISTS "Users manage own saved projects" ON public.user_saved_projects;
 DROP POLICY IF EXISTS "Users manage own followed projects" ON public.user_followed_projects;
 
+-- Grant only the Data API operations needed by the policies below. This makes
+-- the migration safe when automatic public table exposure is disabled.
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+GRANT SELECT ON public.projects, public.documents, public.faqs, public.news
+  TO anon, authenticated;
+GRANT SELECT, UPDATE ON public.users TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE
+  ON public.projects, public.documents, public.faqs, public.news,
+     public.user_saved_projects, public.user_followed_projects
+  TO authenticated;
+
 -- User profiles: own profile only, except administrators.
 CREATE POLICY "Users read own profile or admin" ON public.users FOR SELECT TO authenticated
 USING (auth_user_id = (select auth.uid()) OR (select public.is_admin()));
