@@ -11,7 +11,8 @@
     const BASE_URL = `${config.url}/rest/v1`;
     const PRIVATE_DOCUMENT_BUCKET = 'private-documents';
     const PRIVATE_DOCUMENT_PREFIX = `storage://${PRIVATE_DOCUMENT_BUCKET}/`;
-    const PUBLIC_PROJECT_SELECT = 'id,title,location,investor,progress,status,is_draft,details_json,created_at';
+    const DOCUMENT_STORAGE_GROUPS = new Set(['forms', 'legal', 'packages', 'guides']);
+    const PUBLIC_PROJECT_SELECT = 'id,title,slug,previous_slugs,location,investor,progress,status,is_draft,details_json,created_at,updated_at';
     const PUBLIC_DOCUMENT_SELECT = 'id,title,category,doc_type,file_url,content,is_draft,draft_key,created_at';
     const normalizeProjectStatus = status => {
         if (status === 'Chờ bàn giao' || status === 'Đã bàn giao') return 'Bàn giao';
@@ -131,6 +132,12 @@
     const getPrivateDocumentPath = value => isPrivateDocumentReference(value)
         ? String(value).slice(PRIVATE_DOCUMENT_PREFIX.length)
         : '';
+    const assertPrivateDocumentReferences = docData => {
+        const references = [docData.file, docData.pdfUrl, docData.docxUrl].filter(Boolean);
+        if (references.some(reference => !isPrivateDocumentReference(reference))) {
+            throw new Error('Document files must use private Storage references.');
+        }
+    };
     const getProjectDetails = db => ({
         ...(db.details_json || {}),
         isDraft: db.is_draft === true || db.details_json?.isDraft === true
@@ -364,6 +371,9 @@
                         scale: db.details_json?.scale || 'Đang cập nhật',
                         area: db.details_json?.area || 'Đang cập nhật',
                         handover: db.details_json?.handover || 'Đang cập nhật',
+                        slug: db.slug || '',
+                        previousSlugs: Array.isArray(db.previous_slugs) ? db.previous_slugs : [],
+                        updated_at: db.updated_at || db.created_at,
                         details: getProjectDetails(db)
                     };
                 }
@@ -390,8 +400,11 @@
                     projectCode: db.details_json?.projectCode || '',
                     desc: db.details_json?.desc || '',
                     imageUrl: db.details_json?.mainImageUrl || '',
+                    slug: db.slug || '',
+                    previousSlugs: Array.isArray(db.previous_slugs) ? db.previous_slugs : [],
                     details: getProjectDetails(db),
-                    created_at: db.created_at
+                    created_at: db.created_at,
+                    updated_at: db.updated_at || db.created_at
                 }));
             } catch (err) {
                 console.error(err);
@@ -438,7 +451,8 @@
                     investor: projectData.owner || '',
                     status: normalizeProjectStatus(projectData.status || 'Chờ xây dựng'),
                     details_json: getProjectPayloadDetails(projectData.details || { desc: projectData.desc || '' }),
-                    is_draft: !!projectData.isDraft
+                    is_draft: !!projectData.isDraft,
+                    ...(projectData.slug ? { slug: projectData.slug } : {})
                 };
                 const res = await fetch(`${BASE_URL}/projects`, {
                     method: 'POST',
@@ -462,7 +476,8 @@
                     investor: projectData.owner || '',
                     status: normalizeProjectStatus(projectData.status || 'Chờ xây dựng'),
                     details_json: getProjectPayloadDetails(projectData.details || { desc: projectData.desc || '' }),
-                    is_draft: !!projectData.isDraft
+                    is_draft: !!projectData.isDraft,
+                    ...(projectData.slug ? { slug: projectData.slug } : {})
                 };
                 const res = await fetch(`${BASE_URL}/projects?id=eq.${id}`, {
                     method: 'PATCH',
@@ -823,6 +838,7 @@
 
         async addDocument(docData) {
             try {
+                assertPrivateDocumentReferences(docData);
                 const usesCombinedPayload = FORM_CATEGORIES.includes(docData.type) || docData.guide || docData.pdfUrl || docData.docxUrl;
                 const fileUrl = docData.pdfUrl || docData.docxUrl || docData.file || '';
                 const combinedType = [docData.pdfUrl && 'PDF', docData.docxUrl && 'DOCX'].filter(Boolean).join(', ');
@@ -873,8 +889,12 @@
             }
         },
 
-        async uploadDocumentFile(file, group = 'documents') {
+        async uploadDocumentFile(file, group = 'forms') {
             try {
+                const normalizedGroup = String(group || '').trim().toLowerCase();
+                if (!DOCUMENT_STORAGE_GROUPS.has(normalizedGroup)) {
+                    throw new Error('Unsupported private document storage group.');
+                }
                 // Supabase Storage object keys reject Vietnamese diacritics. Keep the
                 // object key ASCII-only; the Vietnamese title remains in `documents`
                 // and is used as the browser download filename.
@@ -886,7 +906,7 @@
                     .replace(/[^a-zA-Z0-9._-]+/g, '_')
                     .replace(/_+/g, '_');
                 if (!safeName || safeName === '.') safeName = 'document.pdf';
-                const path = `documents/${group}/${Date.now()}-${safeName}`;
+                const path = `documents/${normalizedGroup}/${Date.now()}-${safeName}`;
                 const res = await fetch(`${config.url}/storage/v1/object/${PRIVATE_DOCUMENT_BUCKET}/${path}`, {
                     method: 'POST',
                     headers: { ...getHeaders(), 'Content-Type': file.type || 'application/octet-stream', 'x-upsert': 'true' },
@@ -924,6 +944,7 @@
 
         async updateDocument(id, docData) {
             try {
+                assertPrivateDocumentReferences(docData);
                 const usesCombinedPayload = FORM_CATEGORIES.includes(docData.type) || docData.guide || docData.pdfUrl || docData.docxUrl;
                 const fileUrl = docData.pdfUrl || docData.docxUrl || docData.file || '';
                 const combinedType = [docData.pdfUrl && 'PDF', docData.docxUrl && 'DOCX'].filter(Boolean).join(', ');

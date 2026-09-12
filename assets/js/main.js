@@ -67,7 +67,12 @@ const NoxhRoutes = (() => {
         'documents.html': '/tai-lieu',
         'faq.html': '/cau-hoi-thuong-gap',
         'compare.html': '/so-sanh',
-        'loan.html': '/tinh-khoan-vay'
+        'loan.html': '/tinh-khoan-vay',
+        'contact.html': '/lien-he',
+        'about_us.html': '/ve-chung-toi',
+        'policy.html': '/chinh-sach-bao-mat',
+        'term_of_use.html': '/dieu-khoan-su-dung',
+        'guide.html': '/huong-dan'
     };
 
     const slugify = value => String(value || '')
@@ -78,7 +83,7 @@ const NoxhRoutes = (() => {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '') || 'du-an';
 
-    const getProjectPath = project => `/du-an/${slugify(project && (project.name || project.title))}`;
+    const getProjectPath = project => `/du-an/${encodeURIComponent(String(project?.slug || slugify(project && (project.name || project.title))))}`;
     const getPagePath = page => pagePaths[page] || page;
     const getCurrentPage = (pathname = window.location.pathname) => {
         const path = String(pathname || '/').replace(/\/+$/, '') || '/';
@@ -872,6 +877,7 @@ function setupSPARouter() {
                 if (push) {
                     window.history.pushState({}, '', href);
                 }
+                window.NoxhSeo?.apply?.();
                 
                 // Re-initialize for new content
                 initPageScripts();
@@ -1825,13 +1831,14 @@ async function loadProjectDetails() {
     if (!project && window.location.pathname.startsWith('/du-an/')) {
         const requestedSlug = decodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() || '');
         const projects = await window.SupabaseService.getProjects();
-        project = (projects || []).find(candidate => NoxhRoutes.slugify(candidate.name || candidate.title) === requestedSlug) || null;
+        project = (projects || []).find(candidate => candidate.slug === requestedSlug || (candidate.previousSlugs || []).includes(requestedSlug) || NoxhRoutes.slugify(candidate.name || candidate.title) === requestedSlug) || null;
         id = project && project.id;
     }
     if (!project) return;
     const canonicalPath = NoxhRoutes.getProjectPath(project);
     if (window.location.pathname !== canonicalPath || window.location.search) {
         window.history.replaceState({}, '', canonicalPath);
+        window.NoxhSeo?.apply?.(canonicalPath);
     }
     const details = project.details || {};
     const setText = (elementId, value, fallback = 'Đang cập nhật') => { const el = document.getElementById(elementId); if (el) el.textContent = value || fallback; };
@@ -1873,6 +1880,9 @@ async function loadProjectDetails() {
                 if (viewAll) { viewAll.classList.add('hidden'); viewAll.classList.remove('flex'); }
             }
         };
+        image.decoding = 'async';
+        image.loading = imageId === 'detail-hero-image' ? 'eager' : 'auto';
+        if (imageId === 'detail-hero-image') image.fetchPriority = 'high';
         image.src = url;
     };
     setDetailImage('detail-hero-image', imageSlots[0]);
@@ -1882,7 +1892,7 @@ async function loadProjectDetails() {
     const floorplanPanel = document.getElementById('detail-floorplan-panel');
     if (showFloorplans && floorplanPanel && details.floorplans && details.floorplans.length) {
         const plans = details.floorplans;
-        floorplanPanel.innerHTML = `<div class="relative bg-surface-container"><div id="detail-floorplan-skeleton" class="absolute inset-0 skeleton-shimmer"></div><img id="detail-floorplan-image" data-floorplan-zoom class="block w-full h-auto max-h-[620px] object-contain bg-white cursor-zoom-in opacity-0 transition-opacity duration-200" src="${plans[0].url}" alt="Mặt bằng căn hộ"></div><p id="detail-floorplan-note" class="mt-3 text-center font-body-md text-body-md text-on-surface-variant">${plans[0].note || ''}</p><div id="detail-floorplan-tabs" class="flex flex-wrap justify-center gap-sm mt-sm"></div>`;
+        floorplanPanel.innerHTML = `<div class="relative bg-surface-container"><div id="detail-floorplan-skeleton" class="absolute inset-0 skeleton-shimmer"></div><img id="detail-floorplan-image" data-floorplan-zoom class="block w-full h-auto max-h-[620px] object-contain bg-white cursor-zoom-in opacity-0 transition-opacity duration-200" src="${plans[0].url}" alt="Mặt bằng căn hộ" width="2400" height="1600" loading="lazy" decoding="async"></div><p id="detail-floorplan-note" class="mt-3 text-center font-body-md text-body-md text-on-surface-variant">${plans[0].note || ''}</p><div id="detail-floorplan-tabs" class="flex flex-wrap justify-center gap-sm mt-sm"></div>`;
         const image = document.getElementById('detail-floorplan-image'); const note = document.getElementById('detail-floorplan-note'); const tabs = document.getElementById('detail-floorplan-tabs');
         const floorplanSkeleton = document.getElementById('detail-floorplan-skeleton');
         const revealFloorplan = () => { image.classList.remove('opacity-0'); if (floorplanSkeleton) floorplanSkeleton.classList.add('hidden'); };
@@ -2386,12 +2396,8 @@ function setupProjectFilterSort() {
         }
 
         pagination.classList.remove('hidden');
-        const visiblePageCount = window.matchMedia('(min-width: 1024px)').matches
-            ? totalPages
-            : Math.min(3, totalPages);
-        const firstVisiblePage = window.matchMedia('(min-width: 1024px)').matches
-            ? 1
-            : Math.min(Math.max(currentPage - 1, 1), Math.max(totalPages - visiblePageCount + 1, 1));
+        const visiblePageCount = Math.min(3, totalPages);
+        const firstVisiblePage = Math.min(Math.max(currentPage - 1, 1), Math.max(totalPages - visiblePageCount + 1, 1));
         const pageButtons = Array.from({ length: visiblePageCount }, (_, index) => {
             const page = firstVisiblePage + index;
             const activeClasses = page === currentPage
@@ -2782,7 +2788,7 @@ function renderProjectsList(container, list) {
             <div class="project-card-item bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/60 shadow-sm hover:shadow-md transition-all flex flex-col justify-between" data-name="${escapeHtml(projectName)}" data-owner="${escapeHtml(projectOwner)}" data-location="${escapeHtml(projectLocation)}" data-status="${escapeHtml(p.status || '')}" data-date="${escapeHtml(p.created_at || p.date || '')}" data-price-min="${priceRange.min === null ? '' : priceRange.min}" data-price-max="${priceRange.max === null ? '' : priceRange.max}">
                 <div>
                     <a href="${cardUrl}" class="project-card-thumbnail relative w-full rounded-lg overflow-hidden mb-3 bg-surface-container block">
-                        ${projectImageUrl ? `<img src="${escapeHtml(projectImageUrl)}" alt="${escapeHtml(p.name || p.title)}" class="w-full h-full object-cover" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');"><div class="absolute inset-0 hidden skeleton-shimmer"></div>` : '<div class="absolute inset-0 skeleton-shimmer"></div>'}
+                        ${projectImageUrl ? `<img src="${escapeHtml(projectImageUrl)}" alt="${escapeHtml(p.name || p.title)}" class="w-full h-full object-cover" width="640" height="400" loading="lazy" decoding="async" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');"><div class="absolute inset-0 hidden skeleton-shimmer"></div>` : '<div class="absolute inset-0 skeleton-shimmer"></div>'}
                     </a>
                     <a href="${cardUrl}" class="block font-bold text-lg text-on-surface mb-1 hover:text-primary transition-colors"><h3>${p.name || p.title}</h3></a>
                     <p class="text-sm text-on-surface-variant flex items-center gap-1 mb-3">
@@ -2947,7 +2953,7 @@ async function loadDocumentGuide() {
             return window.SupabaseService.createPrivateDocumentDownloadUrl(imageUrl);
         }))).filter(Boolean);
         if (images && imageUrls.length) {
-            images.innerHTML = imageUrls.map((imageUrl, index) => `<figure><img src="${escapeHtml(imageUrl)}" alt="Trang ${index + 1} của ${escapeHtml(selectedDocument.name)}" class="w-full h-auto rounded shadow-sm border border-outline-variant/30"><figcaption class="mt-2 text-center text-xs font-medium text-on-surface-variant">Trang ${index + 1}</figcaption></figure>`).join('');
+            images.innerHTML = imageUrls.map((imageUrl, index) => `<figure><img src="${escapeHtml(imageUrl)}" alt="Trang ${index + 1} của ${escapeHtml(selectedDocument.name)}" class="w-full h-auto rounded shadow-sm border border-outline-variant/30" width="1600" height="2200" loading="lazy" decoding="async"><figcaption class="mt-2 text-center text-xs font-medium text-on-surface-variant">Trang ${index + 1}</figcaption></figure>`).join('');
             images.classList.remove('hidden');
             if (imageEmpty) imageEmpty.classList.add('hidden');
         } else if (imageEmpty) {
@@ -3130,16 +3136,20 @@ async function loadDocumentSections() {
             const category = packageCategories[index];
             const packageFile = (documents || []).filter(document => !document.isDraft && document.type === category).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))[0];
             if (!packageFile) return;
-            button.onclick = () => {
+            button.onclick = async () => {
                 if (!hasAuthenticatedUserSession()) {
                     showLoginRequiredModal();
                     return;
                 }
-                const a = document.createElement('a');
-                a.href = getDocumentDownloadUrl(packageFile);
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+                const reference = packageFile.fileUrl || packageFile.file || '';
+                const downloadUrl = String(reference).startsWith('storage://private-documents/')
+                    ? await window.SupabaseService.createPrivateDocumentDownloadUrl(reference, getDocumentDownloadName(packageFile))
+                    : getDocumentDownloadUrl(packageFile);
+                if (!downloadUrl || downloadUrl === '#') {
+                    alert('Không thể tạo liên kết tải tài liệu. Vui lòng thử lại.');
+                    return;
+                }
+                window.location.assign(downloadUrl);
             };
             button.title = packageFile.name;
             const label = button.querySelector('.document-pack-label');
@@ -3319,7 +3329,7 @@ window.addProjectToCompareList = function(id, title, location, status, progress)
                 <span class="material-symbols-outlined text-lg">close</span>
             </button>
             <a href="${detailUrl}" class="project-card-thumbnail relative w-full rounded-lg overflow-hidden mb-3 bg-surface-container block">
-                ${imageUrl ? `<img src="${imageUrl}" alt="${projectTitle}" class="w-full h-full object-cover">` : '<div class="w-full h-full bg-slate-100 flex items-center justify-center text-slate-400"><span class="material-symbols-outlined text-4xl">image</span></div>'}
+                ${imageUrl ? `<img src="${imageUrl}" alt="${projectTitle}" class="w-full h-full object-cover" width="640" height="400" loading="lazy" decoding="async">` : '<div class="w-full h-full bg-slate-100 flex items-center justify-center text-slate-400"><span class="material-symbols-outlined text-4xl">image</span></div>'}
             </a>
             <a href="${detailUrl}" class="block font-bold text-lg text-on-surface mb-1 hover:text-primary transition-colors"><h3>${projectTitle}</h3></a>
             <p class="text-sm text-on-surface-variant flex items-center gap-1 mb-3">

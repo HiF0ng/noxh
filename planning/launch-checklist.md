@@ -20,9 +20,9 @@ Cập nhật: 10/09/2026. Đây là danh sách đã trao đổi với người d
 | 4 | 11A–E | Chọn/mua VPS, domain; thiết lập tài khoản, VPS và DNS ban đầu | Chờ duyệt phương án và chi phí trước khi mua |
 | 5 | 03 | Tách public build | Hoàn tất; artifact allowlist đã kiểm tra |
 | 6 | 04A–B | Nginx, staging và HTTPS staging | Chờ duyệt |
-| 7 | 06A–C | Metadata, trang riêng tư, robots/sitemap/404 | Chờ duyệt từng phần |
-| 8 | 07 | HTML từng dự án và cơ chế xuất bản | Chờ duyệt |
-| 9 | 08 | CSS, ảnh và hiệu năng | Chờ duyệt |
+| 7 | 06A–C | Metadata, trang riêng tư, robots/sitemap/404 | Source hoàn tất; xác minh HTTPS/domain/Nginx chờ mã 04/11 |
+| 8 | 07 | HTML từng dự án và cơ chế xuất bản | Source hoàn tất; HTTP 301 và release tự động chờ VPS/Nginx |
+| 9 | 08 | CSS, ảnh và hiệu năng | Source hoàn tất; cache HTTP và đo CWV staging chờ VPS/Nginx |
 | 10 | 09A | QA staging | Chờ duyệt |
 | 11 | 04C + 09B | DNS/HTTPS production, kiểm tra và mở website chính thức | Duyệt sau kết quả QA |
 | 12 | 10 | Search Console, analytics, backup và monitoring | Chờ duyệt |
@@ -88,6 +88,7 @@ Domain được chọn/mua sớm để kiểm tra HTTPS và Auth callback bằng
 
 ## 07 — SEO dự án và xuất bản
 
+- **Tiến độ 2026-09-11:** đã áp dụng migration slug/updated time cho production (121 dự án hợp lệ); bộ build sinh HTML dự án published, sitemap và JSON-LD đã kiểm tra bằng dữ liệu production. Chờ task 04 khi có VPS/domain để Nginx dùng redirect map làm HTTP 301 thật và triển khai release theo lịch tối đa 5 phút.
 - Lưu slug duy nhất trong database, xử lý tên trùng; đổi tên không tự đổi URL; đổi slug có 301 từ slug cũ.
 - Sinh HTML và metadata theo từng dự án published: nội dung chính, H1, breadcrumb, canonical, OG/Twitter, JSON-LD đúng dữ liệu thật.
 - Escape/sanitize nội dung admin trước khi xuất HTML/JSON-LD; không tạo thông tin còn thiếu hoặc dữ liệu nội bộ.
@@ -99,6 +100,7 @@ Domain được chọn/mua sớm để kiểm tra HTTPS và Auth callback bằng
 
 ## 08 — CSS, ảnh, hiệu năng
 
+- **Tiến độ 2026-09-11:** hoàn tất phần mã nguồn: 33 HTML dùng Tailwind CSS build sẵn thay Play CDN; ảnh card/tài liệu lazy-load và có kích thước giữ bố cục; hero giữ ưu tiên LCP. Admin tự tối ưu ảnh raster mới thành WebP theo từng nhóm; floorplan giới hạn 2560px, chất lượng 94%, giữ SVG/GIF và ảnh nhỏ nguyên gốc. Ảnh Storage cũ chưa bị thay thế/xóa; chưa bật Supabase Image Transformations vì cần gói Pro và có thể phát sinh phí. Cache HTTP thực tế chờ task 04 (Nginx/VPS); đánh giá CWV và mobile thực hiện tại task 09 trên staging.
 - Build Tailwind phiên bản tương thích; quét HTML/JS và class động; bỏ CDN runtime, tài nguyên trùng và giảm script chặn hiển thị.
 - Ảnh card/hero/gallery có kích thước phù hợp, WebP/AVIF khi có lợi, fallback, `srcset/sizes`, width/height; lazy-load ngoài màn hình, ưu tiên ảnh LCP.
 - Áp dụng ảnh cũ và upload mới; giữ hero/gallery độc lập và skeleton khi thiếu ảnh; kiểm tra chữ trên mặt bằng sau nén.
@@ -143,5 +145,6 @@ Domain được chọn/mua sớm để kiểm tra HTTPS và Auth callback bằng
 - 10/09/2026: mã 02 force-push lịch sử GitHub đã làm sạch sau khi quét 0 finding; không có fork/tag/PR mở tại lúc xử lý. Mã 03 đã hoàn tất: build allowlist xuất 46 file vào `dist/public`, kiểm tra không có đường dẫn/marker restricted.
 - 10/09/2026: thực hiện phần REST/source của 05A chỉ đọc: REST production xác nhận khách đang đọc dự án/tài liệu/FAQ; chưa có draft ở thời điểm kiểm tra. Source policy public chưa chặn draft và script schema cũ có thể mở toàn bộ RLS/Storage. Dashboard chưa đăng nhập nên bucket, Site URL và redirect allowlist cần xác minh trước khi chốt 05A. Xem `planning/supabase-audit-05a.md`.
 - 10/09/2026: chốt 05A bằng Dashboard chỉ đọc: xác nhận live policy đọc public cho projects/documents đang là `true`; Storage `project-images` public, nhưng upload/update/delete giới hạn bằng `is_admin()`; Site URL và redirect allowlist chỉ có localhost. Quyền admin thật, tài khoản A/B, tạo profile Auth và migration khắc phục sẽ thực hiện ở 05B/05C.
+- 11/09/2026: hoàn tất source mã 06A–C: metadata HTML cho 12 trang public, cập nhật canonical/OG/Twitter khi SPA hoặc Back/Forward, noindex/nofollow cho 20 trang tài khoản/admin, `robots.txt`, trang `404.html`, và tạo sitemap theo `NOXH_SITE_URL` ở public build. Cần HTTPS/domain và Nginx ở mã 04/11 để kiểm tra HTTP 404, canonical tuyệt đối, sitemap thật và crawl trên staging.
 - 10/09/2026: người dùng xác nhận đã kiểm thử thành công luồng reset password đầy đủ ở môi trường local. Cần lặp lại ở HTTPS staging sau khi có VPS/domain để xác nhận callback và email với domain thật.
 - 10/09/2026: 05B đã chuẩn bị migration RLS/Storage, chuyển draft dự án sang SQL column, private bucket cho tài liệu mới, signed download, loại API `password_hash` legacy và chặn schema bootstrap mở quyền. Đã chạy kiểm tra cú pháp, contract bảo mật và public build; chưa chạy SQL hay thay đổi Supabase. Xem `planning/supabase-05b.md`.

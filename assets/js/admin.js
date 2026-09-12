@@ -536,13 +536,16 @@ window.handleAdminLogout = function() {
         var docxInput = document.getElementById('docx-input');
         var saveButton = document.getElementById('btn-save-document');
         var draftButton = document.getElementById('btn-save-document-draft');
+        var legalDocumentCategory = 'Văn bản luật';
         if (!category || !saveButton) return;
         var draftStorageKey = 'noxh_document_draft_key';
         var draftKey = localStorage.getItem(draftStorageKey) || '';
         var activeDrafts = [];
 
         var syncAttachments = function() {
-            if (docxSection) docxSection.classList.remove('hidden');
+            var isLegalDocument = category.value === legalDocumentCategory;
+            if (docxSection) docxSection.classList.toggle('hidden', isLegalDocument);
+            if (isLegalDocument && docxInput) docxInput.value = '';
         };
         category.onchange = syncAttachments;
         syncAttachments();
@@ -562,6 +565,25 @@ window.handleAdminLogout = function() {
         var activeEditDoc = null;
         var activeEditPdfDeleted = false;
         var activeEditDocxDeleted = false;
+        var setPrivateDocumentLink = function(link, url, downloadName) {
+            if (!link) return;
+            if (!String(url || '').startsWith('storage://private-documents/')) {
+                link.href = url || '#';
+                link.onclick = function(e) { e.stopPropagation(); };
+                return;
+            }
+            link.href = '#';
+            link.onclick = async function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var signedUrl = await window.SupabaseService.createPrivateDocumentDownloadUrl(url, downloadName);
+                if (!signedUrl) {
+                    alert('Không thể tạo liên kết tải tài liệu. Vui lòng thử lại.');
+                    return;
+                }
+                window.location.assign(signedUrl);
+            };
+        };
 
         var loadDraft = async function() {
             var pdfFileLabel = document.getElementById('pdf-selected-file');
@@ -602,8 +624,7 @@ window.handleAdminLogout = function() {
                         var fileName = url.split('/').pop().split('?')[0];
                         try { fileName = decodeURIComponent(fileName); } catch(e){}
                         link.textContent = fileName || (kind === 'PDF' ? 'Tài liệu PDF' : 'Tài liệu Word');
-                        link.href = url;
-                        link.onclick = function(e) { e.stopPropagation(); };
+                        setPrivateDocumentLink(link, url, fileName || (kind === 'PDF' ? 'tai-lieu.pdf' : 'tai-lieu.docx'));
                         overlay.classList.remove('hidden');
                         deleteButton.onclick = function(e) {
                             e.preventDefault(); e.stopPropagation();
@@ -646,8 +667,7 @@ window.handleAdminLogout = function() {
                 var deleteButton = document.getElementById(kind === 'PDF' ? 'pdf-existing-delete' : 'docx-existing-delete');
                 if (!overlay || !link || !deleteButton) return;
                 link.textContent = kind === 'PDF' ? 'Tệp PDF trong bản nháp' : 'Tệp DOCX trong bản nháp';
-                link.href = url;
-                link.onclick = function(e) { e.stopPropagation(); };
+                setPrivateDocumentLink(link, url, kind === 'PDF' ? 'tai-lieu.pdf' : 'tai-lieu.docx');
                 overlay.classList.remove('hidden');
                 deleteButton.onclick = function(e) {
                     e.preventDefault(); e.stopPropagation();
@@ -668,7 +688,7 @@ window.handleAdminLogout = function() {
             var pdfInput = document.getElementById('pdf-input');
             var pdfFile = pdfInput && pdfInput.files[0];
             var wordFile = docxInput && docxInput.files[0];
-            var isLegalDocument = false;
+            var isLegalDocument = category.value === legalDocumentCategory;
             var isCombinedForm = ['Đơn đăng ký', 'Xác nhận nhà ở', 'Đối tượng & Thu nhập'].includes(category.value);
 
             if (!isDraft && !name) { alert('Vui lòng nhập tên tài liệu.'); return; }
@@ -679,6 +699,7 @@ window.handleAdminLogout = function() {
             var draftDocxUrl = activeDraft && activeDraft.docxUrl || '';
             if (pdfFile && !/\.pdf$/i.test(pdfFile.name)) { alert('Tệp PDF phải có định dạng .pdf.'); return; }
             if (wordFile && !/\.docx?$/i.test(wordFile.name)) { alert('Tệp Word phải có định dạng .doc hoặc .docx.'); return; }
+            if (isLegalDocument && wordFile) { alert('Văn bản pháp luật chỉ nhận tệp PDF.'); return; }
             if ((pdfFile && pdfFile.size > 50 * 1024 * 1024) || (wordFile && wordFile.size > 50 * 1024 * 1024)) { alert('Tệp đính kèm vượt quá giới hạn 50 MB.'); return; }
 
             var button = isDraft ? draftButton : saveButton;
@@ -698,6 +719,7 @@ window.handleAdminLogout = function() {
                     if (!docxUrl) throw new Error('Không thể tải tệp Word lên.');
                 }
                 if (!isDraft && isCombinedForm && (!pdfUrl || !docxUrl)) throw new Error('Tài liệu biểu mẫu cần đính kèm đồng thời cả tệp PDF và DOCX.');
+                if (!isDraft && isLegalDocument && !pdfUrl) throw new Error('Văn bản pháp luật cần có tệp PDF.');
                 if (!isDraft && !isCombinedForm && !pdfUrl && !docxUrl) throw new Error('Vui lòng chọn ít nhất một tệp đính kèm.');
                 if (isDraft) {
                     await removeDrafts(true);
@@ -1192,9 +1214,65 @@ window.handleAdminLogout = function() {
         return sortProjectsByProjectCode(projectItems);
     }
 
+    async function optimizeProjectImageForUpload(file, group) {
+        if (!file || !/^image\//i.test(file.type || '')) {
+            throw new Error('Tệp tải lên phải là ảnh.');
+        }
+
+        // Giữ nguyên định dạng có thể có chuyển động hoặc vector. Với sơ đồ PNG nhỏ,
+        // chỉ đổi khi thực sự giảm dung lượng để không đánh đổi độ sắc nét của chữ.
+        if (/image\/(svg\+xml|gif)/i.test(file.type) || file.size < 250 * 1024) return file;
+
+        var profiles = {
+            main: { maxEdge: 1920, quality: 0.84 },
+            gallery: { maxEdge: 1600, quality: 0.82 },
+            floorplans: { maxEdge: 2560, quality: 0.94 },
+            location: { maxEdge: 2048, quality: 0.90 }
+        };
+        var profile = profiles[group] || profiles.gallery;
+        var objectUrl = URL.createObjectURL(file);
+
+        try {
+            var source = await new Promise(function(resolve, reject) {
+                var image = new Image();
+                image.onload = function() { resolve(image); };
+                image.onerror = function() { reject(new Error('Không đọc được nội dung ảnh.')); };
+                image.src = objectUrl;
+            });
+            var sourceWidth = source.naturalWidth || source.width;
+            var sourceHeight = source.naturalHeight || source.height;
+            if (!sourceWidth || !sourceHeight) return file;
+
+            var scale = Math.min(1, profile.maxEdge / Math.max(sourceWidth, sourceHeight));
+            var width = Math.max(1, Math.round(sourceWidth * scale));
+            var height = Math.max(1, Math.round(sourceHeight * scale));
+            if (file.type === 'image/webp' && scale === 1) return file;
+
+            var canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            var context = canvas.getContext('2d', { alpha: false });
+            if (!context) return file;
+            context.drawImage(source, 0, 0, width, height);
+            var blob = await new Promise(function(resolve) { canvas.toBlob(resolve, 'image/webp', profile.quality); });
+            if (!blob) return file;
+
+            // Không thay ảnh gốc nếu không cần resize và WebP không tiết kiệm tối thiểu 10%.
+            if (scale === 1 && blob.size >= file.size * 0.9) return file;
+            var baseName = (file.name || 'project-image').replace(/\.[^.]+$/, '').replace(/[^a-z0-9_-]+/gi, '-').replace(/^-+|-+$/g, '') || 'project-image';
+            return new File([blob], baseName + '.webp', { type: 'image/webp', lastModified: Date.now() });
+        } catch (error) {
+            console.warn('Không thể tối ưu ảnh trước khi tải lên; dùng tệp gốc.', error);
+            return file;
+        } finally {
+            URL.revokeObjectURL(objectUrl);
+        }
+    }
+
     async function uploadProjectImageOrThrow(projectId, file, group) {
         if (!file) return '';
-        var uploadedUrl = await window.SupabaseService.uploadProjectImage(projectId, file, group);
+        var optimizedFile = await optimizeProjectImageForUpload(file, group);
+        var uploadedUrl = await window.SupabaseService.uploadProjectImage(projectId, optimizedFile, group);
         if (!uploadedUrl) throw new Error('Không thể tải ảnh "' + (file.name || 'không rõ tên') + '" lên kho lưu trữ.');
         return uploadedUrl;
     }
@@ -2798,12 +2876,19 @@ window.handleAdminLogout = function() {
                     '<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[18px]">drag_indicator</span>Trang ' + (index + 1) + '</span>' +
                     '<button type="button" class="w-8 h-8 shrink-0 rounded-full bg-error-container text-error hover:bg-error hover:text-on-error flex items-center justify-center transition-colors" title="Xóa ảnh trang ' + (index + 1) + '" onclick="event.stopPropagation(); removeGuideImage(' + index + ')"><span class="material-symbols-outlined text-[18px]">close</span></button>' +
                 '</div>' +
-                '<img src="' + escapeHtml(item.url) + '" alt="Trang ' + (index + 1) + ' của tài liệu" class="w-full max-h-[440px] object-contain rounded-lg bg-white">' +
+                '<img data-guide-image-preview="' + index + '" src="' + escapeHtml(item.url) + '" alt="Trang ' + (index + 1) + ' của tài liệu" class="w-full max-h-[440px] object-contain rounded-lg bg-white">' +
             '</div>';
         }).join('');
         previews.classList.remove('hidden');
         previews.classList.add('flex');
         if (placeholder) placeholder.classList.add('hidden');
+        guideImageItems.forEach(function(item, index) {
+            if (!String(item.url || '').startsWith('storage://private-documents/')) return;
+            window.SupabaseService.createPrivateDocumentDownloadUrl(item.url).then(function(signedUrl) {
+                var image = previews.querySelector('[data-guide-image-preview="' + index + '"]');
+                if (image && signedUrl) image.src = signedUrl;
+            });
+        });
     };
     window.removeGuideImage = function(index) {
         guideImageItems.splice(index, 1);

@@ -389,6 +389,10 @@ body {
         margin-bottom: 0.65rem !important;
     }
 
+    #homepage-projects-grid .project-card-project-info > div > span {
+        font-size: 14px;
+    }
+
     .project-card-project-info > * + * {
         margin-top: 0.65rem !important;
     }
@@ -1123,6 +1127,39 @@ body:not(:has(.homepage-hero-section)) [class*="mt-[80px]"] {
     .auth-signup-card #signup-form { padding-left: 1.5rem; padding-right: 1.5rem; }
     .auth-signup-card > div:first-child { padding-top: 1.5rem; }
     .auth-signup-card #signup-form { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+}
+
+@media (min-width: 1024px) {
+    .login-page-main,
+    .signup-cityscape {
+        min-height: 100vh;
+        min-height: 100svh;
+        align-items: flex-end;
+        justify-content: center;
+        /* Match the centered desktop navbar's max-w-5xl (64rem) outer edge. */
+        padding: 140px max(0px, calc((100% - 64rem) / 2)) 64px;
+        background: #e8f5ff url('../../img/login-bg.webp') left bottom / cover no-repeat;
+    }
+
+    .login-page-main .auth-login-card,
+    .signup-cityscape .auth-signup-card {
+        width: min(44vw, 520px);
+        max-width: 520px;
+        background-color: rgba(255, 255, 255, 0.97);
+        box-shadow: 0 16px 48px rgba(39, 78, 120, 0.14);
+    }
+
+    .login-page-main .auth-login-card > div:first-child {
+        display: none;
+    }
+
+    .login-page-main .auth-login-card > div:last-child {
+        width: 100%;
+    }
+
+    .login-page-main .auth-login-card h1 + p {
+        white-space: normal;
+    }
 }
 
 /* Compact breadcrumb spacing is intentionally desktop-only. Keep the original

@@ -38,6 +38,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         viewGallery?.classList.remove('flex');
       }
     };
+    image.decoding = 'async';
+    image.loading = selector === '#register-hero-main' ? 'eager' : 'auto';
+    if (selector === '#register-hero-main') image.fetchPriority = 'high';
     image.src = url;
   });
   const galleryLabel = document.getElementById('register-gallery-label');

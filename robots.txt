@@ -1,0 +1,6 @@
+# Private routes remain crawlable so search engines can read their noindex tag.
+# The sitemap URL is appended during the production build once NOXH_SITE_URL is set.
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /storage/

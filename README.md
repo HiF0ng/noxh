@@ -11,7 +11,7 @@ Ngày 10/09/2026, người dùng duyệt thực hiện **mã 01**. Các mã khá
 
 ## Build public
 
-`npm run build` tạo và kiểm tra `dist/public/` từ allowlist. Chỉ deploy thư mục output này; chi tiết tại [hướng dẫn deployment](deploy/README.md).
+Chạy `npm install` một lần để cài Tailwind CLI, rồi `npm run build` để tạo và kiểm tra `dist/public/` từ allowlist. Lệnh build tạo CSS tĩnh từ HTML/JS, không tải Tailwind CDN ở trình duyệt. Chỉ deploy thư mục output này; chi tiết tại [hướng dẫn deployment](deploy/README.md).
 
 ## Kiến trúc đích
 

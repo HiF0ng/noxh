@@ -1,0 +1,4 @@
+[
+  {"id":"d8aa0bd4-5d20-46be-98b3-73e4c2e6de91","title":"NOXH Mẫu Minh","slug":"noxh-mau-minh","previous_slugs":["noxh-minh-cu"],"location":"Nghệ An","investor":"NOXH.help","status":"Đang nhận hồ sơ","is_draft":false,"details_json":{"desc":"Dự án mẫu để kiểm tra HTML xuất sẵn.","address":"Vinh, Nghệ An","mainImageUrl":"https://example.test/project.jpg","scale":"500 căn"},"created_at":"2026-09-01T00:00:00.000Z","updated_at":"2026-09-10T00:00:00.000Z"},
+  {"id":"d9aa0bd4-5d20-46be-98b3-73e4c2e6de92","title":"Bản nháp không xuất","slug":"ban-nhap-khong-xuat","previous_slugs":[],"location":"Hà Nội","is_draft":true,"details_json":{},"created_at":"2026-09-01T00:00:00.000Z"}
+]

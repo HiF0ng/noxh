@@ -9,7 +9,23 @@ Admin HTML is present so the application can function, but it is not public cont
 Run from the repository root:
 
 ```powershell
+npm install
 npm run build
 ```
+
+`tailwindcss` là build dependency nên không dùng `npm install --omit=dev` trên máy build/deploy. CSS đã build nằm tại `assets/css/tailwind.generated.css`; trình duyệt không tải Tailwind compiler từ CDN.
+
+For an HTTPS staging or production build, set the canonical origin before building. The build then emits `sitemap.xml` with canonical public URLs and appends its absolute location to `robots.txt`.
+
+```powershell
+$env:NOXH_SITE_URL = 'https://staging.example.com'
+npm run build
+```
+
+Do not set this value to a temporary localhost address. `404.html` is included in the public artifact; task 04 configures Nginx to return it with HTTP status 404.
+
+When `NOXH_SITE_URL` is set, the same build reads only published projects through the public Supabase API and writes static pages to `dist/public/du-an/<slug>/index.html`. It also adds these pages to the sitemap in that build. The project source read retries three times; if it still fails, the build fails and the previous deployed release must remain in place.
+
+Changing a slug preserves the former slug in `previous_slugs`. The build records its redirect map in `dist/project-publication-manifest.json`; task 04 must turn that map into real HTTP 301 rules on Nginx. Until Nginx is configured, do not claim that a redirect page is an HTTP 301.
 
 The machine that deploys must use the resulting `dist/public/`. `dist/build-manifest.json` is a local verification report and is outside the web root.

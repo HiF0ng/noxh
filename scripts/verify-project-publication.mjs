@@ -1,0 +1,22 @@
+import assert from 'node:assert/strict';
+import { readFile, rm } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { generateProjectPages } from './generate-project-pages.mjs';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const output = path.join(root, 'dist', 'verify-project-publication');
+const reportFile = path.join(root, 'dist', 'verify-project-publication.json');
+process.env.NOXH_PROJECTS_FIXTURE = 'scripts/fixtures/published-projects.json';
+await rm(output, { recursive: true, force: true });
+await rm(reportFile, { force: true });
+const result = await generateProjectPages({ root, output, origin: 'https://staging.example.test', reportFile });
+assert.equal(result.outputFiles.length, 1, 'only published projects may be exported');
+const page = await readFile(path.join(output, 'du-an/noxh-mau-minh/index.html'), 'utf8');
+assert.match(page, /<h1>NOXH Mẫu Minh<\/h1>/, 'rendered project needs an H1');
+assert.match(page, /https:\/\/staging\.example\.test\/du-an\/noxh-mau-minh/, 'rendered project needs an absolute canonical');
+assert.match(page, /application\/ld\+json/, 'rendered project needs JSON-LD');
+assert.doesNotMatch(page, /Bản nháp không xuất/, 'draft data must not appear in a public page');
+await rm(output, { recursive: true, force: true });
+await rm(reportFile, { force: true });
+console.log('Project publication generator checks passed.');

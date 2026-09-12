@@ -27,8 +27,16 @@ CREATE TABLE IF NOT EXISTS public.projects (
     status VARCHAR(100) DEFAULT 'Đang cập nhật',
     is_draft BOOLEAN NOT NULL DEFAULT false,
     details_json JSONB DEFAULT '{}'::jsonb,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    slug TEXT,
+    previous_slugs TEXT[] NOT NULL DEFAULT '{}',
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT projects_slug_format_check CHECK (slug IS NULL OR slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$')
 );
+
+-- The publication migration finalizes/backfills these values for an existing
+-- database. New installations should still run that migration after 05B.
+CREATE UNIQUE INDEX IF NOT EXISTS projects_slug_unique_idx ON public.projects (slug) WHERE slug IS NOT NULL;
 
 -- projectCode is stored inside details_json so existing deployments do not need
 -- a new table column. Once assigned (PRJ1, PRJ2, ...), it belongs to that row.

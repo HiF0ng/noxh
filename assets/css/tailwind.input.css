@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .status-pill { @apply inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-medium text-white shadow-sm md:text-[11px]; }
+  .status-chuanbikhoicong { @apply bg-error; }
+  .status-dangxaydung { @apply bg-tertiary; }
+  .status-chuanbithuhoso { @apply bg-inverse-primary; }
+  .status-dangthuhoso { @apply bg-primary; }
+  .status-hoanthien { @apply bg-secondary; }
+}
