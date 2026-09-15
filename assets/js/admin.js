@@ -1219,9 +1219,9 @@ window.handleAdminLogout = function() {
             throw new Error('Tệp tải lên phải là ảnh.');
         }
 
-        // Giữ nguyên định dạng có thể có chuyển động hoặc vector. Với sơ đồ PNG nhỏ,
+        // Giữ nguyên định dạng có thể có chuyển động. Với sơ đồ PNG nhỏ,
         // chỉ đổi khi thực sự giảm dung lượng để không đánh đổi độ sắc nét của chữ.
-        if (/image\/(svg\+xml|gif)/i.test(file.type) || file.size < 250 * 1024) return file;
+        if (/image\/gif/i.test(file.type) || file.size < 250 * 1024) return file;
 
         var profiles = {
             main: { maxEdge: 1920, quality: 0.84 },
@@ -1272,6 +1272,12 @@ window.handleAdminLogout = function() {
     async function uploadProjectImageOrThrow(projectId, file, group) {
         if (!file) return '';
         var optimizedFile = await optimizeProjectImageForUpload(file, group);
+        if (!/^image\/(?:jpeg|png|webp|gif|avif)$/i.test(optimizedFile.type || '')) {
+            throw new Error('Ảnh chỉ nhận JPG, PNG, WebP, GIF hoặc AVIF.');
+        }
+        if (!optimizedFile.size || optimizedFile.size > 10 * 1024 * 1024) {
+            throw new Error('Ảnh sau tối ưu không được vượt quá 10 MB.');
+        }
         var uploadedUrl = await window.SupabaseService.uploadProjectImage(projectId, optimizedFile, group);
         if (!uploadedUrl) throw new Error('Không thể tải ảnh "' + (file.name || 'không rõ tên') + '" lên kho lưu trữ.');
         return uploadedUrl;
@@ -1697,7 +1703,7 @@ window.handleAdminLogout = function() {
         item.className = 'gallery-item aspect-square bg-surface-container rounded-xl overflow-hidden relative group cursor-pointer border border-outline-variant hover:border-primary transition-all';
         item.dataset.existingUrl = url;
         item.setAttribute('onclick', 'triggerGalleryUpload(this, event)');
-        item.innerHTML = '<input type="file" accept="image/*" class="hidden gallery-file-input" onchange="previewGalleryImage(this)"><img src="' + url + '" class="gallery-img-preview w-full h-full object-cover group-hover:opacity-75 transition-opacity"><div class="gallery-upload-overlay absolute inset-0 bg-inverse-surface/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-white text-2xl">photo_camera</span><span class="text-[11px] text-white font-medium mt-1">Đổi ảnh</span></div><button type="button" onclick="removeGalleryItem(this, event)" class="btn-remove-gallery absolute top-2 right-2 w-7 h-7 bg-error text-white rounded-full flex items-center justify-center z-20" title="Xóa ảnh"><span class="material-symbols-outlined text-sm font-bold">close</span></button>';
+        item.innerHTML = '<input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" class="hidden gallery-file-input" onchange="previewGalleryImage(this)"><img src="' + url + '" class="gallery-img-preview w-full h-full object-cover group-hover:opacity-75 transition-opacity"><div class="gallery-upload-overlay absolute inset-0 bg-inverse-surface/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-white text-2xl">photo_camera</span><span class="text-[11px] text-white font-medium mt-1">Đổi ảnh</span></div><button type="button" onclick="removeGalleryItem(this, event)" class="btn-remove-gallery absolute top-2 right-2 w-7 h-7 bg-error text-white rounded-full flex items-center justify-center z-20" title="Xóa ảnh"><span class="material-symbols-outlined text-sm font-bold">close</span></button>';
         return item;
     }
 
@@ -1706,7 +1712,7 @@ window.handleAdminLogout = function() {
         item.className = 'floorplan-item p-4 border border-outline-variant rounded-xl bg-surface-container-low relative space-y-3';
         item.dataset.existingUrl = plan.url;
         var hasImage = !!plan.url;
-        item.innerHTML = '<button type="button" class="btn-remove-floorplan absolute top-3 right-3 w-7 h-7 bg-error/10 hover:bg-error text-error hover:text-white rounded-full flex items-center justify-center z-10" title="Xóa mặt bằng"><span class="material-symbols-outlined text-sm font-bold">close</span></button><input type="file" accept="image/*" class="hidden floorplan-file-input"><div class="floorplan-upload-box border-2 border-dashed border-outline-variant rounded-xl p-6 text-center bg-surface-container-lowest cursor-pointer"><img src="' + (plan.url || '') + '" class="floorplan-img-preview w-full h-40 object-cover rounded-lg ' + (hasImage ? '' : 'hidden') + '"><div class="floorplan-placeholder-content ' + (hasImage ? 'hidden' : '') + '"><span class="material-symbols-outlined text-4xl text-primary">map</span><p class="text-xs text-on-surface font-semibold">Kéo thả hoặc click để tải ảnh mặt bằng</p></div></div><input type="text" value="' + (plan.note || '').replace(/"/g, '&quot;') + '" placeholder="Ghi chú thông tin mặt bằng..." class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-xs text-on-surface focus:outline-none focus:border-primary">';
+        item.innerHTML = '<button type="button" class="btn-remove-floorplan absolute top-3 right-3 w-7 h-7 bg-error/10 hover:bg-error text-error hover:text-white rounded-full flex items-center justify-center z-10" title="Xóa mặt bằng"><span class="material-symbols-outlined text-sm font-bold">close</span></button><input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" class="hidden floorplan-file-input"><div class="floorplan-upload-box border-2 border-dashed border-outline-variant rounded-xl p-6 text-center bg-surface-container-lowest cursor-pointer"><img src="' + (plan.url || '') + '" class="floorplan-img-preview w-full h-40 object-cover rounded-lg ' + (hasImage ? '' : 'hidden') + '"><div class="floorplan-placeholder-content ' + (hasImage ? 'hidden' : '') + '"><span class="material-symbols-outlined text-4xl text-primary">map</span><p class="text-xs text-on-surface font-semibold">Kéo thả hoặc click để tải ảnh mặt bằng</p></div></div><input type="text" value="' + (plan.note || '').replace(/"/g, '&quot;') + '" placeholder="Ghi chú thông tin mặt bằng..." class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-xs text-on-surface focus:outline-none focus:border-primary">';
         return item;
     }
 
@@ -2034,7 +2040,7 @@ window.handleAdminLogout = function() {
                     .map(function(input) { return input.files && input.files[0]; })
                     .find(function(file) { return file && file.size > 50 * 1024 * 1024; });
                 if (oversizedFile) {
-                    alert('Ảnh "' + oversizedFile.name + '" vượt quá giới hạn 50 MB.');
+                    alert('Ảnh nguồn "' + oversizedFile.name + '" vượt quá giới hạn xử lý 50 MB. Ảnh tải lên sau tối ưu bị giới hạn 10 MB.');
                     return;
                 }
 
@@ -2191,7 +2197,7 @@ window.handleAdminLogout = function() {
         var newItem = document.createElement('div');
         newItem.className = 'gallery-item aspect-square bg-surface-container rounded-xl overflow-hidden relative group cursor-pointer border border-outline-variant hover:border-primary transition-all';
         newItem.setAttribute('onclick', 'triggerGalleryUpload(this, event)');
-        newItem.innerHTML = '<input type="file" accept="image/*" class="hidden gallery-file-input" onchange="previewGalleryImage(this)">' +
+        newItem.innerHTML = '<input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" class="hidden gallery-file-input" onchange="previewGalleryImage(this)">' +
             '<img src="https://placehold.co/300x300/e5eeff/004ac6?text=Ảnh+mới" class="gallery-img-preview w-full h-full object-cover group-hover:opacity-75 transition-opacity">' +
             '<div class="gallery-upload-overlay absolute inset-0 bg-inverse-surface/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">' +
                 '<span class="material-symbols-outlined text-white text-2xl">photo_camera</span>' +
@@ -2287,7 +2293,7 @@ window.handleAdminLogout = function() {
                 newItem.innerHTML = '<button type="button" class="btn-remove-floorplan absolute top-3 right-3 w-7 h-7 bg-error/10 hover:bg-error text-error hover:text-white rounded-full flex items-center justify-center transition-all z-10" title="Xóa mặt bằng">' +
                     '<span class="material-symbols-outlined text-sm font-bold">close</span>' +
                 '</button>' +
-                '<input type="file" accept="image/*" class="hidden floorplan-file-input">' +
+                '<input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" class="hidden floorplan-file-input">' +
                 '<div class="floorplan-upload-box border-2 border-dashed border-outline-variant rounded-xl p-6 text-center bg-surface-container-lowest hover:bg-surface-container hover:border-primary transition-all cursor-pointer relative group">' +
                     '<img src="" class="floorplan-img-preview w-full h-40 object-cover rounded-lg mb-2 hidden">' +
                     '<div class="floorplan-placeholder-content">' +

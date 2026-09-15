@@ -1,5 +1,8 @@
-document.addEventListener('DOMContentLoaded', () => {
+(() => {
+    const initRecoveryPage = () => {
     const emailForm = document.getElementById('recovery-email-form');
+    if (!emailForm || emailForm.dataset.recoveryInitialized === 'true') return;
+    emailForm.dataset.recoveryInitialized = 'true';
     const codeForm = document.getElementById('recovery-code-form');
     const passwordForm = document.getElementById('recovery-password-form');
     const message = document.getElementById('recovery-message');
@@ -88,4 +91,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         title.textContent = 'Hoàn tất đổi mật khẩu'; description.textContent = 'Mật khẩu của bạn đã được cập nhật. Đang điều hướng về trang chủ'; document.getElementById('recovery-heading-icon').classList.add('hidden'); document.getElementById('recovery-back-link').classList.add('hidden'); showOnly(success); window.setTimeout(() => window.location.href = '/trang-chu', 2200);
     });
-});
+    };
+
+    window.initRecoveryPage = initRecoveryPage;
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initRecoveryPage, { once: true });
+    } else {
+        initRecoveryPage();
+    }
+})();

@@ -77,3 +77,31 @@
       font-size: clamp(15.5px, 1.18vw, 18px) !important;
       line-height: 1.25;
   }
+
+  @media (max-width: 1023px) {
+      .top-navbar {
+          margin-top: 20px !important;
+          transition: none !important;
+      }
+
+      .top-navbar .nav-item,
+      .top-navbar .nav-text,
+      #nav-indicator {
+          transition: none !important;
+          -webkit-tap-highlight-color: transparent;
+      }
+
+      .top-navbar .nav-item:not(.is-active):not(.dropdown-open):hover,
+      .top-navbar .nav-item:not(.is-active):not(.dropdown-open):active {
+          background-color: transparent;
+      }
+
+      #nav-indicator {
+          display: none !important;
+      }
+
+      .top-navbar .nav-item.is-active,
+      .top-navbar .nav-item.dropdown-open {
+          background-color: var(--primary, #2563eb);
+      }
+  }

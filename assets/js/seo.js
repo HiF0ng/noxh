@@ -78,9 +78,20 @@
         const direct = Object.entries(templatePaths).find(([, mappedPath]) => mappedPath === path);
         return direct ? direct[0] : path.split('/').pop() || 'homepage.html';
     };
+    const projectPage = project => ({
+        title: `${project.name || 'Dự án nhà ở xã hội'} | ${BRAND}`,
+        description: String(project.desc || project.details?.desc || `Thông tin dự án ${project.name || ''}.`).replace(/\s+/g, ' ').trim().slice(0, 180),
+        image: project.imageUrl || project.details?.mainImageUrl || DEFAULT_IMAGE,
+        template: 'details.html'
+    });
     const pageForPath = pathname => {
         const path = String(pathname || '/').replace(/\/+$/, '') || '/';
-        if (path.startsWith('/du-an/')) return pages['/du-an/'];
+        if (path.startsWith('/du-an/')) {
+            const requestedSlug = decodeURIComponent(path.split('/').filter(Boolean).pop() || '');
+            const project = window.__NOXH_PRELOADED_PROJECT__;
+            if (project && (project.slug === requestedSlug || (project.previousSlugs || []).includes(requestedSlug))) return projectPage(project);
+            return pages['/du-an/'];
+        }
         if (path === '/') return pages['/trang-chu'];
         return pages[path] || pages[templatePaths[templateForPath(pathname)]] || null;
     };
@@ -95,13 +106,13 @@
     };
     const absoluteUrl = path => new URL(path, `${getOrigin()}/`).href;
 
-    const apply = (pathname = window.location.pathname) => {
+    const apply = (pathname = window.location.pathname, project = null) => {
         const template = templateForPath(pathname);
         if (privateTemplates.has(template)) {
             upsertMeta('meta[name="robots"]', { name: 'robots', content: 'noindex, nofollow, noarchive' });
             return;
         }
-        const page = pageForPath(pathname);
+        const page = project ? projectPage(project) : pageForPath(pathname);
         if (!page) return;
         const canonicalPath = String(pathname || '/').startsWith('/du-an/')
             ? String(pathname).replace(/\/+$/, '')
@@ -122,13 +133,14 @@
         upsertMeta('meta[property="og:title"]', { property: 'og:title', content: page.title });
         upsertMeta('meta[property="og:description"]', { property: 'og:description', content: page.description });
         upsertMeta('meta[property="og:url"]', { property: 'og:url', content: canonical });
-        upsertMeta('meta[property="og:image"]', { property: 'og:image', content: absoluteUrl(DEFAULT_IMAGE) });
-        upsertMeta('meta[name="twitter:card"]', { name: 'twitter:card', content: 'summary' });
+        upsertMeta('meta[property="og:image"]', { property: 'og:image', content: absoluteUrl(page.image || DEFAULT_IMAGE) });
+        upsertMeta('meta[name="twitter:card"]', { name: 'twitter:card', content: page.image ? 'summary_large_image' : 'summary' });
         upsertMeta('meta[name="twitter:title"]', { name: 'twitter:title', content: page.title });
         upsertMeta('meta[name="twitter:description"]', { name: 'twitter:description', content: page.description });
+        if (page.image) upsertMeta('meta[name="twitter:image"]', { name: 'twitter:image', content: absoluteUrl(page.image) });
     };
 
-    window.NoxhSeo = { apply, pageForPath };
+    window.NoxhSeo = { apply, applyProject: (project, pathname) => apply(pathname, project), pageForPath };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => apply());
     else apply();
     window.addEventListener('popstate', () => apply());

@@ -5,13 +5,16 @@
   "description": "Allowlisted public build for NOXH",
   "scripts": {
     "build:css": "tailwindcss -c tailwind.config.cjs -i assets/css/tailwind.input.css -o assets/css/tailwind.generated.css --minify",
+    "update:icons": "node scripts/update-material-symbols.mjs",
     "verify:performance": "node scripts/verify-performance-08.mjs",
     "build:public": "node scripts/build-public.mjs",
     "verify:public": "node scripts/verify-public.mjs",
     "verify:security": "node scripts/verify-security-05b.mjs",
+    "verify:production-security": "node scripts/verify-production-security.mjs",
+    "verify:production-authz": "node scripts/verify-production-authz.mjs",
     "verify:seo": "node scripts/verify-seo-06.mjs",
     "verify:project-publication": "node scripts/verify-project-publication.mjs",
-    "build": "npm run build:css && node scripts/build-public.mjs && node scripts/verify-public.mjs && node scripts/verify-security-05b.mjs && node scripts/verify-seo-06.mjs && node scripts/verify-project-publication.mjs && node scripts/verify-performance-08.mjs"
+    "build": "tailwindcss -c tailwind.config.cjs -i assets/css/tailwind.input.css -o assets/css/tailwind.generated.css --minify && node scripts/build-public.mjs && node scripts/verify-public.mjs && node scripts/verify-security-05b.mjs && node scripts/verify-seo-06.mjs && node scripts/verify-project-publication.mjs && node scripts/verify-performance-08.mjs"
   },
   "devDependencies": {
     "tailwindcss": "3.4.17"

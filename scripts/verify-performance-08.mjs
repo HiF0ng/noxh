@@ -7,6 +7,8 @@ const failures = [];
 const htmlFiles = (await readdir(root)).filter(name => name.endsWith('.html'));
 const generatedCss = path.join(root, 'assets', 'css', 'tailwind.generated.css');
 const generatedCssText = await readFile(generatedCss, 'utf8').catch(() => '');
+const materialSymbolsCss = await readFile(path.join(root, 'assets', 'css', 'material-symbols.css'), 'utf8').catch(() => '');
+const materialSymbolsFont = path.join(root, 'assets', 'fonts', 'material-symbols-outlined.0.woff2');
 
 if (!generatedCssText) failures.push('Missing assets/css/tailwind.generated.css. Run npm run build:css.');
 if (generatedCssText.length > 750_000) failures.push('Generated Tailwind CSS is unexpectedly large; check the content scan paths.');
@@ -18,7 +20,14 @@ for (const file of htmlFiles) {
   const html = await readFile(path.join(root, file), 'utf8');
   if (/cdn\.tailwindcss\.com|assets\/js\/tailwind-config\.js/.test(html)) failures.push(`${file} still loads Tailwind at runtime.`);
   if (!/assets\/css\/tailwind\.generated\.css\?v=1/.test(html)) failures.push(`${file} does not load the generated Tailwind CSS.`);
+  if (/fonts\.googleapis\.com\/css2\?family=Material\+Symbols/.test(html)) failures.push(`${file} still loads the full remote Material Symbols font.`);
 }
+
+if (!/font-weight:\s*100 700/.test(materialSymbolsCss) || !/material-symbols-outlined\.0\.woff2/.test(materialSymbolsCss)) {
+  failures.push('The local variable Material Symbols stylesheet is missing.');
+}
+const materialSymbolsBytes = await stat(materialSymbolsFont).then(info => info.size).catch(() => 0);
+if (!materialSymbolsBytes || materialSymbolsBytes > 100_000) failures.push('The local Material Symbols subset is missing or unexpectedly large.');
 
 const details = await readFile(path.join(root, 'details.html'), 'utf8');
 if (!/id="detail-hero-image"[^>]*loading="eager"[^>]*fetchpriority="high"[^>]*decoding="async"/.test(details)) {
@@ -31,6 +40,12 @@ if (!/id="detail-floorplan-image"[^>]*loading="lazy"[^>]*decoding="async"/.test(
 const main = await readFile(path.join(root, 'assets', 'js', 'main.js'), 'utf8');
 if (!/width="640" height="400" loading="lazy" decoding="async"/.test(main)) failures.push('Project cards are missing lazy-load dimensions.');
 if (!/width="1600" height="2200" loading="lazy" decoding="async"/.test(main)) failures.push('Document preview pages are missing lazy-load dimensions.');
+if (/updateLegalDocumentsUpdateLabel\(\);\s*loadLiveProjects\(\);\s*loadLiveDocuments\(\);/.test(main)) failures.push('Homepage projects are still fetched twice during DOMContentLoaded.');
+
+const homepage = await readFile(path.join(root, 'homepage.html'), 'utf8');
+for (const script of ['location-data.js', 'supabase-config.js', 'supabase-service.js', 'main.js']) {
+  if (!new RegExp(`<script defer src="assets/js/${script.replace('.', '\\.')}`).test(homepage)) failures.push(`Homepage ${script} is not deferred.`);
+}
 
 const admin = await readFile(path.join(root, 'assets', 'js', 'admin.js'), 'utf8');
 for (const fragment of [
@@ -49,4 +64,4 @@ if (failures.length) {
   console.error(failures.map(item => `FAIL: ${item}`).join('\n'));
   process.exit(1);
 }
-console.log(`Performance 08 checks passed: ${htmlFiles.length} HTML files use built Tailwind CSS (${Math.round(cssSize / 1024)} KiB).`);
+console.log(`Performance 08 checks passed: ${htmlFiles.length} HTML files use built Tailwind CSS (${Math.round(cssSize / 1024)} KiB) and a ${Math.round(materialSymbolsBytes / 1024)} KiB local icon subset.`);

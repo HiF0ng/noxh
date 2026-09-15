@@ -8,8 +8,8 @@
 <meta name="robots" content="noindex, nofollow, noarchive">
 <!-- SEO:END -->
     
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/material-symbols.css?v=1">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/tailwind.generated.css?v=1">
 <link rel="stylesheet" href="assets/css/style.css?v=34">
 <script src="assets/js/admin-pages/admin-1.js"></script>
@@ -18,7 +18,7 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="assets/js/location-data.js"></script>
     <script src="assets/js/supabase-config.js"></script>
-    <script src="assets/js/supabase-service.js?v=18"></script>
+    <script src="assets/js/supabase-service.js?v=19"></script>
     <link rel="stylesheet" href="assets/css/admin.css?v=5">
     <link rel="stylesheet" href="assets/css/icon-utilities.css">
 </head>
@@ -517,7 +517,7 @@
                                     <button type="button" class="btn-remove-floorplan absolute top-3 right-3 w-7 h-7 bg-error/10 hover:bg-error text-error hover:text-white rounded-full flex items-center justify-center transition-all z-10" title="Xóa mặt bằng">
                                         <span class="material-symbols-outlined text-sm font-bold">close</span>
                                     </button>
-                                    <input type="file" accept="image/*" class="hidden floorplan-file-input">
+                                    <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" class="hidden floorplan-file-input">
                                     <div class="floorplan-upload-box border-2 border-dashed border-outline-variant rounded-xl p-6 text-center bg-surface-container-lowest hover:bg-surface-container hover:border-primary transition-all cursor-pointer relative group">
                                         <img src="" class="floorplan-img-preview w-full h-40 object-cover rounded-lg mb-2 hidden">
                                         <div class="floorplan-placeholder-content">
@@ -548,7 +548,7 @@
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-sm font-medium text-on-surface mb-1">Ảnh sơ đồ / Bản đồ vị trí</label>
-                                    <input id="location-map-file-input" type="file" accept="image/*" class="hidden">
+                                    <input id="location-map-file-input" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" class="hidden">
                                     <div id="location-map-upload-box" class="border-2 border-dashed border-outline-variant rounded-xl p-6 text-center bg-surface-container-low hover:bg-surface-container hover:border-primary transition-all cursor-pointer relative group">
                                         <img id="location-map-img-preview" src="" class="w-full h-36 object-cover rounded-lg mb-2 hidden">
                                         <div id="location-map-placeholder">
@@ -575,7 +575,7 @@
                         <!-- Ảnh đại diện -->
                         <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
                             <h3 class="text-lg font-semibold text-on-surface mb-4">Ảnh đại diện dự án</h3>
-                            <input id="prj-main-image-input" type="file" accept="image/*" class="hidden" onchange="previewMainImage(this)">
+                            <input id="prj-main-image-input" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" class="hidden" onchange="previewMainImage(this)">
                             <div id="prj-main-image-box" onclick="document.getElementById('prj-main-image-input').click()" class="aspect-video w-full bg-surface-container rounded-xl overflow-hidden mb-3 relative group cursor-pointer border border-outline-variant hover:border-primary transition-all">
                                 <img id="prj-main-image-preview" src="https://placehold.co/600x400/e5eeff/004ac6?text=Ảnh+đại+diện" alt="Preview" class="w-full h-full object-cover transition-opacity group-hover:opacity-70">
                                 <div class="absolute inset-0 bg-inverse-surface/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -594,7 +594,7 @@
                             <div id="gallery-container" class="grid grid-cols-2 gap-3">
                                 <!-- Box 1 -->
                                 <div class="gallery-item aspect-square bg-surface-container rounded-xl overflow-hidden relative group cursor-pointer border border-outline-variant hover:border-primary transition-all" onclick="triggerGalleryUpload(this, event)">
-                                    <input type="file" accept="image/*" class="hidden gallery-file-input" onchange="previewGalleryImage(this)">
+                                    <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" class="hidden gallery-file-input" onchange="previewGalleryImage(this)">
                                     <img src="https://placehold.co/300x300/e5eeff/004ac6?text=Ảnh+1" class="gallery-img-preview w-full h-full object-cover group-hover:opacity-75 transition-opacity">
                                     <div class="gallery-upload-overlay absolute inset-0 bg-inverse-surface/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                         <span class="material-symbols-outlined text-white text-2xl">photo_camera</span>
@@ -607,7 +607,7 @@
                                 
                                 <!-- Box 2 -->
                                 <div class="gallery-item aspect-square bg-surface-container rounded-xl overflow-hidden relative group cursor-pointer border border-outline-variant hover:border-primary transition-all" onclick="triggerGalleryUpload(this, event)">
-                                    <input type="file" accept="image/*" class="hidden gallery-file-input" onchange="previewGalleryImage(this)">
+                                    <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" class="hidden gallery-file-input" onchange="previewGalleryImage(this)">
                                     <img src="https://placehold.co/300x300/e5eeff/004ac6?text=Ảnh+2" class="gallery-img-preview w-full h-full object-cover group-hover:opacity-75 transition-opacity">
                                     <div class="gallery-upload-overlay absolute inset-0 bg-inverse-surface/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                         <span class="material-symbols-outlined text-white text-2xl">photo_camera</span>
@@ -1168,7 +1168,7 @@
                     <div>
                         <label class="block text-sm font-medium text-on-surface mb-2">Ảnh đại diện tin tức</label>
                         <div class="relative group border-2 border-dashed border-outline-variant rounded-xl p-6 text-center bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer w-full md:w-96" onclick="document.getElementById('news-image-input').click()">
-                            <input type="file" id="news-image-input" accept="image/*" class="hidden" onchange="previewNewsMainImage(this)">
+                            <input type="file" id="news-image-input" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" class="hidden" onchange="previewNewsMainImage(this)">
                             <img id="news-main-image-preview" src="" class="w-full h-44 object-cover rounded-lg mb-2 hidden">
                             <div id="news-image-placeholder">
                                 <span class="material-symbols-outlined text-4xl text-on-surface-variant mb-1">cloud_upload</span>
@@ -1235,6 +1235,6 @@
         </div>
     </div>
 
-    <script src="assets/js/admin.js?v=35"></script>
+    <script src="assets/js/admin.js?v=36"></script>
 </body>
 </html>

@@ -7,6 +7,8 @@ const mainSource = fs.readFileSync('assets/js/main.js', 'utf8');
 const adminSource = fs.readFileSync('assets/js/admin.js', 'utf8');
 const migration = fs.readFileSync('supabase_migrations/20260910_05b_security_hardening.sql', 'utf8');
 const groupingMigration = fs.readFileSync('supabase_migrations/20260911_document_storage_grouping.sql', 'utf8');
+const storageLimitsMigration = fs.readFileSync('supabase_migrations/20260915_storage_upload_limits.sql', 'utf8');
+const profilePrivilegesMigration = fs.readFileSync('supabase_migrations/20260915_user_profile_column_privileges.sql', 'utf8');
 const bootstrapSchema = fs.readFileSync('supabase_schema.sql', 'utf8');
 const memory = new Map([['noxh_auth_session', JSON.stringify({ access_token: 'test-token' })]]);
 const requests = [];
@@ -57,17 +59,21 @@ assert.doesNotMatch(requests.at(-1).url, /projects\?select=\*/, 'Public project 
 await service.getDocuments();
 assert.doesNotMatch(requests.at(-1).url, /documents\?select=\*/, 'Public document reads must not request every database column');
 
-const privateReference = await service.uploadDocumentFile({ name: 'Đơn đăng ký.pdf', type: 'application/pdf' }, 'forms');
+const privateReference = await service.uploadDocumentFile({ name: 'Đơn đăng ký.pdf', type: 'application/pdf', size: 1024 }, 'forms');
 assert.match(privateReference, /^storage:\/\/private-documents\/documents\/forms\//, 'New document files must use the private bucket reference');
 assert.match(requests.at(-1).url, /\/storage\/v1\/object\/private-documents\//, 'Document upload must target the private bucket');
 
-const legalReference = await service.uploadDocumentFile({ name: 'Nghị định.pdf', type: 'application/pdf' }, 'legal');
+const legalReference = await service.uploadDocumentFile({ name: 'Nghị định.pdf', type: 'application/pdf', size: 1024 }, 'legal');
 assert.match(legalReference, /^storage:\/\/private-documents\/documents\/legal\//, 'Legal documents must use the private legal folder');
-const packageReference = await service.uploadDocumentFile({ name: 'bo-tai-lieu.zip', type: 'application/zip' }, 'packages');
+const packageReference = await service.uploadDocumentFile({ name: 'bo-tai-lieu.zip', type: 'application/zip', size: 1024 }, 'packages');
 assert.match(packageReference, /^storage:\/\/private-documents\/documents\/packages\//, 'Document packages must use the private packages folder');
-const guideReference = await service.uploadDocumentFile({ name: 'huong-dan.png', type: 'image/png' }, 'guides');
+const guideReference = await service.uploadDocumentFile({ name: 'huong-dan.png', type: 'image/png', size: 1024 }, 'guides');
 assert.match(guideReference, /^storage:\/\/private-documents\/documents\/guides\//, 'Guide images must use the private guides folder');
-assert.equal(await service.uploadDocumentFile({ name: 'bad.pdf', type: 'application/pdf' }, 'unknown'), null, 'Unknown document storage groups must be rejected');
+assert.equal(await service.uploadDocumentFile({ name: 'bad.pdf', type: 'application/pdf', size: 1024 }, 'unknown'), null, 'Unknown document storage groups must be rejected');
+assert.equal(await service.uploadDocumentFile({ name: 'payload.html', type: 'text/html', size: 1024 }, 'forms'), null, 'Executable document content types must be rejected');
+assert.equal(await service.uploadDocumentFile({ name: 'large.pdf', type: 'application/pdf', size: 50 * 1024 * 1024 + 1 }, 'forms'), null, 'Private documents over 50 MB must be rejected');
+assert.equal(await service.uploadProjectImage('project-id', { name: 'vector.svg', type: 'image/svg+xml', size: 1024 }), null, 'Public SVG uploads must be rejected');
+assert.equal(await service.uploadProjectImage('project-id', { name: 'large.jpg', type: 'image/jpeg', size: 10 * 1024 * 1024 + 1 }), null, 'Project images over 10 MB must be rejected');
 const requestCountBeforeLegacyWrite = requests.length;
 assert.equal(await service.addDocument({ name: 'Legacy document', type: 'Đơn đăng ký', file: 'https://example.supabase.co/storage/v1/object/public/project-images/documents/forms/legacy.pdf' }), null, 'Document records must reject public Storage URLs');
 assert.equal(requests.length, requestCountBeforeLegacyWrite, 'A rejected public document URL must never reach the database');
@@ -96,5 +102,18 @@ assert.match(groupingMigration, /WHEN document_category = 'Văn bản luật' TH
 assert.match(groupingMigration, /WHEN document_category LIKE 'Bộ tài liệu - %' THEN 'packages'/, 'Database must map document packages to the packages folder');
 assert.match(groupingMigration, /WHEN document_category = 'Hướng dẫn' THEN 'guides'/, 'Database must map guide images to the guides folder');
 assert.match(groupingMigration, /SET\s+file_url = regexp_replace/, 'Grouping migration must convert legacy main-file URLs as well as metadata URLs');
+assert.match(storageLimitsMigration, /file_size_limit = 10 \* 1024 \* 1024/, 'Project images must have a server-side 10 MB limit');
+assert.match(storageLimitsMigration, /file_size_limit = 50 \* 1024 \* 1024/, 'Private documents must have a server-side 50 MB limit');
+assert.doesNotMatch(storageLimitsMigration, /image\/svg\+xml/, 'The public image bucket must reject active SVG content');
+assert.doesNotMatch(migration, /GRANT SELECT, UPDATE ON public\.users/, 'The canonical migration must not grant table-wide profile updates');
+assert.match(migration, /GRANT UPDATE \(full_name, phone, last_active_at\) ON public\.users TO authenticated/, 'The canonical migration must grant only public profile fields');
+assert.match(migration, /CREATE OR REPLACE FUNCTION public\.guard_user_profile_update\(\)/, 'The canonical migration must install the profile update guard');
+assert.match(migration, /IF public\.is_admin\(\) THEN[\s\S]*RETURN NEW/, 'The profile update guard must preserve authenticated admin profile edits');
+assert.match(migration, /NEW\.role IS DISTINCT FROM OLD\.role/, 'The profile update guard must reject role changes from normal users');
+assert.match(migration, /NEW\.full_name IS DISTINCT FROM OLD\.full_name/, 'The profile update guard must reject direct name changes from normal users');
+assert.match(profilePrivilegesMigration, /REVOKE UPDATE ON TABLE public\.users FROM authenticated/, 'The production patch must revoke table-wide profile updates');
+assert.match(profilePrivilegesMigration, /GRANT UPDATE \(full_name, phone, last_active_at\) ON TABLE public\.users TO authenticated/, 'The production patch must allow only public profile fields');
+assert.doesNotMatch(profilePrivilegesMigration, /GRANT UPDATE \([^)]*(?:role|auth_user_id|email)/, 'Privileged profile fields must remain non-writable');
+assert.match(profilePrivilegesMigration, /CREATE TRIGGER guard_user_profile_update/, 'The production patch must install the normal-user profile update trigger');
 
 console.log('05B security contract checks passed.');

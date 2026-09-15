@@ -29,3 +29,7 @@ When `NOXH_SITE_URL` is set, the same build reads only published projects throug
 Changing a slug preserves the former slug in `previous_slugs`. The build records its redirect map in `dist/project-publication-manifest.json`; task 04 must turn that map into real HTTP 301 rules on Nginx. Until Nginx is configured, do not claim that a redirect page is an HTTP 301.
 
 The machine that deploys must use the resulting `dist/public/`. `dist/build-manifest.json` is a local verification report and is outside the web root.
+
+## VPS input
+
+`deploy/nginx/noxh.help.conf` is the initial HTTP configuration for the production host. Copy it to `/etc/nginx/sites-available/noxh.help`, enable it with a symlink in `sites-enabled`, test with `nginx -t`, then issue the certificate with Certbot. Do not point Nginx at the repository root or proxy traffic to `server/`.

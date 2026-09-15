@@ -39,7 +39,7 @@ assert.match(notFound, /id="navbar-placeholder"/, '404 page must use the shared 
 assert.match(notFound, /id="footer-placeholder"/, '404 page must use the shared footer placeholder');
 
 const seoScript = await fs.readFile('assets/js/seo.js', 'utf8');
-assert.match(seoScript, /window\.NoxhSeo = \{ apply, pageForPath \}/, 'SEO runtime must expose SPA metadata updates');
+assert.match(seoScript, /window\.NoxhSeo = \{ apply, applyProject:/, 'SEO runtime must expose page and project metadata updates');
 assert.match(seoScript, /window\.addEventListener\('popstate'/, 'SEO runtime must update on browser history navigation');
 assert.match(seoScript, /\/du-an\//, 'SEO runtime must recognize project URLs');
 const mainScript = await fs.readFile('assets/js/main.js', 'utf8');

@@ -12,6 +12,29 @@
     const PRIVATE_DOCUMENT_BUCKET = 'private-documents';
     const PRIVATE_DOCUMENT_PREFIX = `storage://${PRIVATE_DOCUMENT_BUCKET}/`;
     const DOCUMENT_STORAGE_GROUPS = new Set(['forms', 'legal', 'packages', 'guides']);
+    const PROJECT_IMAGE_MAX_BYTES = 10 * 1024 * 1024;
+    const PRIVATE_DOCUMENT_MAX_BYTES = 50 * 1024 * 1024;
+    const PROJECT_IMAGE_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif']);
+    const PRIVATE_DOCUMENT_MIME_TYPES = new Set([
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/zip',
+        'application/x-zip-compressed',
+        'image/jpeg',
+        'image/png'
+    ]);
+    const inferUploadMimeType = file => {
+        const suppliedType = String(file?.type || '').trim().toLowerCase();
+        if (suppliedType) return suppliedType === 'image/jpg' ? 'image/jpeg' : suppliedType;
+        const extension = String(file?.name || '').toLowerCase().split('.').pop();
+        return ({
+            jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif', avif: 'image/avif',
+            pdf: 'application/pdf', doc: 'application/msword',
+            docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            zip: 'application/zip'
+        })[extension] || '';
+    };
     const PUBLIC_PROJECT_SELECT = 'id,title,slug,previous_slugs,location,investor,progress,status,is_draft,details_json,created_at,updated_at';
     const PUBLIC_DOCUMENT_SELECT = 'id,title,category,doc_type,file_url,content,is_draft,draft_key,created_at';
     const normalizeProjectStatus = status => {
@@ -657,12 +680,17 @@
 
         async uploadProjectImage(projectId, file, group = 'images') {
             try {
+                const mimeType = inferUploadMimeType(file);
+                if (!PROJECT_IMAGE_MIME_TYPES.has(mimeType)) throw new Error('Unsupported project image type.');
+                if (!Number.isFinite(file?.size) || file.size <= 0 || file.size > PROJECT_IMAGE_MAX_BYTES) {
+                    throw new Error('Project image must be between 1 byte and 10 MB.');
+                }
                 let safeName = file.name || 'image';
                 safeName = safeName.replace(/[#?%\\/]/g, '_');
                 const path = `${projectId}/${group}/${Date.now()}-${safeName}`;
                 const res = await fetch(`${config.url}/storage/v1/object/project-images/${path}`, {
                     method: 'POST',
-                    headers: { ...getHeaders(), 'Content-Type': file.type || 'application/octet-stream', 'x-upsert': 'true' },
+                    headers: { ...getHeaders(), 'Content-Type': mimeType, 'x-upsert': 'true' },
                     body: file
                 });
                 if (!res.ok) throw new Error(await res.text());
@@ -895,6 +923,11 @@
                 if (!DOCUMENT_STORAGE_GROUPS.has(normalizedGroup)) {
                     throw new Error('Unsupported private document storage group.');
                 }
+                const mimeType = inferUploadMimeType(file);
+                if (!PRIVATE_DOCUMENT_MIME_TYPES.has(mimeType)) throw new Error('Unsupported private document type.');
+                if (!Number.isFinite(file?.size) || file.size <= 0 || file.size > PRIVATE_DOCUMENT_MAX_BYTES) {
+                    throw new Error('Private document must be between 1 byte and 50 MB.');
+                }
                 // Supabase Storage object keys reject Vietnamese diacritics. Keep the
                 // object key ASCII-only; the Vietnamese title remains in `documents`
                 // and is used as the browser download filename.
@@ -909,7 +942,7 @@
                 const path = `documents/${normalizedGroup}/${Date.now()}-${safeName}`;
                 const res = await fetch(`${config.url}/storage/v1/object/${PRIVATE_DOCUMENT_BUCKET}/${path}`, {
                     method: 'POST',
-                    headers: { ...getHeaders(), 'Content-Type': file.type || 'application/octet-stream', 'x-upsert': 'true' },
+                    headers: { ...getHeaders(), 'Content-Type': mimeType, 'x-upsert': 'true' },
                     body: file
                 });
                 if (!res.ok) throw new Error(await res.text());

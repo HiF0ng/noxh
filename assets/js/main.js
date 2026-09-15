@@ -185,7 +185,7 @@ async function loadNavbar() {
     const placeholder = document.getElementById('navbar-placeholder');
     if (!placeholder) return;
     try {
-        const response = await fetch('components/navbar.html');
+        const response = await fetch('components/navbar.html?v=3');
         if (response.ok) {
             const html = await response.text();
             placeholder.innerHTML = html;
@@ -270,7 +270,7 @@ async function loadNavbar() {
                     dropdownFunctions.classList.remove('opacity-0', 'invisible');
                     dropdownFunctions.classList.add('opacity-100', 'visible');
                     
-                    if (window.slideNavIndicator) window.slideNavIndicator(newBtn, 'dropdown-open');
+                    if (window.slideNavIndicator) window.slideNavIndicator(newBtn, 'dropdown-open', false);
                 });
 
                 // A selected function always closes the menu before SPA navigation begins.
@@ -794,6 +794,16 @@ function setupAccordions() {
 function setupSPARouter() {
     let isNavigating = false;
 
+    // Delegate the pressed state so it survives component replacement and SPA
+    // navigation. Touch users see the selected destination before its content
+    // request finishes, without the browser's lingering grey tap background.
+    document.addEventListener('pointerdown', (e) => {
+        const navLink = e.target.closest('.top-navbar a.nav-link');
+        if (!navLink) return;
+        window.realActiveItem = navLink;
+        if (window.slideNavIndicator) window.slideNavIndicator(navLink, 'is-active', false);
+    }, { passive: true });
+
     document.addEventListener('click', async (e) => {
         // A feature-specific handler may intentionally cancel a link (for
         // example, to show the login-required modal). Do not let the SPA
@@ -806,7 +816,7 @@ function setupSPARouter() {
         const href = link.getAttribute('href');
         
         // Ignore external, hash, or empty links
-        if (!href || href.startsWith('http') || href.startsWith('#') || href.startsWith('javascript:') || link.getAttribute('target') === '_blank' || href.startsWith('register_steps.html')) return;
+        if (!href || href.startsWith('http') || href.startsWith('#') || href.startsWith('javascript:') || link.getAttribute('target') === '_blank' || link.hasAttribute('data-full-navigation') || href.startsWith('register_steps.html')) return;
         
         e.preventDefault();
         
@@ -1181,7 +1191,6 @@ function highlightActiveLink() {
 
     // Top Navbar Links
     const indicator = document.getElementById('nav-indicator');
-    const isInitialized = indicator && indicator.style.width && indicator.style.width !== '0px';
     const topNavLinks = document.querySelectorAll('.top-navbar a.nav-link:not(.user-dropdown-menu a)');
     const btnFunctions = document.getElementById('btn-functions');
     let targetLink = null;
@@ -1240,20 +1249,10 @@ function highlightActiveLink() {
     }
 
     if (targetLink) {
-        if (isInitialized && window.slideNavIndicator) {
-            // SPA navigation: animate smoothly
-            window.slideNavIndicator(targetLink, 'is-active', true);
-        } else {
-            // Initial page load: snap without animation
-            // First apply the class so CSS applies, then snap indicator
-            topNavLinks.forEach(link => link.classList.remove('is-active'));
-            if (btnFunctions) btnFunctions.classList.remove('is-active');
-            
-            targetLink.classList.add('is-active');
-            setTimeout(() => {
-                if (window.slideNavIndicator) window.slideNavIndicator(targetLink, 'is-active', false);
-            }, 50);
-        }
+        // Mobile and tablet navigation should respond on the same frame as the
+        // tap. Measuring after an expanding text transition caused the initial
+        // indicator to stretch into its neighbour and made SPA changes feel slow.
+        if (window.slideNavIndicator) window.slideNavIndicator(targetLink, 'is-active', false);
     } else {
         // Current page is not in the navbar (e.g. login.html, signup.html)
         topNavLinks.forEach(link => link.classList.remove('is-active'));
@@ -1325,7 +1324,7 @@ function highlightActiveLink() {
     });
 }
 
-window.slideNavIndicator = function(targetItem, activeClass = 'is-active', animate = true) {
+window.slideNavIndicator = function(targetItem, activeClass = 'is-active') {
     const container = document.getElementById('nav-links-container');
     const indicator = document.getElementById('nav-indicator');
     if (!container || !indicator || !targetItem) return;
@@ -1345,36 +1344,13 @@ window.slideNavIndicator = function(targetItem, activeClass = 'is-active', anima
     const finalLeft = targetRect.left - containerRect.left;
     const finalWidth = targetRect.width;
     
-    if (animate && currentActive && currentActive !== targetItem) {
-        // Revert to current state
-        targetItem.classList.remove(activeClass);
-        if (currentActive.id === 'btn-functions') currentActive.classList.add('dropdown-open');
-        else currentActive.classList.add('is-active');
-        
-        // Force layout flush for the reverted state
-        void container.offsetHeight;
-        
-        // Re-enable transitions
-        container.classList.remove('no-transitions');
-        
-        // Apply final target classes to start CSS animation on items
-        if (currentActive) currentActive.classList.remove('is-active', 'dropdown-open');
-        targetItem.classList.add(activeClass);
-        
-        indicator.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-    } else {
-        // No animation needed (e.g. page load)
-        container.classList.remove('no-transitions');
-        indicator.style.transition = 'none';
-        // Ensure target is active
-        if (currentActive && currentActive !== targetItem) currentActive.classList.remove('is-active', 'dropdown-open');
-        targetItem.classList.add(activeClass);
-    }
+    indicator.style.transition = 'none';
 
     // Move indicator to final target
     indicator.style.left = `${finalLeft}px`;
     indicator.style.width = `${finalWidth}px`;
     indicator.style.opacity = '1';
+    requestAnimationFrame(() => container.classList.remove('no-transitions'));
 };
 
 
@@ -1824,12 +1800,22 @@ function setupDocumentAccessGuard(container) {
 async function loadProjectDetails() {
     if (!document.getElementById('detail-title') || !window.SupabaseService) return;
     let id = new URLSearchParams(window.location.search).get('id');
-    let project = id ? await window.SupabaseService.getProject(id) : null;
+    const requestedSlug = window.location.pathname.startsWith('/du-an/')
+        ? decodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() || '')
+        : '';
+    const preloadedProject = window.__NOXH_PRELOADED_PROJECT__;
+    const preloadedMatches = preloadedProject && (
+        (id && String(preloadedProject.id) === String(id))
+        || (!id && requestedSlug && (
+            preloadedProject.slug === requestedSlug
+            || (preloadedProject.previousSlugs || []).includes(requestedSlug)
+        ))
+    );
+    let project = preloadedMatches ? preloadedProject : (id ? await window.SupabaseService.getProject(id) : null);
 
     // The friendly route is resolved from the authoritative project name. The
     // old ?id= URL remains readable, then is immediately cleaned up below.
     if (!project && window.location.pathname.startsWith('/du-an/')) {
-        const requestedSlug = decodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() || '');
         const projects = await window.SupabaseService.getProjects();
         project = (projects || []).find(candidate => candidate.slug === requestedSlug || (candidate.previousSlugs || []).includes(requestedSlug) || NoxhRoutes.slugify(candidate.name || candidate.title) === requestedSlug) || null;
         id = project && project.id;
@@ -1838,8 +1824,8 @@ async function loadProjectDetails() {
     const canonicalPath = NoxhRoutes.getProjectPath(project);
     if (window.location.pathname !== canonicalPath || window.location.search) {
         window.history.replaceState({}, '', canonicalPath);
-        window.NoxhSeo?.apply?.(canonicalPath);
     }
+    window.NoxhSeo?.applyProject?.(project, canonicalPath);
     const details = project.details || {};
     const setText = (elementId, value, fallback = 'Đang cập nhật') => { const el = document.getElementById(elementId); if (el) el.textContent = value || fallback; };
     const estimatedPrice = (details.estimatedPrice || '').trim().replace(/\s*\/?\s*m(?:2|²)?\s*$/i, '');
@@ -1981,21 +1967,31 @@ function setupSimilarProjectsCarousel(container) {
     const setScrollImmediately = left => {
         const previousBehavior = container.style.scrollBehavior;
         container.style.scrollBehavior = 'auto';
+        void container.offsetHeight;
         container.scrollLeft = left;
-        container.style.scrollBehavior = previousBehavior;
+        requestAnimationFrame(() => {
+            container.style.scrollBehavior = previousBehavior;
+        });
     };
     const positionAtLoopCenter = () => {
         const metrics = getLoopMetrics();
         if (metrics && metrics.groupWidth > 0) setScrollImmediately(metrics.baseStart - metrics.centerOffset);
     };
+    let normalizeTimer = 0;
     const keepInsideLoop = () => {
         const metrics = getLoopMetrics();
         if (!metrics || metrics.groupWidth <= 0) return;
         const loopStart = metrics.baseStart - metrics.centerOffset;
+        const lowerBuffer = loopStart - (metrics.groupWidth * 2);
+        const upperBuffer = loopStart + (metrics.groupWidth * 3);
         let nextPosition = container.scrollLeft;
-        while (nextPosition < loopStart) nextPosition += metrics.groupWidth;
-        while (nextPosition >= loopStart + metrics.groupWidth) nextPosition -= metrics.groupWidth;
+        while (nextPosition < lowerBuffer) nextPosition += metrics.groupWidth;
+        while (nextPosition >= upperBuffer) nextPosition -= metrics.groupWidth;
         if (nextPosition !== container.scrollLeft) setScrollImmediately(nextPosition);
+    };
+    const scheduleLoopNormalization = () => {
+        window.clearTimeout(normalizeTimer);
+        normalizeTimer = window.setTimeout(keepInsideLoop, 140);
     };
     const scroll = direction => {
         const firstCard = container.children[baseStartIndex];
@@ -2003,16 +1999,17 @@ function setupSimilarProjectsCarousel(container) {
         const cardStep = firstCard && followingCard
             ? followingCard.offsetLeft - firstCard.offsetLeft
             : (firstCard ? firstCard.offsetWidth + 24 : 288);
-        container.scrollBy({ left: direction * cardStep, behavior: 'smooth' });
+        setScrollImmediately(container.scrollLeft + (direction * cardStep));
+        scheduleLoopNormalization();
     };
 
     previous.disabled = false;
     next.disabled = false;
     previous.onclick = () => scroll(-1);
     next.onclick = () => scroll(1);
-    container.onscroll = keepInsideLoop;
+    container.onscroll = scheduleLoopNormalization;
     window.addEventListener('resize', () => requestAnimationFrame(positionAtLoopCenter), { once: true });
-    requestAnimationFrame(positionAtLoopCenter);
+    requestAnimationFrame(() => requestAnimationFrame(positionAtLoopCenter));
 }
 
 async function loadSimilarProjects(project, currentProjectId) {
@@ -3048,7 +3045,6 @@ async function loadLiveDocuments() {
 // Auto-run Live Loaders on Page Load
 document.addEventListener('DOMContentLoaded', () => {
     updateLegalDocumentsUpdateLabel();
-    loadLiveProjects();
     loadLiveDocuments();
 });
 

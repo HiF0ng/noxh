@@ -86,12 +86,50 @@ $$;
 REVOKE ALL ON FUNCTION public.is_admin() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.is_admin() TO authenticated;
 
+-- Authenticated users share one database role, so RLS alone cannot distinguish
+-- an admin editing another profile from a user editing their own identity fields.
+-- Permit the low-risk activity heartbeat for users while keeping name/phone edits
+-- available to an authenticated admin through the existing admin UI.
+CREATE OR REPLACE FUNCTION public.guard_user_profile_update()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+BEGIN
+  IF public.is_admin() THEN
+    RETURN NEW;
+  END IF;
+
+  IF NEW.id IS DISTINCT FROM OLD.id
+     OR NEW.email IS DISTINCT FROM OLD.email
+     OR NEW.full_name IS DISTINCT FROM OLD.full_name
+     OR NEW.phone IS DISTINCT FROM OLD.phone
+     OR NEW.role IS DISTINCT FROM OLD.role
+     OR NEW.auth_user_id IS DISTINCT FROM OLD.auth_user_id
+     OR NEW.created_at IS DISTINCT FROM OLD.created_at THEN
+    RAISE EXCEPTION 'Only administrators can update profile identity fields'
+      USING ERRCODE = '42501';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.guard_user_profile_update() FROM PUBLIC, anon, authenticated;
+
+DROP TRIGGER IF EXISTS guard_user_profile_update ON public.users;
+CREATE TRIGGER guard_user_profile_update
+  BEFORE UPDATE ON public.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.guard_user_profile_update();
+
 -- Data API table privileges are deliberate because project creation disables
 -- automatic table exposure. RLS below still decides which rows each role sees.
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT SELECT ON public.projects, public.documents, public.faqs, public.news
   TO anon, authenticated;
-GRANT SELECT, UPDATE ON public.users TO authenticated;
+GRANT SELECT ON public.users TO authenticated;
+GRANT UPDATE (full_name, phone, last_active_at) ON public.users TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE
   ON public.projects, public.documents, public.faqs, public.news,
      public.user_saved_projects, public.user_followed_projects
