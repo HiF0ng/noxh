@@ -27,6 +27,19 @@ const escapeHtml = value => String(value)
   .replace(/"/g, '&quot;')
   .replace(/</g, '&lt;')
   .replace(/>/g, '&gt;');
+const jsonLd = (path, title, description) => JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: title,
+  description,
+  url: `https://noxh.help${path}`,
+  inLanguage: 'vi-VN',
+  isPartOf: {
+    '@type': 'WebSite',
+    name: 'NOXH.help',
+    url: 'https://noxh.help/'
+  }
+}).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
 const removeSeoBlock = html => html.replace(/\s*<!-- SEO:START -->[\s\S]*?<!-- SEO:END -->/g, '');
 const publicBlock = ([path, title, description]) => `
 <!-- SEO:START -->
@@ -42,6 +55,7 @@ const publicBlock = ([path, title, description]) => `
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="${escapeHtml(title)}">
 <meta name="twitter:description" content="${escapeHtml(description)}">
+<script type="application/ld+json">${jsonLd(path, title, description)}</script>
 <!-- SEO:END -->`;
 const privateBlock = `
 <!-- SEO:START -->

@@ -1133,6 +1133,8 @@ window.handleAdminLogout = function() {
 
     var pendingDeleteProjectIndex = null;
     var holdTimer = null;
+    var activeProjectActionId = null;
+    var projectActionMenuInitialized = false;
     var isEditingProjectSession = false;
     var currentEditingProjectId = null;
 
@@ -1323,6 +1325,7 @@ window.handleAdminLogout = function() {
     }
 
     function getAdminProjectStatus(project) {
+        if (isHiddenProject(project)) return 'Đã ẩn';
         if (isDraftProject(project)) return 'Bản nháp';
         var status = String((project && project.status) || '').trim();
         if (status === 'Đang nhận đơn') return 'Đang nhận hồ sơ';
@@ -1456,6 +1459,10 @@ window.handleAdminLogout = function() {
 
     function isDraftProject(project) {
         return !!(project && (project.isDraft || (project.details && project.details.isDraft)));
+    }
+
+    function isHiddenProject(project) {
+        return !!(project && project.isHidden);
     }
 
     function getProjectDisplayId(project) {
@@ -1809,6 +1816,107 @@ window.handleAdminLogout = function() {
 
     window.openProjectEdit = openProjectEdit;
 
+    function openProjectDeleteModal(prj) {
+        pendingDeleteProjectIndex = projectsList.indexOf(prj);
+        var modal = document.getElementById('delete-project-modal');
+        var prjNameSpan = document.getElementById('delete-project-name');
+        if (prjNameSpan) prjNameSpan.textContent = prj.name;
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+    }
+
+    function closeProjectActionMenu() {
+        var menu = document.getElementById('project-action-menu');
+        if (menu) {
+            menu.classList.add('hidden');
+            menu.setAttribute('aria-hidden', 'true');
+        }
+        document.querySelectorAll('.btn-project-actions[aria-expanded="true"]').forEach(function(button) {
+            button.setAttribute('aria-expanded', 'false');
+        });
+        activeProjectActionId = null;
+    }
+
+    function openProjectActionMenu(button) {
+        var projectId = button.getAttribute('data-project-id');
+        var prj = projectsList.find(function(item) { return item.id === projectId; });
+        var menu = document.getElementById('project-action-menu');
+        if (!prj || !menu) return;
+
+        if (activeProjectActionId === prj.id && !menu.classList.contains('hidden')) {
+            closeProjectActionMenu();
+            return;
+        }
+
+        document.querySelectorAll('.btn-project-actions[aria-expanded="true"]').forEach(function(item) {
+            item.setAttribute('aria-expanded', 'false');
+        });
+        activeProjectActionId = prj.id;
+        button.setAttribute('aria-expanded', 'true');
+        menu.dataset.projectId = prj.id;
+        menu.querySelector('[data-project-action="toggle"]').innerHTML = isHiddenProject(prj)
+            ? '<span class="material-symbols-outlined text-[18px]">visibility</span><span>Hiện dự án</span>'
+            : '<span class="material-symbols-outlined text-[18px]">visibility_off</span><span>Ẩn dự án</span>';
+        menu.classList.remove('hidden');
+        menu.setAttribute('aria-hidden', 'false');
+        var rect = button.getBoundingClientRect();
+        menu.style.top = Math.min(window.innerHeight - 148, rect.bottom + 8) + 'px';
+        menu.style.left = Math.max(8, rect.right - 208) + 'px';
+    }
+
+    async function toggleProjectVisibility(prj) {
+        var shouldHide = !isHiddenProject(prj);
+        closeProjectActionMenu();
+        var updated = await window.SupabaseService.setProjectHidden(prj.id, shouldHide);
+        if (!updated) {
+            alert('Không thể cập nhật trạng thái ẩn/hiện. Vui lòng thử lại.');
+            return;
+        }
+        projectsList = sortProjectsByProjectCode(await window.SupabaseService.getProjects() || []);
+        populateAdminProjectProvinceFilter();
+        handleProjectsFilterSearch();
+        alert(shouldHide
+            ? 'Đã ẩn dự án khỏi website công khai. Hãy build/deploy bản public để gỡ trang HTML và sitemap cũ.'
+            : 'Đã hiện lại dự án trên website công khai. Hãy build/deploy bản public để tạo lại trang HTML và sitemap.');
+    }
+
+    function initProjectActionMenu() {
+        if (projectActionMenuInitialized) return;
+        projectActionMenuInitialized = true;
+        var menu = document.getElementById('project-action-menu');
+        if (!menu) return;
+
+        menu.addEventListener('click', async function(event) {
+            var action = event.target.closest('[data-project-action]');
+            if (!action) return;
+            var prj = projectsList.find(function(item) { return item.id === menu.dataset.projectId; });
+            if (!prj) { closeProjectActionMenu(); return; }
+            var type = action.getAttribute('data-project-action');
+            if (type === 'edit') {
+                closeProjectActionMenu();
+                openProjectEdit(prj.id);
+            } else if (type === 'delete') {
+                closeProjectActionMenu();
+                openProjectDeleteModal(prj);
+            } else if (type === 'toggle') {
+                await toggleProjectVisibility(prj);
+            }
+        });
+
+        document.addEventListener('click', function(event) {
+            if (!menu.classList.contains('hidden') && !menu.contains(event.target) && !event.target.closest('.btn-project-actions')) {
+                closeProjectActionMenu();
+            }
+        });
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') closeProjectActionMenu();
+        });
+        window.addEventListener('resize', closeProjectActionMenu);
+        window.addEventListener('scroll', closeProjectActionMenu, true);
+    }
+
     function renderProjectsTable(items) {
         var tbody = document.getElementById('admin-projects-tbody');
         if (!tbody) return;
@@ -1828,8 +1936,9 @@ window.handleAdminLogout = function() {
         renderedItems.forEach(function(prj) {
             var shortId = getProjectDisplayId(prj);
             var isDraft = isDraftProject(prj);
-            var displayStatus = isDraft ? 'Bản nháp' : prj.status;
-            var pillClass = isDraft ? 'status-draft' : getStatusPillClass(prj.status);
+            var isHidden = isHiddenProject(prj);
+            var displayStatus = isHidden ? 'Đã ẩn' : (isDraft ? 'Bản nháp' : prj.status);
+            var pillClass = isHidden ? 'status-hidden' : (isDraft ? 'status-draft' : getStatusPillClass(prj.status));
 
             html += '<tr class="hover:bg-surface-container-low transition-colors group">' +
                 '<td class="p-4 border-b border-outline-variant text-sm font-semibold text-on-surface whitespace-nowrap">' + shortId + '</td>' +
@@ -1846,8 +1955,7 @@ window.handleAdminLogout = function() {
                 '</td>' +
                 '<td class="p-4 border-b border-outline-variant text-right align-middle whitespace-nowrap">' +
                     '<div class="flex items-center justify-end gap-1">' +
-                        '<button class="p-2 text-on-surface-variant hover:text-primary transition-colors btn-edit-project cursor-pointer" data-project-id="' + prj.id + '" title="Chỉnh sửa"><span class="material-symbols-outlined text-[20px]">edit</span></button>' +
-                        '<button class="p-2 text-on-surface-variant hover:text-error transition-colors btn-delete-project cursor-pointer" data-project-id="' + prj.id + '" title="Xóa dự án"><span class="material-symbols-outlined text-[20px]">delete</span></button>' +
+                        '<button type="button" class="p-2 text-on-surface-variant hover:text-primary hover:bg-primary/10 rounded-lg transition-colors btn-project-actions cursor-pointer" data-project-id="' + prj.id + '" title="Thao tác dự án" aria-label="Thao tác dự án" aria-haspopup="menu" aria-expanded="false"><span class="material-symbols-outlined text-[22px]">more_vert</span></button>' +
                     '</div>' +
                 '</td>' +
             '</tr>';
@@ -1855,8 +1963,9 @@ window.handleAdminLogout = function() {
 
         tbody.innerHTML = html;
 
-        // Attach Edit listeners to both edit button and project title
-        tbody.querySelectorAll('.btn-edit-project, .btn-edit-title').forEach(function(btn) {
+        // Project title remains a quick edit shortcut; destructive and visibility
+        // actions live in the compact overflow menu.
+        tbody.querySelectorAll('.btn-edit-title').forEach(function(btn) {
             btn.addEventListener('click', function(e) {
                 e.stopPropagation();
                 var prj = projectsList.find(function(item) { return item.id === this.getAttribute('data-project-id'); }, this);
@@ -1867,22 +1976,10 @@ window.handleAdminLogout = function() {
             });
         });
 
-        // Attach Delete listeners
-        tbody.querySelectorAll('.btn-delete-project').forEach(function(btn) {
+        tbody.querySelectorAll('.btn-project-actions').forEach(function(btn) {
             btn.addEventListener('click', function(e) {
                 e.stopPropagation();
-                var prj = projectsList.find(function(item) { return item.id === this.getAttribute('data-project-id'); }, this);
-                if (!prj) return;
-
-                pendingDeleteProjectIndex = projectsList.indexOf(prj);
-
-                var modal = document.getElementById('delete-project-modal');
-                var prjNameSpan = document.getElementById('delete-project-name');
-                if (prjNameSpan) prjNameSpan.textContent = prj.name;
-                if (modal) {
-                    modal.classList.remove('hidden');
-                    modal.classList.add('flex');
-                }
+                openProjectActionMenu(this);
             });
         });
     }
@@ -1999,6 +2096,7 @@ window.handleAdminLogout = function() {
         var saveBtn = document.getElementById('btn-save-project-form');
         var draftBtn = document.getElementById('btn-save-project-draft');
 
+        initProjectActionMenu();
         populateAdminProjectProvinceFilter();
 
         if (searchInput) searchInput.oninput = handleProjectsFilterSearch;
@@ -2069,7 +2167,8 @@ window.handleAdminLogout = function() {
                         location: addressInp && addressInp.value.trim() ? addressInp.value.trim() : 'Hà Nội',
                         desc: descTxt ? descTxt.value : '',
                         details: Object.assign({}, existingDetails, { projectCode: projectCode, desc: descTxt ? descTxt.value : '', address: addressInp ? addressInp.value.trim() : '', mapsUrl: mapsInp ? mapsInp.value.trim() : '', showFloorplans: floorplansToggle ? floorplansToggle.checked : true, showLocation: locationToggle ? locationToggle.checked : true, area: areaInp ? areaInp.value.trim() : '', scale: scaleInp ? scaleInp.value.trim() : '', handover: handoverInp ? handoverInp.value.trim() : '', estimatedPrice: estimatedPriceInp ? estimatedPriceInp.value.trim() : '', amenities: Array.from(document.querySelectorAll('#page-projects-new input[placeholder="Thêm tiện ích..."]')).filter(input => input.previousElementSibling && input.previousElementSibling.checked && input.value.trim()).map(input => input.value.trim()), statusTimeline: Array.from(document.querySelectorAll('#project-status-notes > div')).map(function(item) { return { label: item.querySelector('label span').textContent.trim(), checked: item.querySelector('input[type="checkbox"]').checked, note: item.querySelector('input[type="text"]').value.trim() }; }) }),
-                        isDraft: !!isDraft
+                        isDraft: !!isDraft,
+                        isHidden: !!(editingProject && editingProject.isHidden)
                     };
 
                     var savedProject;

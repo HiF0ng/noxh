@@ -692,6 +692,11 @@ body.admin-body {
     color: #ffffff !important;
 }
 
+.status-pill.status-hidden {
+    background-color: #475569 !important;
+    color: #ffffff !important;
+}
+
 /* Sắp nhận hồ sơ: tím, riêng biệt với các pill hiện có. */
 .status-sap-nhan-ho-so, .status-sapnhanhoso, .bg-status-sap-nhan-ho-so {
     background-color: #eab308 !important;

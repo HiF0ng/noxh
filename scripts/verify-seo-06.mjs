@@ -20,6 +20,7 @@ for (const page of publicPages) {
   assert.match(html, /<link rel="canonical" href="\/[^"]*">/i, `${page} needs a canonical path`);
   assert.match(html, /<meta property="og:title" content="[^"]+">/i, `${page} needs Open Graph title`);
   assert.match(html, /<meta name="twitter:card" content="summary">/i, `${page} needs Twitter metadata`);
+  assert.match(html, /<script type="application\/ld\+json">\{[\s\S]*"@type":"WebPage"[\s\S]*<\/script>/i, `${page} needs WebPage JSON-LD`);
   assert.match(html, /assets\/js\/seo\.js\?v=1/, `${page} needs runtime canonical updates`);
 }
 
@@ -40,6 +41,7 @@ assert.match(notFound, /id="footer-placeholder"/, '404 page must use the shared 
 
 const seoScript = await fs.readFile('assets/js/seo.js', 'utf8');
 assert.match(seoScript, /window\.NoxhSeo = \{ apply, applyProject:/, 'SEO runtime must expose page and project metadata updates');
+assert.match(seoScript, /application\/ld\+json/, 'SEO runtime must update JSON-LD');
 assert.match(seoScript, /window\.addEventListener\('popstate'/, 'SEO runtime must update on browser history navigation');
 assert.match(seoScript, /\/du-an\//, 'SEO runtime must recognize project URLs');
 const mainScript = await fs.readFile('assets/js/main.js', 'utf8');

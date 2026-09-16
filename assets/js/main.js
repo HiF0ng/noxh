@@ -1811,7 +1811,12 @@ async function loadProjectDetails() {
             || (preloadedProject.previousSlugs || []).includes(requestedSlug)
         ))
     );
-    let project = preloadedMatches ? preloadedProject : (id ? await window.SupabaseService.getProject(id) : null);
+    // A generated detail page can outlive a visibility change until the next
+    // static deploy. Recheck its project through the public RLS policy so a
+    // newly hidden record is never rendered from stale preloaded HTML.
+    let project = preloadedMatches
+        ? await window.SupabaseService.getProject(preloadedProject.id)
+        : (id ? await window.SupabaseService.getProject(id) : null);
 
     // The friendly route is resolved from the authoritative project name. The
     // old ?id= URL remains readable, then is immediately cleaned up below.
@@ -1820,7 +1825,10 @@ async function loadProjectDetails() {
         project = (projects || []).find(candidate => candidate.slug === requestedSlug || (candidate.previousSlugs || []).includes(requestedSlug) || NoxhRoutes.slugify(candidate.name || candidate.title) === requestedSlug) || null;
         id = project && project.id;
     }
-    if (!project) return;
+    if (!project) {
+        if (preloadedMatches) window.location.replace('/404.html');
+        return;
+    }
     const canonicalPath = NoxhRoutes.getProjectPath(project);
     if (window.location.pathname !== canonicalPath || window.location.search) {
         window.history.replaceState({}, '', canonicalPath);
@@ -1831,7 +1839,7 @@ async function loadProjectDetails() {
     const estimatedPrice = (details.estimatedPrice || '').trim().replace(/\s*\/?\s*m(?:2|²)?\s*$/i, '');
     const displayPrice = estimatedPrice ? `Khoảng ${estimatedPrice}/m²` : project.price;
     const setQuickField = (field, value) => document.querySelectorAll(`[data-detail-field="${field}"]`).forEach(el => { el.textContent = value || 'Đang cập nhật'; });
-    setText('detail-title', project.name); setText('detail-breadcrumb-title', project.name); setText('detail-location', details.address || project.location); setQuickField('investor', project.investor); setText('detail-price', displayPrice); setText('detail-status', project.status);
+    setText('detail-title', project.name); setText('detail-breadcrumb-title', project.name); setText('detail-location', details.address || project.location); setQuickField('investor', project.investor || project.owner); setText('detail-price', displayPrice); setText('detail-status', project.status);
     setQuickField('area', details.area); setQuickField('scale', details.scale); setQuickField('handover', details.handover);
     const desc = document.getElementById('detail-desc');
     if (desc) {

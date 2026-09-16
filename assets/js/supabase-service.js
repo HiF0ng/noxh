@@ -35,7 +35,7 @@
             zip: 'application/zip'
         })[extension] || '';
     };
-    const PUBLIC_PROJECT_SELECT = 'id,title,slug,previous_slugs,location,investor,progress,status,is_draft,details_json,created_at,updated_at';
+    const PUBLIC_PROJECT_SELECT = 'id,title,slug,previous_slugs,location,investor,progress,status,is_draft,is_hidden,details_json,created_at,updated_at';
     const PUBLIC_DOCUMENT_SELECT = 'id,title,category,doc_type,file_url,content,is_draft,draft_key,created_at';
     const normalizeProjectStatus = status => {
         if (status === 'Chờ bàn giao' || status === 'Đã bàn giao') return 'Bàn giao';
@@ -396,6 +396,7 @@
                         handover: db.details_json?.handover || 'Đang cập nhật',
                         slug: db.slug || '',
                         previousSlugs: Array.isArray(db.previous_slugs) ? db.previous_slugs : [],
+                        isHidden: !!db.is_hidden,
                         updated_at: db.updated_at || db.created_at,
                         details: getProjectDetails(db)
                     };
@@ -418,6 +419,7 @@
                     name: db.title,
                     location: db.location,
                     owner: db.investor,
+                    investor: db.investor,
                     status: normalizeProjectStatus(db.status),
                     progress: db.progress,
                     projectCode: db.details_json?.projectCode || '',
@@ -425,6 +427,7 @@
                     imageUrl: db.details_json?.mainImageUrl || '',
                     slug: db.slug || '',
                     previousSlugs: Array.isArray(db.previous_slugs) ? db.previous_slugs : [],
+                    isHidden: !!db.is_hidden,
                     details: getProjectDetails(db),
                     created_at: db.created_at,
                     updated_at: db.updated_at || db.created_at
@@ -475,6 +478,7 @@
                     status: normalizeProjectStatus(projectData.status || 'Chờ xây dựng'),
                     details_json: getProjectPayloadDetails(projectData.details || { desc: projectData.desc || '' }),
                     is_draft: !!projectData.isDraft,
+                    is_hidden: !!projectData.isHidden,
                     ...(projectData.slug ? { slug: projectData.slug } : {})
                 };
                 const res = await fetch(`${BASE_URL}/projects`, {
@@ -500,6 +504,7 @@
                     status: normalizeProjectStatus(projectData.status || 'Chờ xây dựng'),
                     details_json: getProjectPayloadDetails(projectData.details || { desc: projectData.desc || '' }),
                     is_draft: !!projectData.isDraft,
+                    is_hidden: !!projectData.isHidden,
                     ...(projectData.slug ? { slug: projectData.slug } : {})
                 };
                 const res = await fetch(`${BASE_URL}/projects?id=eq.${id}`, {
@@ -524,6 +529,22 @@
                     body: JSON.stringify({ details_json: getProjectPayloadDetails(details) })
                 });
                 if (!res.ok) throw new Error('Failed to update project details');
+                const data = await res.json();
+                return data[0] || data;
+            } catch (err) {
+                console.error(err);
+                return null;
+            }
+        },
+
+        async setProjectHidden(id, isHidden) {
+            try {
+                const res = await fetch(`${BASE_URL}/projects?id=eq.${encodeURIComponent(id)}`, {
+                    method: 'PATCH',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ is_hidden: !!isHidden })
+                });
+                if (!res.ok) throw new Error('Failed to update project visibility');
                 const data = await res.json();
                 return data[0] || data;
             } catch (err) {

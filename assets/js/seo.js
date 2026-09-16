@@ -105,6 +105,29 @@
         return element;
     };
     const absoluteUrl = path => new URL(path, `${getOrigin()}/`).href;
+    const upsertJsonLd = (page, canonical) => {
+        const data = {
+            '@context': 'https://schema.org',
+            '@type': 'WebPage',
+            name: page.title,
+            description: page.description,
+            url: canonical,
+            inLanguage: 'vi-VN',
+            isPartOf: {
+                '@type': 'WebSite',
+                name: BRAND,
+                url: `${getOrigin()}/`
+            }
+        };
+        let element = document.head.querySelector('script[data-noxh-seo-jsonld]');
+        if (!element) {
+            element = document.createElement('script');
+            element.type = 'application/ld+json';
+            element.dataset.noxhSeoJsonld = 'true';
+            document.head.appendChild(element);
+        }
+        element.textContent = JSON.stringify(data);
+    };
 
     const apply = (pathname = window.location.pathname, project = null) => {
         const template = templateForPath(pathname);
@@ -138,6 +161,7 @@
         upsertMeta('meta[name="twitter:title"]', { name: 'twitter:title', content: page.title });
         upsertMeta('meta[name="twitter:description"]', { name: 'twitter:description', content: page.description });
         if (page.image) upsertMeta('meta[name="twitter:image"]', { name: 'twitter:image', content: absoluteUrl(page.image) });
+        upsertJsonLd(page, canonical);
     };
 
     window.NoxhSeo = { apply, applyProject: (project, pathname) => apply(pathname, project), pageForPath };

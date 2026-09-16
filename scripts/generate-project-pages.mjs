@@ -49,6 +49,10 @@ const replaceElementText = (html, id, value) => html.replace(
   new RegExp(`(<([a-z][\\w:-]*)[^>]+id=["']${id}["'][^>]*>)[\\s\\S]*?(<\\/\\2>)`, 'i'),
   `$1${escapeHtml(value)}$3`
 );
+const replaceDataFieldText = (html, field, value) => html.replace(
+  new RegExp(`(<([a-z][\\w:-]*)[^>]+data-detail-field=["']${field}["'][^>]*>)[\\s\\S]*?(<\\/\\2>)`, 'gi'),
+  `$1${escapeHtml(value)}$3`
+);
 
 function projectPage(project, { origin, template }) {
   const slug = project.slug || slugifyProject(project.title);
@@ -87,12 +91,13 @@ function projectPage(project, { origin, template }) {
     .replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtml(project.title)} | NOXH.help</title>`)
     .replace(/<!-- SEO:START -->[\s\S]*?<!-- SEO:END -->/i, seo)
     .replace(/<script src="assets\/js\/seo\.js\?v=\d+"><\/script>/i, `${preload}\n  <script src="assets/js/seo.js?v=2"></script>`)
-    .replace(/assets\/js\/main\.js\?v=\d+/i, 'assets/js/main.js?v=100')
+    .replace(/assets\/js\/main\.js\?v=\d+/i, 'assets/js/main.js?v=102')
     .replace('</head>', `<script type="application/ld+json">${escapeJson(pageJsonLd)}</script></head>`);
   html = replaceElementText(html, 'detail-title', project.title);
   html = replaceElementText(html, 'detail-breadcrumb-title', project.title);
   html = replaceElementText(html, 'detail-location', details.address || project.location || 'Đang cập nhật');
   html = replaceElementText(html, 'detail-desc', details.desc || 'Đang cập nhật thông tin dự án.');
+  html = replaceDataFieldText(html, 'investor', project.investor || 'Đang cập nhật');
   return html;
 }
 
@@ -109,8 +114,8 @@ export async function fetchPublishedProjects(root) {
   const configured = await readPublicConfig(root);
   const url = process.env.NOXH_SUPABASE_URL || configured.url;
   const anonKey = process.env.NOXH_SUPABASE_ANON_KEY || configured.anonKey;
-  const select = 'id,title,slug,previous_slugs,location,investor,progress,status,is_draft,details_json,created_at,updated_at';
-  const endpoint = `${url}/rest/v1/projects?is_draft=eq.false&select=${select}`;
+  const select = 'id,title,slug,previous_slugs,location,investor,progress,status,is_draft,is_hidden,details_json,created_at,updated_at';
+  const endpoint = `${url}/rest/v1/projects?is_draft=eq.false&is_hidden=eq.false&select=${select}`;
   let failure;
   for (let attempt = 1; attempt <= 3; attempt += 1) {
     try {
@@ -131,7 +136,7 @@ export async function generateProjectPages({ root, output, origin = '', reportFi
   const outputFiles = [];
   const sitemapEntries = [];
   for (const project of projects) {
-    if (project.is_draft === true) continue;
+    if (project.is_draft === true || project.is_hidden === true) continue;
     const slug = String(project.slug || slugifyProject(project.title));
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) throw new Error(`Invalid project slug: ${slug}`);
     if (usedSlugs.has(slug)) throw new Error(`Duplicate published project slug: ${slug}`);
